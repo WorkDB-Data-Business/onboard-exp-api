@@ -1,7 +1,7 @@
 version: '3'
 
 volumes:
-  postgresql_data_dev:
+  postgresql_data:
     driver: local
   api_data:
     driver: local
@@ -9,16 +9,16 @@ volumes:
 services:
   database:
     container_name: onboardexp_database
-    build: .
+    restart: always
     image: postgres:12.3
     environment: 
       POSTGRES_DB: ${DATABASE_NAME}
       POSTGRES_USER: ${DATABASE_USER}
       POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
     ports: 
-      - ${DATABASE_PORT}:5432
+      - ${DATABASE_PORT}:${DATABASE_PORT}
     volumes:
-      - postgresql_data_dev:/var/lib/postgresql/data
+      - postgresql_data:/var/lib/postgresql/data
 
   api:
     container_name: onboardexp_api
@@ -27,8 +27,16 @@ services:
       context: .
     image: harvest/onboardexp:latest
     ports:
-      - 8081:8081
+      - ${APP_PORT}:${APP_PORT}
+    environment:
+      - "SPRING_PROFILES_ACTIVE=${ENV}"
+      - "SPRING_DATASOURCE_URL=jdbc:postgresql://database:${DATABASE_PORT}/${DATABASE_NAME}"
+      - "SPRING_DATASOURCE_USERNAME=${DATABASE_USER}"
+      - "SPRING_DATASOURCE_PASSWORD=${DATABASE_PASSWORD}"
+      - "SERVER_PORT=${APP_PORT}"
     volumes: 
       - api_data:/usr/local/onboardexp
+    depends_on: 
+      - "database"
     links: 
-      - "database:db"
+      - "database:database"

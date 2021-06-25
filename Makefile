@@ -31,3 +31,4 @@ run-prod:
 	docker-compose down -v
 	@mvn clean package -Dmaven.test.skip=true
 	docker-compose -f docker-compose.yml up --build -d --force-recreate 
+	-Dspring.profiles.active=prod
