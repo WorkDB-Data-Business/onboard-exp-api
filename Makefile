@@ -27,7 +27,10 @@ package:
 
 .ONESHELL:
 
-run-prod: 
-	docker-compose down -v
-	@mvn clean package -Dmaven.test.skip=true
-	docker-compose -f docker-compose.yml up --build -d --force-recreate 
+install:
+	@mvn clean package -Dmaven.test.skip=true 
+
+run: 
+	@docker-compose down -v
+	@docker-compose -f docker-compose.yml up --build -d --force-recreate 
+
