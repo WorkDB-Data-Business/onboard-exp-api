@@ -28,9 +28,9 @@ reset-db:
 install:
 	@mvn clean install -Dmaven.test.skip=true 
 
-package:
+build:
 	@mvn clean package -Dmaven.test.skip=true
 
-run: 
+run: build
 	@docker-compose down -v
-	@docker-compose -f docker-compose.yml up --build -d --force-recreate 
+	@docker-compose -f docker-compose.yml up --build -d --force-recreate
