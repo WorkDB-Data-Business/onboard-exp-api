@@ -1,4 +1,4 @@
-version: '3'
+version: "3"
 
 volumes:
   postgresql_data:
@@ -11,18 +11,18 @@ services:
     container_name: onboardexp_database
     restart: always
     image: postgres:12.3
-    environment: 
+    environment:
       POSTGRES_DB: ${DATABASE_NAME}
       POSTGRES_USER: ${DATABASE_USER}
       POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
-    ports: 
+    ports:
       - ${DATABASE_PORT}:${DATABASE_PORT}
     volumes:
       - postgresql_data:/var/lib/postgresql/data
 
   api:
     container_name: onboardexp_api
-    build: 
+    build:
       dockerfile: Dockerfile
       context: .
     image: harvest/onboardexp:latest
@@ -34,9 +34,9 @@ services:
       - "SPRING_DATASOURCE_USERNAME=${DATABASE_USER}"
       - "SPRING_DATASOURCE_PASSWORD=${DATABASE_PASSWORD}"
       - "SERVER_PORT=${APP_PORT}"
-    volumes: 
+    volumes:
       - api_data:/usr/local/onboardexp
-    depends_on: 
+    depends_on:
       - "database"
-    links: 
+    links:
       - "database:database"

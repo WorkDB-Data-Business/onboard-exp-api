@@ -22,13 +22,15 @@ reset-db:
 	docker-compose down -v
 	docker-compose up -d db1
 
-package:
-	@mvn clean package -Dmaven.test.skip=true
 
 .ONESHELL:
 
-run-prod: 
-	docker-compose down -v
+install:
+	@mvn clean install -Dmaven.test.skip=true 
+
+package:
 	@mvn clean package -Dmaven.test.skip=true
-	docker-compose -f docker-compose.yml up --build -d --force-recreate 
-	-Dspring.profiles.active=prod
+
+run: 
+	@docker-compose down -v
+	@docker-compose -f docker-compose.yml up --build -d --force-recreate 
