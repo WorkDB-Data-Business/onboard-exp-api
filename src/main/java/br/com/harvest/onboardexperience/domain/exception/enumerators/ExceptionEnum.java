@@ -1,0 +1,54 @@
+package br.com.harvest.onboardexperience.domain.exception.enumerators;
+
+import br.com.harvest.onboardexperience.domain.enumerators.ExceptionEnumInterface;
+import lombok.Getter;
+
+@Getter
+public enum ExceptionEnum implements ExceptionEnumInterface {
+	
+	INTERNAL_SERVER_GENERIC_ERROR("E01", "An internal error ocurred", "Request support for help with this issue", "error.internal_server_generic_error", "error.internal_server_generic_error_cause");
+	
+	private String code;
+	private String value;
+	private String cause;
+	private String valueKey;
+	private String causeKey;
+	
+	private ExceptionEnum(final String code, final String value, final String cause, final String valueKey, final String causeKey) {
+		this.code = code;
+		this.value = value;
+		this.cause = cause;
+		this.valueKey = valueKey;
+		this.causeKey = causeKey;
+	}
+	
+	
+	public static ExceptionEnum valueOfCodigo(String codigo) {
+		for (ExceptionEnum error: ExceptionEnum.values()) {
+			if (error.getCode().equalsIgnoreCase(codigo)) {
+				return error;
+			}
+		}
+		return null;
+	}
+	
+	public static ExceptionEnum valueOfvalueKey(String valueKey) {
+		for (ExceptionEnum error: ExceptionEnum.values()) {
+			if (error.getValueKey().equals(valueKey)) {
+				return error;
+			}
+		}
+		return null;
+	}
+	
+	public static ExceptionEnum valueOfCauseKey(String causeKey) {
+		for (ExceptionEnum error: ExceptionEnum.values()) {
+			if (error.getCauseKey().equals(causeKey)) {
+				return error;
+			}
+		}
+		return null;
+	}
+
+
+}

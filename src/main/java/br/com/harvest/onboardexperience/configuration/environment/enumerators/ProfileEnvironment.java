@@ -5,7 +5,7 @@ import lombok.Getter;
 @Getter
 public enum ProfileEnvironment {
 	
-	DEV("dev"), PROD("prod");
+	DEV("Development"), PROD("Production"), TEST("Test");
 	
 	private String name;
 

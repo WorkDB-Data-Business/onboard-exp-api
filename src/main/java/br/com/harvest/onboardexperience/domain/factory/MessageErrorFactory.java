@@ -1,0 +1,99 @@
+package br.com.harvest.onboardexperience.domain.factory;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+
+import br.com.harvest.onboardexperience.domain.dto.MessageError;
+import br.com.harvest.onboardexperience.domain.exception.FactoryException;
+import br.com.harvest.onboardexperience.domain.exception.enumerators.FactoryExceptionEnum;
+import br.com.harvest.onboardexperience.domain.dto.Comment;
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+public class MessageErrorFactory {
+
+	private List<MessageError> errors;
+	private MessageError error;
+
+	public MessageErrorFactory() {
+		this.errors = new ArrayList<>();
+	}
+
+	public MessageErrorFactory buildError(final MessageError error) {
+		
+		if(Objects.isNull(error)) {
+			log.error(FactoryExceptionEnum.ERROR_CANNOT_BE_NULL.getValue(), FactoryExceptionEnum.ERROR_CANNOT_BE_NULL.getCause());
+			throw new FactoryException(FactoryExceptionEnum.ERROR_CANNOT_BE_NULL);
+		}
+		
+		this.errors.add(error);
+		
+		return this;
+	}
+
+	public MessageErrorFactory buildError(final String message, final String cause, String messageKey, String causeKey) {
+		
+		if(Objects.isNull(message)) {
+			log.error(FactoryExceptionEnum.MESSAGE_CANNOT_BE_NULL.getValue(), FactoryExceptionEnum.MESSAGE_CANNOT_BE_NULL.getCause());
+			throw new FactoryException(FactoryExceptionEnum.MESSAGE_CANNOT_BE_NULL);
+		}
+		
+		if(Objects.isNull(cause)) {
+			log.error(FactoryExceptionEnum.CAUSE_CANNOT_BE_NULL.getValue(), FactoryExceptionEnum.MESSAGE_CANNOT_BE_NULL.getCause());
+			throw new FactoryException(FactoryExceptionEnum.CAUSE_CANNOT_BE_NULL);
+		}
+		
+		if(Objects.isNull(messageKey)) {
+			log.error(FactoryExceptionEnum.MESSAGE_KEY_CANNOT_BE_NULL.getValue(), FactoryExceptionEnum.MESSAGE_KEY_CANNOT_BE_NULL.getCause());
+			throw new FactoryException(FactoryExceptionEnum.MESSAGE_KEY_CANNOT_BE_NULL);
+		}
+		
+		if(Objects.isNull(causeKey)) {
+			log.error(FactoryExceptionEnum.CAUSE_KEY_CANNOT_BE_NULL.getValue(), FactoryExceptionEnum.CAUSE_KEY_CANNOT_BE_NULL.getCause());
+			throw new FactoryException(FactoryExceptionEnum.CAUSE_KEY_CANNOT_BE_NULL);
+		}
+		
+		this.error = MessageError.builder()
+						  .message(message)
+						  .messageKey(messageKey)
+						  .cause(cause)
+						  .causeKey(causeKey)
+						  .build(); 
+		
+		return this;
+	}
+	
+	public MessageErrorFactory withComments(final List<Comment> comments) {
+		
+		if(Objects.isNull(comments)) {
+			log.error(FactoryExceptionEnum.COMMENTS_CANNOT_BE_NULL.getValue(), FactoryExceptionEnum.MESSAGE_CANNOT_BE_NULL.getCause());
+			throw new FactoryException(FactoryExceptionEnum.COMMENTS_CANNOT_BE_NULL);
+		}
+		
+		if(Objects.isNull(this.error)) {
+			log.error(FactoryExceptionEnum.CURRENT_ERROR_NULL.getValue(), FactoryExceptionEnum.MESSAGE_CANNOT_BE_NULL.getCause());
+			throw new FactoryException(FactoryExceptionEnum.CURRENT_ERROR_NULL);
+		}
+		
+		this.error.setComments(comments);
+		
+		return this;
+	}
+	
+	public void addError() {
+		
+		if(Objects.isNull(this.error)) {
+			log.error(FactoryExceptionEnum.CURRENT_ERROR_NULL.getValue(), FactoryExceptionEnum.MESSAGE_CANNOT_BE_NULL.getCause());
+			throw new FactoryException(FactoryExceptionEnum.CURRENT_ERROR_NULL);
+		} 
+		
+		this.errors.add(error);
+		this.error = null;
+	}
+
+	public List<MessageError> build() {
+		return this.errors;
+	}
+
+}
