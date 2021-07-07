@@ -82,6 +82,19 @@
 	<build>
 		<plugins>
 			<plugin>
+				<groupId>org.flywaydb</groupId>
+				<artifactId>flyway-maven-plugin</artifactId>
+				<configuration>
+					<url>jdbc:postgresql://localhost:${DATABASE_PORT}/${DATABASE_NAME}</url>
+					<user>${DATABASE_USER}</user>
+					<password>${DATABASE_PASSWORD}</password>
+					<baselineOnMigrate>true</baselineOnMigrate>
+					<schemas>
+						<schema>public</schema>
+					</schemas>
+				</configuration>
+			</plugin>
+			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<configuration>
 					<encoding>UTF-8</encoding>

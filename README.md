@@ -32,7 +32,7 @@ Para rodar o projeto, é necessário possuir um arquivo .env dentro do diretóri
 
 ### Utilizando uma IDE
 
-Abra o Powershell em modo administrador e clone o projeto para sua máquina.
+Abra o Powershell (ou bash, em ambiente Linux) em modo administrador e clone o projeto para sua máquina.
 
 ```bash
   git clone git@github.com:WorkDB-Data-Business/onboard-exp-api.git
@@ -47,13 +47,15 @@ Vá para o diretório do projeto.
 Instale as variáveis de ambiente.
 
 ```bash
-  .\add_env_variables.ps1
+  make install-env-variables-windows // ambiente Windows
+  make install-env-variables-linux // ambiente Linux
 ```
 
 É também possível retirar as variáveis de ambiente utilizando o comando abaixo.
 
 ```bash
-  .\remove_env_variables.ps1
+  make remove-env-variables-windows // ambiente Windows
+  make remove-env-variables-linux // ambiente Linux
 ```
 
 Após definir as variáveis de ambiente, **reinicie a máquina**. Este passo é importante para que a IDE reconheça as variáveis de ambiente definidas.
@@ -121,9 +123,3 @@ Ao subir a aplicação, é possível gerenciar os containers através do link ab
 ## Observações
 
 - **É necessário se atentar à versão do Maven utilizada no projeto.** Versões superiores à **3.6.3** ocorre uma quebra de compatibilidade devido a mudanças nas requisições HTTP/HTTPS aos repositórios.
-
-- **É necessário configurar a política de segurança do Powershell para aceitar a execução de script's de terceiros**. O Powershell, por padrão, bloqueia a execução de script's de terceiros, e portanto não será possível executar os comandos necessários. Para realizar a configuração, abra o Powershell em modo administrador e execute o comando abaixo:
-
-```bash
-  Set-ExecutionPolicy AllSigned
-```
