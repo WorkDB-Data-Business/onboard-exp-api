@@ -1,26 +1,26 @@
-package br.com.harvest.onboardexperience.domain.factory;
+package br.com.harvest.onboardexperience.domain.builders;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import br.com.harvest.onboardexperience.domain.dto.MessageError;
+import br.com.harvest.onboardexperience.domain.dto.responses.Comment;
+import br.com.harvest.onboardexperience.domain.dto.responses.MessageError;
 import br.com.harvest.onboardexperience.domain.exception.FactoryException;
 import br.com.harvest.onboardexperience.domain.exception.enumerators.FactoryExceptionEnum;
-import br.com.harvest.onboardexperience.domain.dto.Comment;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class MessageErrorFactory {
+public class MessageErrorBuilder {
 
 	private List<MessageError> errors;
 	private MessageError error;
 
-	public MessageErrorFactory() {
+	public MessageErrorBuilder() {
 		this.errors = new ArrayList<>();
 	}
 
-	public MessageErrorFactory buildError(final MessageError error) {
+	public MessageErrorBuilder buildError(final MessageError error) {
 		
 		if(Objects.isNull(error)) {
 			log.error(FactoryExceptionEnum.ERROR_CANNOT_BE_NULL.getValue(), FactoryExceptionEnum.ERROR_CANNOT_BE_NULL.getCause());
@@ -32,7 +32,7 @@ public class MessageErrorFactory {
 		return this;
 	}
 
-	public MessageErrorFactory buildError(final String message, final String cause, String messageKey, String causeKey) {
+	public MessageErrorBuilder buildError(final String message, final String cause, String messageKey, String causeKey) {
 		
 		if(Objects.isNull(message)) {
 			log.error(FactoryExceptionEnum.MESSAGE_CANNOT_BE_NULL.getValue(), FactoryExceptionEnum.MESSAGE_CANNOT_BE_NULL.getCause());
@@ -64,7 +64,7 @@ public class MessageErrorFactory {
 		return this;
 	}
 	
-	public MessageErrorFactory withComments(final List<Comment> comments) {
+	public MessageErrorBuilder withComments(final List<Comment> comments) {
 		
 		if(Objects.isNull(comments)) {
 			log.error(FactoryExceptionEnum.COMMENTS_CANNOT_BE_NULL.getValue(), FactoryExceptionEnum.MESSAGE_CANNOT_BE_NULL.getCause());
@@ -81,7 +81,7 @@ public class MessageErrorFactory {
 		return this;
 	}
 	
-	public void addError() {
+	public MessageErrorBuilder addError() {
 		
 		if(Objects.isNull(this.error)) {
 			log.error(FactoryExceptionEnum.CURRENT_ERROR_NULL.getValue(), FactoryExceptionEnum.MESSAGE_CANNOT_BE_NULL.getCause());
@@ -90,6 +90,7 @@ public class MessageErrorFactory {
 		
 		this.errors.add(error);
 		this.error = null;
+		return this;
 	}
 
 	public List<MessageError> build() {

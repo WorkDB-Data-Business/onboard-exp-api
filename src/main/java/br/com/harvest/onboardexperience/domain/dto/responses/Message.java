@@ -1,4 +1,5 @@
-package br.com.harvest.onboardexperience.domain.dto;
+package br.com.harvest.onboardexperience.domain.dto.responses;
+
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,17 +13,14 @@ import lombok.Data;
 @AllArgsConstructor
 public class Message {
 	
+	private String message; 
+	private String messageKey;
+	private List<MessageError> errors;
+	private List<Comment> comments;
+	
 	public Message() {
 		this.errors = new ArrayList<>();
 		this.comments = new ArrayList<>();
 	}
 	
-	private String message;
-	
-	private String messageKey;
-	
-	private List<MessageError> errors;
-	
-	private List<Comment> comments;
-
 }

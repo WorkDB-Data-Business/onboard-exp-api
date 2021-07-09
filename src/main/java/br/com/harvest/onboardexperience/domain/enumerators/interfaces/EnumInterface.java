@@ -1,4 +1,4 @@
-package br.com.harvest.onboardexperience.domain.enumerators;
+package br.com.harvest.onboardexperience.domain.enumerators.interfaces;
 
 public interface EnumInterface {
 

@@ -1,4 +1,4 @@
-package br.com.harvest.onboardexperience.domain.dto;
+package br.com.harvest.onboardexperience.domain.dto.responses;
 
 import lombok.Builder;
 import lombok.Data;
@@ -8,7 +8,6 @@ import lombok.Data;
 public class Comment {
 	
 	private String message;
-	
 	private String messageKey;
-
+	
 }

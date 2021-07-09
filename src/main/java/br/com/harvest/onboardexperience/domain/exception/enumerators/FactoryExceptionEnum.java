@@ -1,11 +1,11 @@
 package br.com.harvest.onboardexperience.domain.exception.enumerators;
 
-import br.com.harvest.onboardexperience.domain.enumerators.ExceptionEnumInterface;
+import br.com.harvest.onboardexperience.domain.enumerators.interfaces.ExceptionEnumInterface;
 import lombok.Getter;
 
 @Getter
 public enum FactoryExceptionEnum implements ExceptionEnumInterface {
-	
+
 	ERROR_FACTORY_BUILD("FE01", "An error occurred at factory build", "Generic cause message", "error.factory.build", "error.factory.build_cause"),
 	CURRENT_ERROR_NULL("FE02", "The current error cannot be null", "The current error is null", "error.factory.current_error_null", "error.factory.current_error_null_cause"),
 	COMMENTS_CANNOT_BE_NULL("FE03", "Comments cannot be null", "Comments is null", "error.factory.comments_cannot_be_null", "error.factory.comments_cannot_be_null_cause"),
