@@ -1,7 +1,7 @@
 package br.com.harvest.onboardexperience.domain.exceptions;
 
 import br.com.harvest.onboardexperience.domain.enumerators.interfaces.ExceptionEnumInterface;
-import br.com.harvest.onboardexperience.domain.exceptions.enumerators.BusinessExceptionEnum;
+import br.com.harvest.onboardexperience.domain.exceptions.enumerators.UserExceptionEnum;
 import lombok.Getter;
 
 @Getter
@@ -12,19 +12,19 @@ public class UserNotFoundException extends RuntimeException {
 	private ExceptionEnumInterface exception;
 
 	public UserNotFoundException(String message) {
-		super(BusinessExceptionEnum.BUSINESS_GENERIC_ERROR + ": " + message);
+		super(UserExceptionEnum.USER_NOT_FOUND + ": " + message);
 	}
 
 	public UserNotFoundException(String message, Throwable cause) {
-		super(BusinessExceptionEnum.BUSINESS_GENERIC_ERROR + ": " + message, cause);
+		super(UserExceptionEnum.USER_NOT_FOUND + ": " + message, cause);
 	}
 
 	public UserNotFoundException(String message, String customCause) {
-		super(BusinessExceptionEnum.BUSINESS_GENERIC_ERROR + ": " +  message);
+		super(UserExceptionEnum.USER_NOT_FOUND + ": " +  message);
 	}
 
 	public UserNotFoundException(ExceptionEnumInterface exception) {
-		super(BusinessExceptionEnum.BUSINESS_GENERIC_ERROR + ": " + exception.getValue());
+		super(UserExceptionEnum.USER_NOT_FOUND + ": " + exception.getValue());
 		this.exception = exception;
 	}
 

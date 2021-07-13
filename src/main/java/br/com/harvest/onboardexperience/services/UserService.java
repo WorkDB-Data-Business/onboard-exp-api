@@ -1,12 +1,16 @@
 package br.com.harvest.onboardexperience.services;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import br.com.harvest.onboardexperience.domain.dto.UserDto;
 import br.com.harvest.onboardexperience.domain.entities.User;
+import br.com.harvest.onboardexperience.domain.exceptions.UserNotFoundException;
+import br.com.harvest.onboardexperience.domain.exceptions.enumerators.UserExceptionEnum;
 import br.com.harvest.onboardexperience.mappers.UserMapper;
 import br.com.harvest.onboardexperience.repositories.UserRepository;
 
@@ -27,29 +31,35 @@ public class UserService implements IService<UserDto>{
 
 	@Override
 	public UserDto update(Long id, UserDto dto) {
-		User user = repository.findById(id).orElseThrow(() -> );
-		if() {
-			
-		}
-		return null;
+		User user = repository.findById(id).orElseThrow(
+				() -> new UserNotFoundException(UserExceptionEnum.USER_NOT_FOUND_ID));
+		
+		BeanUtils.copyProperties(dto, user);
+		
+		user = repository.save(user);
+		
+		return mapper.toDto(user);
 	}
 
 	@Override
 	public UserDto findById(Long id) {
-		// TODO Auto-generated method stub
-		return null;
+		User user = repository.findById(id).orElseThrow(
+				() -> new UserNotFoundException(UserExceptionEnum.USER_NOT_FOUND_ID));
+		
+		return mapper.toDto(user);
 	}
 
 	@Override
 	public List<UserDto> findAll() {
-		// TODO Auto-generated method stub
-		return null;
+		List<User> users = repository.findAll();
+		return users.stream().map(mapper::toDto).collect(Collectors.toList());
 	}
 
 	@Override
 	public void delete(Long id) {
-		// TODO Auto-generated method stub
-		
+		User user = repository.findById(id).orElseThrow(
+				() -> new UserNotFoundException(UserExceptionEnum.USER_NOT_FOUND_ID));
+		repository.delete(user);
 	}
 		
 }
