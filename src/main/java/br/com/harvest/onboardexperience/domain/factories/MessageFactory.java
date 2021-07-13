@@ -12,7 +12,7 @@ import br.com.harvest.onboardexperience.domain.dto.responses.MessageError;
 import br.com.harvest.onboardexperience.domain.dto.responses.SimpleMessage;
 import br.com.harvest.onboardexperience.domain.dto.responses.SimpleMessageWithComment;
 import br.com.harvest.onboardexperience.domain.enumerators.interfaces.EnumInterface;
-import br.com.harvest.onboardexperience.domain.mappers.MessageMapper;
+import br.com.harvest.onboardexperience.mappers.MessageMapper;
 
 @Component
 public class MessageFactory {

@@ -1,4 +1,4 @@
-package br.com.harvest.onboardexperience.domain.exception.enumerators;
+package br.com.harvest.onboardexperience.domain.exceptions.enumerators;
 
 import br.com.harvest.onboardexperience.domain.enumerators.interfaces.ExceptionEnumInterface;
 import lombok.Getter;

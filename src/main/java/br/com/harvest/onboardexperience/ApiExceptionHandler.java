@@ -11,8 +11,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import br.com.harvest.onboardexperience.domain.dto.response.templates.InternalServerErrorMessage;
 import br.com.harvest.onboardexperience.domain.dto.responses.Message;
-import br.com.harvest.onboardexperience.domain.exception.BusinessException;
-import br.com.harvest.onboardexperience.domain.exception.FactoryException;
+import br.com.harvest.onboardexperience.domain.exceptions.BusinessException;
+import br.com.harvest.onboardexperience.domain.exceptions.FactoryException;
 
 @ControllerAdvice(annotations = RestController.class)
 @Order(Ordered.HIGHEST_PRECEDENCE)

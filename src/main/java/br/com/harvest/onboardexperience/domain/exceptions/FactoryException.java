@@ -1,7 +1,7 @@
-package br.com.harvest.onboardexperience.domain.exception;
+package br.com.harvest.onboardexperience.domain.exceptions;
 
 import br.com.harvest.onboardexperience.domain.enumerators.interfaces.ExceptionEnumInterface;
-import br.com.harvest.onboardexperience.domain.exception.enumerators.FactoryExceptionEnum;
+import br.com.harvest.onboardexperience.domain.exceptions.enumerators.FactoryExceptionEnum;
 import lombok.Getter;
 
 @Getter

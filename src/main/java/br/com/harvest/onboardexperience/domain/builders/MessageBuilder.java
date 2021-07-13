@@ -9,8 +9,8 @@ import br.com.harvest.onboardexperience.domain.dto.responses.Comment;
 import br.com.harvest.onboardexperience.domain.dto.responses.Message;
 import br.com.harvest.onboardexperience.domain.dto.responses.MessageError;
 import br.com.harvest.onboardexperience.domain.enumerators.interfaces.EnumInterface;
-import br.com.harvest.onboardexperience.domain.exception.FactoryException;
-import br.com.harvest.onboardexperience.domain.exception.enumerators.FactoryExceptionEnum;
+import br.com.harvest.onboardexperience.domain.exceptions.FactoryException;
+import br.com.harvest.onboardexperience.domain.exceptions.enumerators.FactoryExceptionEnum;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j

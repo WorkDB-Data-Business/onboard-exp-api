@@ -1,4 +1,4 @@
-package br.com.harvest.onboardexperience.configuration.environment.enumerators;
+package br.com.harvest.onboardexperience.configurations.environment.enumerators;
 
 import lombok.Getter;
 

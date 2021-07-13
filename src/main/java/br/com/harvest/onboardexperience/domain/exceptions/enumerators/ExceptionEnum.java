@@ -1,4 +1,4 @@
-package br.com.harvest.onboardexperience.domain.exception.enumerators;
+package br.com.harvest.onboardexperience.domain.exceptions.enumerators;
 
 import br.com.harvest.onboardexperience.domain.enumerators.interfaces.ExceptionEnumInterface;
 import lombok.Getter;
@@ -7,7 +7,8 @@ import lombok.Getter;
 public enum ExceptionEnum implements ExceptionEnumInterface {
 	
 	INTERNAL_SERVER_GENERIC_ERROR("E01", "An internal server error ocurred", "Request support for help with this issue", "error.internal_server_generic_error", "error.internal_server_generic_error_cause"),
-	GENERIC_EXCEPTION_MESSAGE("E02", "An exception has been thrown", "Verify the root cause", "error.generic_exception_message", "error.generic_exception_message_cause");
+	GENERIC_EXCEPTION_MESSAGE("E02", "An exception has been thrown", "Verify the root cause", "error.generic_exception_message", "error.generic_exception_message_cause"),
+	RECORD_NOT_FOUND("E03", "The record has been not found", "dsds", "error.record_not_found");
 	
 	private String code;
 	private String value;

@@ -1,4 +1,4 @@
-package br.com.harvest.onboardexperience.domain.entity;
+package br.com.harvest.onboardexperience.domain.entities;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;

@@ -1,4 +1,4 @@
-package br.com.harvest.onboardexperience.domain.mappers;
+package br.com.harvest.onboardexperience.mappers;
 
 import org.mapstruct.Mapper;
 

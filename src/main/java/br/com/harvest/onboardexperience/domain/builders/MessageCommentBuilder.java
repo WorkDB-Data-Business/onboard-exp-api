@@ -5,8 +5,8 @@ import java.util.List;
 import java.util.Objects;
 
 import br.com.harvest.onboardexperience.domain.dto.responses.Comment;
-import br.com.harvest.onboardexperience.domain.exception.FactoryException;
-import br.com.harvest.onboardexperience.domain.exception.enumerators.FactoryExceptionEnum;
+import br.com.harvest.onboardexperience.domain.exceptions.FactoryException;
+import br.com.harvest.onboardexperience.domain.exceptions.enumerators.FactoryExceptionEnum;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
