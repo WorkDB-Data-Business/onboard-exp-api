@@ -6,8 +6,9 @@ import lombok.Getter;
 @Getter
 public enum UserExceptionEnum implements ExceptionEnumInterface {
 	
-	USER_NOT_FOUND("E03", "The user has been not found", "Doesn't have any user in database with this field value", "error.user_not_found", "error.user_not_found_cause"),
-	USER_NOT_FOUND_ID("E04", "The user with this ID has been not found", "Doesn't have any user in database with this field value", "error.user_not_found_id", "error.user_not_found_cause");
+	USER_NOT_FOUND("UE01", "The user has been not found", "Doesn't have any user in database with this field value", "error.user_not_found", "error.user_not_found_cause"),
+	USER_NOT_FOUND_ID("UE02", "The user with this ID has been not found", "Doesn't have any user in database with this field value", "error.user_not_found_id", "error.user_not_found_cause"),
+	USER_ALREADY_EXISTS("UE03", "The user already exists", "The user already exists", "error.user_already_exists", "error.user_already_exists");
 
 	private String code;
 	private String value;

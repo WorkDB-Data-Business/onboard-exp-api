@@ -9,33 +9,27 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestController;
 
-import br.com.harvest.onboardexperience.domain.dto.response.templates.InternalServerErrorMessage;
+//import br.com.harvest.onboardexperience.domain.dto.response.templates.InternalServerErrorMessage;
 import br.com.harvest.onboardexperience.domain.dto.responses.Message;
 import br.com.harvest.onboardexperience.domain.exceptions.BusinessException;
 import br.com.harvest.onboardexperience.domain.exceptions.FactoryException;
 
+
 @ControllerAdvice(annotations = RestController.class)
 @Order(Ordered.HIGHEST_PRECEDENCE)
-public class ApiExceptionHandler {
+public class ApiExceptionHandler  {
 	
 	@ExceptionHandler(FactoryException.class)
 	public ResponseEntity<?> handleFactoryException(FactoryException e){
 		
-		Message message = new InternalServerErrorMessage()
-				.setError(e.getException())
-				.build();
 								  
-		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).contentType(MediaType.APPLICATION_JSON).body(message);
+		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).contentType(MediaType.APPLICATION_JSON).body(e);
 	}
 	
 	@ExceptionHandler(BusinessException.class)
 	public ResponseEntity<?> handleFactoryException(BusinessException e){
-		
-		Message message = new InternalServerErrorMessage()
-				.setError(e.getException())
-				.build();
 								  
-		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).contentType(MediaType.APPLICATION_JSON).body(message);
+		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).contentType(MediaType.APPLICATION_JSON).body(e);
 	}
 
 }

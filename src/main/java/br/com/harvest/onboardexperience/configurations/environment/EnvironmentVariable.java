@@ -23,6 +23,9 @@ public class EnvironmentVariable {
 	@Value("${spring.config.activate.on-profile}")
 	private ProfileEnvironment profile;
 	
+	@Value("${jwt.secret}")
+	private String jwtSecret;
+	
 	public String getApplicationVersion() {
 		return applicationEnvironment.getVersion();
 	}

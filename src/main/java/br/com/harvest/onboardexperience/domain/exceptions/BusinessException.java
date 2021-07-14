@@ -12,19 +12,19 @@ public class BusinessException extends RuntimeException {
 	private ExceptionEnumInterface exception;
 
 	public BusinessException(String message) {
-		super(BusinessExceptionEnum.BUSINESS_GENERIC_ERROR + ": " + message);
+		super(BusinessExceptionEnum.BUSINESS_GENERIC_ERROR.getValue() + ": " + message);
 	}
 
 	public BusinessException(String message, Throwable cause) {
-		super(BusinessExceptionEnum.BUSINESS_GENERIC_ERROR + ": " + message, cause);
+		super(BusinessExceptionEnum.BUSINESS_GENERIC_ERROR.getValue() + ": " + message, cause);
 	}
 
 	public BusinessException(String message, String customCause) {
-		super(BusinessExceptionEnum.BUSINESS_GENERIC_ERROR + ": " +  message);
+		super(BusinessExceptionEnum.BUSINESS_GENERIC_ERROR.getValue() + ": " +  message);
 	}
 
 	public BusinessException(ExceptionEnumInterface exception) {
-		super(BusinessExceptionEnum.BUSINESS_GENERIC_ERROR + ": " + exception.getValue());
+		super(BusinessExceptionEnum.BUSINESS_GENERIC_ERROR.getValue() + ": " + exception.getValue());
 		this.exception = exception;
 	}
 
