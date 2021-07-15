@@ -3,6 +3,7 @@ package br.com.harvest.onboardexperience.services;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -13,10 +14,12 @@ import org.springframework.stereotype.Service;
 import br.com.harvest.onboardexperience.configurations.application.PasswordConfiguration;
 import br.com.harvest.onboardexperience.domain.dto.UserDto;
 import br.com.harvest.onboardexperience.domain.entities.User;
+import br.com.harvest.onboardexperience.domain.exceptions.InvalidCpfException;
 import br.com.harvest.onboardexperience.domain.exceptions.UserAlreadyExistsException;
 import br.com.harvest.onboardexperience.domain.exceptions.UserNotFoundException;
 import br.com.harvest.onboardexperience.mappers.UserMapper;
 import br.com.harvest.onboardexperience.repositories.UserRepository;
+import br.com.harvest.onboardexperience.utils.GenericUtils;
 
 @Service
 public class UserService implements IService<UserDto>{
@@ -37,6 +40,8 @@ public class UserService implements IService<UserDto>{
 		
 		checkIfUserAlreadyExists(dto);
 		
+		validateCpf(dto);
+		
 		User user = repository.save(mapper.toEntity(dto));
 		return mapper.toDto(user);
 	}
@@ -47,6 +52,12 @@ public class UserService implements IService<UserDto>{
 				() -> new UserNotFoundException("The user with ID " + id + " has not found"));
 		
 		checkIfUserAlreadyExists(dto);
+		
+		validateCpf(dto);
+		
+		if(checkIfPasswordChanged(user, dto)) {
+			encryptPassword(dto);
+		}
 		
 		BeanUtils.copyProperties(dto, user, "id");
 		
@@ -89,6 +100,23 @@ public class UserService implements IService<UserDto>{
 		if(repository.findByEmailContainingIgnoreCase(dto.getUsername()).isPresent()) {
 			throw new UserAlreadyExistsException("Try use email.");
 		}
+	}
+	
+	private void validateCpf(UserDto dto) {
+		
+		if(!(ObjectUtils.isNotEmpty(dto.getCpf()) && GenericUtils.validateCPF(dto.getCpf()))) {
+			throw new InvalidCpfException("CPF is invalid");
+		}
+		
+	}
+	
+	private Boolean checkIfPasswordChanged(User user, UserDto dto) {
+		
+		if(passwordConfiguration.encoder().matches(dto.getPassword(), user.getPassword())) {
+			return false;
+		}
+		
+		return true;
 	}
 		
 }

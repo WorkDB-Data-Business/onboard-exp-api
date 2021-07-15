@@ -11,6 +11,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -43,6 +44,13 @@ public class User {
 	
 	@Column(name = "email")
 	private String email;
+	
+	@Column(name = "cpf")
+	private String cpf;
+	
+	@ManyToOne
+	@JoinColumn(name="idcompany_role")
+	private CompanyRole companyRole;
 	
 	@Column(name = "is_active")
 	private Boolean isActive;

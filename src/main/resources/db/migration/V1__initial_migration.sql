@@ -5,9 +5,11 @@ CREATE TABLE IF NOT EXISTS public.tbuser(
 	password CHARACTER VARYING NOT NULL,
 	username CHARACTER VARYING NOT NULL,
 	email CHARACTER VARYING NOT NULL,
-	is_active boolean default true,
-	is_expired boolean default false,
-	is_blocked boolean default false,
+	cpf CHARACTER VARYING,
+	idcompany_role BIGINT NOT NULL,
+	is_active BOOLEAN default true,
+	is_expired BOOLEAN default false,
+	is_blocked BOOLEAN default false,
 	
 	CONSTRAINT tbuser_pk PRIMARY KEY (iduser)
 );
@@ -42,4 +44,11 @@ CREATE TABLE IF NOT EXISTS public.tbuser_role(
 	FOREIGN KEY (idrole) REFERENCES tbrole(idrole),
 	
 	CONSTRAINT tbuser_role_pk PRIMARY KEY (iduser, idrole)
+);
+
+CREATE TABLE IF NOT EXISTS public.tbcompany_role(
+	idcompany_role bigserial NOT NULL,
+	name CHARACTER VARYING NOT NULL,
+	
+	CONSTRAINT tbcompany_role_pk PRIMARY KEY (idcompany_role)
 );

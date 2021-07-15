@@ -67,8 +67,8 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
 				Permission permission = new Permission();
 				permission.setPermission(permissionEnum);
 				permissionRepository.save(permission);
-				
-				log.info("The load of " + permission.getPermission() + " occurred successful");
+
+				log.info("The load of " + permission.getPermission() + " permission  occurred successful");
 			}
 
 		} catch (Exception e) {
@@ -111,18 +111,18 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
 
 	private Set<Permission> createPermissionsRole(RoleEnum role) {
 		switch(role) {
-		case ADMIN: {
-			return createPermissions(PermissionEnum.WRITE, PermissionEnum.READ, PermissionEnum.UPDATE, PermissionEnum.DELETE);
-		}
-		case MASTER: {
-			return createPermissions(PermissionEnum.WRITE, PermissionEnum.READ, PermissionEnum.UPDATE, PermissionEnum.DELETE);
-		}
-		case COLABORATOR: {
-			return createPermissions(PermissionEnum.READ, PermissionEnum.UPDATE);
-		}
-		default: {
-			return null;
-		}
+			case ADMIN: {
+				return createPermissions(PermissionEnum.WRITE, PermissionEnum.READ, PermissionEnum.UPDATE, PermissionEnum.DELETE);
+			}
+			case MASTER: {
+				return createPermissions(PermissionEnum.WRITE, PermissionEnum.READ, PermissionEnum.UPDATE, PermissionEnum.DELETE);
+			}
+			case COLABORATOR: {
+				return createPermissions(PermissionEnum.READ, PermissionEnum.UPDATE);
+			}
+			default: {
+				return null;
+			}
 		}
 	}
 

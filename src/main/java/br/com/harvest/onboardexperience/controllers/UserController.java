@@ -35,27 +35,28 @@ public class UserController {
 	private UserService service;
 	
 	@Operation(description = "Retorna os usuários cadastrados.")
+	@PreAuthorize(value = "hasRole('ADMIN')")
 	@GetMapping(path = "/users", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Page<UserDto>> findAll(Pageable pageable) {
 		return ResponseEntity.ok(service.findAll(pageable));
 	}
 	
 	@Operation(description = "Retorna o usuário cadastrado pelo ID.")
-	@PreAuthorize(value = "isAuthenticated()")
+	@PreAuthorize(value = "hasRole('ADMIN')")
 	@GetMapping(path = "/users/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<UserDto> findById(@PathVariable  @Pattern(regexp = RegexUtils.ONLY_NUMBERS) Long id) {
 		return ResponseEntity.ok(service.findById(id));
 	}
 	
 	@Operation(description = "Salva um usuário no banco de dados e o retorna.")
-	@PreAuthorize(value = "isAuthenticated()")
+	@PreAuthorize(value = "hasRole('ADMIN')")
 	@PostMapping(path = "/users", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<UserDto> create(@RequestBody @NotNull UserDto dto) {
 		return ResponseEntity.ok().body(service.create(dto));
 	}
 	
 	@Operation(description = "Realiza a alteração de um usuário no banco de dados e o retorna atualizado.")
-	@PreAuthorize(value = "isAuthenticated()")
+	@PreAuthorize(value = "hasRole('ADMIN') or hasRole('COLABORATOR')")
 	@PutMapping(path = "/users/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<UserDto> update(@PathVariable  @Pattern(regexp = RegexUtils.ONLY_NUMBERS) Long id, @RequestBody @NotNull UserDto dto) {
 		return ResponseEntity.ok().body(service.update(id, dto));
@@ -63,11 +64,9 @@ public class UserController {
 	
 	@Operation(description = "Realiza a exclusão de um usuário no banco de dados.")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
-	@PreAuthorize(value = "isAuthenticated()")
+	@PreAuthorize(value = "hasRole('ADMIN')")
 	@DeleteMapping(path = "/users/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 	public void delete(@PathVariable  @Pattern(regexp = RegexUtils.ONLY_NUMBERS) Long id) {
 		service.delete(id);
 	}
-	
-
 }

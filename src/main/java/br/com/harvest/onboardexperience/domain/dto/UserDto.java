@@ -46,6 +46,10 @@ public class UserDto {
 	@Pattern(regexp = RegexUtils.EMAIL_VALIDATION)
 	private String email;
 	
+	private String cpf;
+	
+	private CompanyRoleDto companyRole;
+	
 	private Boolean isActive;
 	
 	private Boolean isBlocked;
