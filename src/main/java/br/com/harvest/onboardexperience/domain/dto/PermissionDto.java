@@ -3,7 +3,7 @@ package br.com.harvest.onboardexperience.domain.dto;
 
 import javax.validation.constraints.NotNull;
 
-import br.com.harvest.onboardexperience.domain.enumerators.PermissionScope;
+import br.com.harvest.onboardexperience.domain.enumerators.PermissionEnum;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -18,6 +18,6 @@ public class PermissionDto {
 	private Long id;
 	
 	@NotNull
-	private PermissionScope permission;
+	private PermissionEnum permission;
 
 }

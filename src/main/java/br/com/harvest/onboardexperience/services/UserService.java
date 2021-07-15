@@ -82,9 +82,12 @@ public class UserService implements IService<UserDto>{
 	}
 	
 	private void checkIfUserAlreadyExists(UserDto dto) {
-		if(repository.findByUsernameContainingIgnoreCaseOrEmailContainingIgnoreCase(dto.getUsername(),
-				dto.getEmail()).isPresent()) {
-			throw new UserAlreadyExistsException("Try use another username or email.");
+		if(repository.findByUsernameContainingIgnoreCase(dto.getUsername()).isPresent()) {
+			throw new UserAlreadyExistsException("Try use another username.");
+		}
+		
+		if(repository.findByEmailContainingIgnoreCase(dto.getUsername()).isPresent()) {
+			throw new UserAlreadyExistsException("Try use email.");
 		}
 	}
 		

@@ -4,6 +4,7 @@ import java.util.Set;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -52,9 +53,9 @@ public class User {
 	@Column(name = "is_expired")
 	private Boolean isExpired;
 	
-	@ManyToMany
+	@ManyToMany(fetch = FetchType.EAGER)
 	@JoinTable(
-	  name = "user_role", 
+	  name = "tbuser_role", 
 	  joinColumns = @JoinColumn(name = "iduser"), 
 	  inverseJoinColumns = @JoinColumn(name = "idrole"))
 	private Set<Role> roles;
