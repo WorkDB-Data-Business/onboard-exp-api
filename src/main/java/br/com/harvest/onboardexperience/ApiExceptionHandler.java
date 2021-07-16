@@ -1,16 +1,23 @@
 package br.com.harvest.onboardexperience;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestController;
 
-//import br.com.harvest.onboardexperience.domain.dto.response.templates.InternalServerErrorMessage;
+import br.com.harvest.onboardexperience.builders.MessageBuilder;
 import br.com.harvest.onboardexperience.domain.dto.responses.Message;
+import br.com.harvest.onboardexperience.domain.dto.responses.MessageError;
+//import br.com.harvest.onboardexperience.domain.dto.response.templates.InternalServerErrorMessage;
 import br.com.harvest.onboardexperience.domain.exceptions.BusinessException;
 import br.com.harvest.onboardexperience.domain.exceptions.FactoryException;
 
@@ -31,5 +38,25 @@ public class ApiExceptionHandler  {
 								  
 		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).contentType(MediaType.APPLICATION_JSON).body(e);
 	}
-
+	
+	@ExceptionHandler(MethodArgumentNotValidException.class)
+	public ResponseEntity<?> handleMethodArgumentNotValidException(MethodArgumentNotValidException e){
+		
+		List<MessageError> errors = new ArrayList<>();
+		
+		for(FieldError fieldError : e.getBindingResult().getFieldErrors()) {
+			MessageError error = MessageError.builder().message("The value " + fieldError.getRejectedValue()
+			+ " is invalid on field " + fieldError.getField() + ".")
+			.cause(fieldError.getDefaultMessage()).build();
+			errors.add(error);
+		}
+		
+		Message message = new MessageBuilder().addMessage("The object " + e.getBindingResult().getObjectName() + " have validation errors.")
+				.withErrors(errors)
+				.withComments("Please, fix the errors and try again.")
+				.build();
+		
+		  
+		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).contentType(MediaType.APPLICATION_JSON).body(message);
+	}
 }

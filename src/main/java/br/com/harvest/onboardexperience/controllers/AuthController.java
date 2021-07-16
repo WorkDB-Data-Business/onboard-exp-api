@@ -1,5 +1,9 @@
 package br.com.harvest.onboardexperience.controllers;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.TimeZone;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +19,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import br.com.harvest.onboardexperience.domain.dto.JwtRequest;
 import br.com.harvest.onboardexperience.domain.dto.JwtResponse;
+import br.com.harvest.onboardexperience.domain.entities.User;
+import br.com.harvest.onboardexperience.domain.exceptions.UserNotFoundException;
+import br.com.harvest.onboardexperience.repositories.UserRepository;
 import br.com.harvest.onboardexperience.services.JwtUserDetailsService;
 import br.com.harvest.onboardexperience.utils.JwtTokenUtils;
 import io.swagger.v3.oas.annotations.Operation;
@@ -34,17 +41,20 @@ public class AuthController {
 	@Autowired
 	private JwtUserDetailsService userDetailsService;
 	
+	@Autowired
+	private UserRepository repository;
+	
 	
 	@Operation(description = "Realiza a autenticação e retorna o token JWT.")
 	@RequestMapping(value = "/auth", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.POST)
-	public ResponseEntity<?> createAuthenticationToken(@RequestBody JwtRequest authenticationRequest) throws Exception {
-
+	public ResponseEntity<?> createAuthenticationToken(@RequestBody JwtRequest authenticationRequest, TimeZone timezone) throws Exception {
+		System.out.print(timezone.getID());
 		authenticate(authenticationRequest.getUsername(), authenticationRequest.getPassword());
 
 		final UserDetails userDetails = userDetailsService
 				.loadUserByUsername(authenticationRequest.getUsername());
 
-		final String token = jwtUtil.generateToken(userDetails);
+		final String token = jwtUtil.generateToken(createUserClaims(userDetails), userDetails);
 
 		return ResponseEntity.ok(new JwtResponse(token));
 	}
@@ -57,6 +67,18 @@ public class AuthController {
 		} catch (BadCredentialsException e) {
 			throw new Exception("INVALID_CREDENTIALS", e);
 		}
+	}
+	
+	private Map<String, Object> createUserClaims(UserDetails userDetails){
+		User user = repository.findByUsernameContainingIgnoreCase(userDetails.getUsername()).orElseThrow(() -> new UserNotFoundException("User with " 
+				+ userDetails.getUsername() + " not found."));
+		Map<String, Object> claims = new HashMap<>();
+		claims.put("user_id", user.getId());
+		claims.put("user_tenant", user.getClient().getTenant());
+		claims.put("user_is_active", user.getIsActive());
+//		claims.put("timeZoneOffset", claims)
+		
+		return claims;
 	}
 
 }

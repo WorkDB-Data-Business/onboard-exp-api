@@ -11,13 +11,19 @@ import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import br.com.harvest.onboardexperience.domain.entities.Client;
+import br.com.harvest.onboardexperience.domain.entities.CompanyRole;
 import br.com.harvest.onboardexperience.domain.entities.Permission;
 import br.com.harvest.onboardexperience.domain.entities.Role;
 import br.com.harvest.onboardexperience.domain.entities.User;
 import br.com.harvest.onboardexperience.domain.enumerators.PermissionEnum;
 import br.com.harvest.onboardexperience.domain.enumerators.RoleEnum;
+import br.com.harvest.onboardexperience.domain.exceptions.ClientNotFoundException;
+import br.com.harvest.onboardexperience.domain.exceptions.CompanyRoleNotFoundException;
 import br.com.harvest.onboardexperience.domain.exceptions.PermissionNotFoundException;
 import br.com.harvest.onboardexperience.domain.exceptions.RoleNotFoundException;
+import br.com.harvest.onboardexperience.repositories.ClientRepository;
+import br.com.harvest.onboardexperience.repositories.CompanyRoleRepository;
 import br.com.harvest.onboardexperience.repositories.PermissionRepository;
 import br.com.harvest.onboardexperience.repositories.RoleRepository;
 import br.com.harvest.onboardexperience.repositories.UserRepository;
@@ -40,6 +46,12 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
 
 	@Autowired
 	private UserRepository userRepository;
+	
+	@Autowired
+	private CompanyRoleRepository companyRoleRepository;
+	
+	@Autowired
+	private ClientRepository clientRepository;
 
 	@Override
 	@Transactional
@@ -50,6 +62,10 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
 		setupPermissions();
 
 		setupRoles();
+		
+		setupMasterCompanyRole();
+		
+		setupMasterClient();
 
 		setupMasterUser();
 
@@ -143,7 +159,9 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
 
 		try {
 			Role masterRole = roleRepository.findByRole(RoleEnum.MASTER).orElseThrow(() -> new RoleNotFoundException("Permission with name " + RoleEnum.MASTER.getName() + " was not found"));
-
+			CompanyRole companyRole = companyRoleRepository.findByNameContainingIgnoreCase("system owner").orElseThrow(() -> new CompanyRoleNotFoundException("Company Role with name system owner not found"));
+			Client client = clientRepository.findByTenantContainingIgnoreCase("harvest").orElseThrow(() -> new ClientNotFoundException("Client with name harvest not found"));
+			
 			User user = User.builder()
 					.firstName("User")
 					.lastName("Harvest")
@@ -153,6 +171,9 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
 					.isActive(true)
 					.isExpired(false)
 					.isBlocked(false)
+					.client(client)
+					.isClient(true)
+					.companyRole(companyRole)
 					.roles(Set.of(masterRole))
 					.build();
 
@@ -161,6 +182,41 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
 			log.info("The load of master user occurred successful");
 		} catch (Exception e) {
 			log.error("Occurred an error to load master user: " + e.getMessage(), e.getCause());
+		}
+	}
+	
+	@Transactional
+	private void setupMasterCompanyRole() {
+		if(companyRoleRepository.findByNameContainingIgnoreCase("system owner").isPresent()) return; 
+		
+		try {
+			CompanyRole companyRole = CompanyRole.builder().name("System Owner").build();
+			companyRoleRepository.save(companyRole);
+			log.info("The load of master user's company role occurred successful");
+		} catch (Exception e) {
+			log.error("Occurred an error to load master user's company role: " + e.getMessage(), e.getCause());
+		}
+	}
+	
+	@Transactional
+	private void setupMasterClient() {
+		if(clientRepository.findByNameContainingIgnoreCase("harvest").isPresent()) return;
+			//TODO: fill with correct cnpj later
+			Client client = Client.builder().cnpj("12345678912345")
+					.name("Harvest")
+					.isActive(true)
+					.isBlocked(false)
+					.isExpired(false)
+					.isMaster(true)
+					.tenant("harvest")
+					.build();
+			
+			log.info("The load of master client occurred successful");
+			clientRepository.save(client);
+		try {
+			
+		} catch(Exception e) {
+			log.error("Occurred an error to load master client: " + e.getMessage(), e.getCause());
 		}
 	}
 

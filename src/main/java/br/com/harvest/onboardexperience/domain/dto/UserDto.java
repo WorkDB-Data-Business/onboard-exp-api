@@ -1,9 +1,11 @@
 package br.com.harvest.onboardexperience.domain.dto;
 
+import java.io.Serializable;
 import java.util.Set;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 
@@ -21,8 +23,10 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserDto {
+public class UserDto implements Serializable {
 	
+	private static final long serialVersionUID = -9144485778635865671L;
+
 	private Long id;
 	
 	@NotBlank
@@ -46,8 +50,11 @@ public class UserDto {
 	@Pattern(regexp = RegexUtils.EMAIL_VALIDATION)
 	private String email;
 	
+	@Size(min = ValidationUtils.CPF_SIZE, max = ValidationUtils.CPF_SIZE)
+	@Pattern(regexp = RegexUtils.ONLY_NUMBERS)
 	private String cpf;
 	
+	@NotNull
 	private CompanyRoleDto companyRole;
 	
 	private Boolean isActive;
@@ -58,5 +65,10 @@ public class UserDto {
 	
 	@NotEmpty
 	private Set<RoleDto> roles;
+	
+	@NotNull
+	private ClientDto client;
+	
+	private Boolean isClient;
 	
 }

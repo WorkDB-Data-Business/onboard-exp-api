@@ -1,3 +1,31 @@
+CREATE TABLE IF NOT EXISTS public.tbclient(
+	idclient BIGSERIAL NOT NULL,
+	cnpj CHARACTER VARYING NOT NULL,
+	name CHARACTER VARYING NOT NULL,
+	is_active BOOLEAN default true,
+	is_expired BOOLEAN default false,
+	is_blocked BOOLEAN default false,
+	tenant CHARACTER VARYING NOT NULL,
+	is_master BOOLEAN default false,
+	created_by CHARACTER VARYING,
+	updated_by CHARACTER VARYING,
+	created_at TIMESTAMP default now(),
+	updated_at TIMESTAMP,
+	
+	CONSTRAINT tbclient_pk PRIMARY KEY (idclient)
+);
+
+CREATE TABLE IF NOT EXISTS public.tbcompany_role(
+	idcompany_role bigserial NOT NULL,
+	name CHARACTER VARYING NOT NULL,
+	created_by CHARACTER VARYING,
+	updated_by CHARACTER VARYING,
+	created_at TIMESTAMP default now(),
+	updated_at TIMESTAMP,
+	
+	CONSTRAINT tbcompany_role_pk PRIMARY KEY (idcompany_role)
+);
+
 CREATE TABLE IF NOT EXISTS public.tbuser(
 	iduser bigserial NOT NULL,
 	first_name CHARACTER VARYING NOT NULL,
@@ -10,9 +38,20 @@ CREATE TABLE IF NOT EXISTS public.tbuser(
 	is_active BOOLEAN default true,
 	is_expired BOOLEAN default false,
 	is_blocked BOOLEAN default false,
+	is_client BOOLEAN default false,
+	idclient BIGINT NOT NULL,
+	created_by CHARACTER VARYING,
+	updated_by CHARACTER VARYING,
+	created_at TIMESTAMP default now(),
+	updated_at TIMESTAMP,
+	
+	FOREIGN KEY (idcompany_role) REFERENCES tbcompany_role(idcompany_role),
+	FOREIGN KEY (idclient) REFERENCES tbclient(idclient),
 	
 	CONSTRAINT tbuser_pk PRIMARY KEY (iduser)
 );
+
+		
 
 CREATE TABLE IF NOT EXISTS public.tbrole(
 	idrole bigserial NOT NULL,
@@ -46,9 +85,3 @@ CREATE TABLE IF NOT EXISTS public.tbuser_role(
 	CONSTRAINT tbuser_role_pk PRIMARY KEY (iduser, idrole)
 );
 
-CREATE TABLE IF NOT EXISTS public.tbcompany_role(
-	idcompany_role bigserial NOT NULL,
-	name CHARACTER VARYING NOT NULL,
-	
-	CONSTRAINT tbcompany_role_pk PRIMARY KEY (idcompany_role)
-);

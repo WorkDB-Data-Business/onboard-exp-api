@@ -7,5 +7,5 @@ import br.com.harvest.onboardexperience.domain.entities.Role;
 
 @Mapper(componentModel="spring")
 public interface RoleMapper extends AbstractMapper<Role, RoleDto>{
-
+	
 }

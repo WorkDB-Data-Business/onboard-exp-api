@@ -1,22 +1,21 @@
 package br.com.harvest.onboardexperience.domain.exceptions;
 
-import br.com.harvest.onboardexperience.domain.exceptions.enumerators.FactoryExceptionEnum;
-
 public class FactoryException extends RuntimeException {
 	
 	private static final long serialVersionUID = 2841627938904433841L;
 	
+	private static final String FACTORY_ERROR = "An error occurred at factory build";
 	
 	public FactoryException(String message) {
-		super(FactoryExceptionEnum.ERROR_FACTORY_BUILD.getValue() + ": " + message);
+		super(FACTORY_ERROR + ": " + message);
 	}
 	
 	public FactoryException(String message, Throwable cause) {
-		super(FactoryExceptionEnum.ERROR_FACTORY_BUILD.getValue()  + ": " + message, cause);
+		super(FACTORY_ERROR + ": " + message, cause);
 	}
 	
 	public FactoryException(String message, String customCause) {
-		super(FactoryExceptionEnum.ERROR_FACTORY_BUILD.getValue()  + ": " +  message);
+		super(FACTORY_ERROR + ": " +  message);
 	}
 	
 }

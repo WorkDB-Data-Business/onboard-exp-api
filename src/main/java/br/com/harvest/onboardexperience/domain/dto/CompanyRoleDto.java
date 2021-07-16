@@ -1,11 +1,7 @@
 package br.com.harvest.onboardexperience.domain.dto;
 
-import java.util.List;
-
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
-
-import com.sun.istack.NotNull;
 
 import br.com.harvest.onboardexperience.utils.ValidationUtils;
 import lombok.AllArgsConstructor;
@@ -24,8 +20,5 @@ public class CompanyRoleDto {
 	@NotBlank
 	@Min(ValidationUtils.MIN_SIZE_ROLE)
 	private String name;
-	
-	@NotNull
-	private List<UserDto> users;
 	
 }

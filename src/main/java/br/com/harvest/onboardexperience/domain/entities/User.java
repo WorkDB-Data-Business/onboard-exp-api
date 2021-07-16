@@ -16,14 +16,18 @@ import javax.persistence.ManyToOne;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 @Data
+@EqualsAndHashCode(callSuper = false)
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity(name = "tbuser")
-public class User {
+public class User extends BaseEntityAudit {
+
+	private static final long serialVersionUID = -4309141727418094357L;
 
 	@Id
 	@Column(name = "iduser")
@@ -68,4 +72,10 @@ public class User {
 	  inverseJoinColumns = @JoinColumn(name = "idrole"))
 	private Set<Role> roles;
 	
+	@ManyToOne
+	@JoinColumn(name = "idclient")
+	private Client client;
+	
+	@Column(name = "is_client")
+	private Boolean isClient;
 }
