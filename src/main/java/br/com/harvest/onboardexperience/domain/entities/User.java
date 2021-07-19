@@ -2,6 +2,7 @@ package br.com.harvest.onboardexperience.domain.entities;
 
 import java.util.Set;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -65,7 +66,7 @@ public class User extends BaseEntityAudit {
 	@Column(name = "is_expired")
 	private Boolean isExpired;
 	
-	@ManyToMany(fetch = FetchType.EAGER)
+	@ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
 	@JoinTable(
 	  name = "tbuser_role", 
 	  joinColumns = @JoinColumn(name = "iduser"), 

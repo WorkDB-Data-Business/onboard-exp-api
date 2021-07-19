@@ -17,9 +17,9 @@ import org.springframework.web.bind.annotation.RestController;
 import br.com.harvest.onboardexperience.builders.MessageBuilder;
 import br.com.harvest.onboardexperience.domain.dto.responses.Message;
 import br.com.harvest.onboardexperience.domain.dto.responses.MessageError;
-//import br.com.harvest.onboardexperience.domain.dto.response.templates.InternalServerErrorMessage;
 import br.com.harvest.onboardexperience.domain.exceptions.BusinessException;
 import br.com.harvest.onboardexperience.domain.exceptions.FactoryException;
+import br.com.harvest.onboardexperience.domain.exceptions.UserAlreadyExistsException;
 
 
 @ControllerAdvice(annotations = RestController.class)
@@ -27,14 +27,20 @@ import br.com.harvest.onboardexperience.domain.exceptions.FactoryException;
 public class ApiExceptionHandler  {
 	
 	@ExceptionHandler(FactoryException.class)
-	public ResponseEntity<?> handleFactoryException(FactoryException e){
-		
-								  
+	public ResponseEntity<?> handleFactoryException(FactoryException e){							  
 		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).contentType(MediaType.APPLICATION_JSON).body(e);
 	}
 	
 	@ExceptionHandler(BusinessException.class)
 	public ResponseEntity<?> handleFactoryException(BusinessException e){
+								  
+		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).contentType(MediaType.APPLICATION_JSON).body(e);
+	}
+	
+	
+	//TODO: need to verify why this is not working xP
+	@ExceptionHandler(UserAlreadyExistsException.class)
+	public ResponseEntity<?> handleAlreadyExistsException(UserAlreadyExistsException e){
 								  
 		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).contentType(MediaType.APPLICATION_JSON).body(e);
 	}
@@ -59,4 +65,6 @@ public class ApiExceptionHandler  {
 		  
 		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).contentType(MediaType.APPLICATION_JSON).body(message);
 	}
+	
+	
 }

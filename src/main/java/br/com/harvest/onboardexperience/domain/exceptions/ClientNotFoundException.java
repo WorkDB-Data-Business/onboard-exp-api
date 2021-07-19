@@ -17,5 +17,9 @@ public class ClientNotFoundException extends RuntimeException {
 	public ClientNotFoundException(String message, String customCause) {
 		super(CLIENT_NOT_FOUND + ": " +  message);
 	}	
+	
+	public static String buildMessage(String field, String value) {
+		return "The client with " + field + " " + value + " not found"; 
+	}
 
 }

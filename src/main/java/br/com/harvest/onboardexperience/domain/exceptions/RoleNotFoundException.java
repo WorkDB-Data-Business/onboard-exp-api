@@ -18,4 +18,7 @@ public class RoleNotFoundException extends RuntimeException {
 		super(ROLE_NOT_FOUND + ": " +  message);
 	}	
 
+	public static String buildMessage(String field, String value) {
+		return "The role with " + field + " " + value + " not found"; 
+	}
 }

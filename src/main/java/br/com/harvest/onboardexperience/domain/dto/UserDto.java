@@ -57,11 +57,14 @@ public class UserDto implements Serializable {
 	@NotNull
 	private CompanyRoleDto companyRole;
 	
-	private Boolean isActive;
+	@Builder.Default
+	private Boolean isActive = true;
 	
-	private Boolean isBlocked;
+	@Builder.Default
+	private Boolean isBlocked = false;
 	
-	private Boolean isExpired;
+	@Builder.Default
+	private Boolean isExpired = false;
 	
 	@NotEmpty
 	private Set<RoleDto> roles;
@@ -69,6 +72,7 @@ public class UserDto implements Serializable {
 	@NotNull
 	private ClientDto client;
 	
-	private Boolean isClient;
+	@Builder.Default
+	private Boolean isClient = false;
 	
 }

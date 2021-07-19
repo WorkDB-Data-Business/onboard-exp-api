@@ -1,6 +1,8 @@
 package br.com.harvest.onboardexperience.domain.dto;
 
 
+import java.io.Serializable;
+
 import javax.validation.constraints.NotNull;
 
 import br.com.harvest.onboardexperience.domain.enumerators.PermissionEnum;
@@ -13,8 +15,10 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class PermissionDto {
+public class PermissionDto implements Serializable {
 	
+	private static final long serialVersionUID = -4606418091317413664L;
+
 	private Long id;
 	
 	@NotNull

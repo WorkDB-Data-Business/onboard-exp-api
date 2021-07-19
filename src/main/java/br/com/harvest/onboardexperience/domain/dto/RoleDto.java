@@ -1,12 +1,10 @@
 package br.com.harvest.onboardexperience.domain.dto;
 
-import java.util.List;
+import java.io.Serializable;
 import java.util.Set;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import br.com.harvest.onboardexperience.domain.enumerators.RoleEnum;
 import lombok.AllArgsConstructor;
@@ -18,8 +16,10 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class RoleDto {
+public class RoleDto implements Serializable {
 	
+	private static final long serialVersionUID = -894423581234757315L;
+
 	private Long id;
 	
 	@NotNull

@@ -64,7 +64,7 @@ public class CompanyRoleController {
 	@Operation(description = "Realiza a exclusão de um cargo no banco de dados.")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	@PreAuthorize(value = "isAuthenticated()")
-	@DeleteMapping(path = "/company-roles/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+	@DeleteMapping(path = "/company-roles/{id}")
 	public void delete(@PathVariable  @Pattern(regexp = RegexUtils.ONLY_NUMBERS) Long id) {
 		service.delete(id);
 	}

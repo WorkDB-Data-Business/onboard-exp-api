@@ -13,8 +13,10 @@ import org.springframework.stereotype.Service;
 import br.com.harvest.onboardexperience.domain.dto.CompanyRoleDto;
 import br.com.harvest.onboardexperience.domain.entities.CompanyRole;
 import br.com.harvest.onboardexperience.domain.exceptions.CompanyRoleNotFoundException;
+import br.com.harvest.onboardexperience.domain.factories.ExceptionMessageFactory;
 import br.com.harvest.onboardexperience.mappers.CompanyRoleMapper;
 import br.com.harvest.onboardexperience.repositories.CompanyRoleRepository;
+import lombok.NonNull;
 
 @Service
 public class CompanyRoleService implements IService<CompanyRoleDto>{
@@ -26,14 +28,14 @@ public class CompanyRoleService implements IService<CompanyRoleDto>{
 	private CompanyRoleRepository repository;
 	
 	@Override
-	public CompanyRoleDto create(CompanyRoleDto dto) {
+	public CompanyRoleDto create(@NonNull CompanyRoleDto dto) {
 		CompanyRole companyRole = repository.save(mapper.toEntity(dto));
 		return mapper.toDto(companyRole);
 	}
 
 	@Override
-	public CompanyRoleDto update(Long id, CompanyRoleDto dto) {
-		CompanyRole companyRole = repository.findById(id).orElseThrow(() -> new CompanyRoleNotFoundException("The company role with ID " + id + " has not found"));
+	public CompanyRoleDto update(@NonNull final Long id, @NonNull CompanyRoleDto dto) {
+		CompanyRole companyRole = repository.findById(id).orElseThrow(() -> new CompanyRoleNotFoundException(ExceptionMessageFactory.createNotFoundMessage("company role", "ID", id.toString())));
 		
 		BeanUtils.copyProperties(dto, companyRole, "id");
 		
@@ -43,8 +45,8 @@ public class CompanyRoleService implements IService<CompanyRoleDto>{
 	}
 
 	@Override
-	public CompanyRoleDto findById(Long id) {
-		CompanyRole companyRole = repository.findById(id).orElseThrow(() -> new CompanyRoleNotFoundException("The company role with ID " + id + " has not found"));
+	public CompanyRoleDto findById(@NonNull final Long id) {
+		CompanyRole companyRole = repository.findById(id).orElseThrow(() -> new CompanyRoleNotFoundException(ExceptionMessageFactory.createNotFoundMessage("company role", "ID", id.toString())));
 		
 		return mapper.toDto(companyRole);
 	}
@@ -65,7 +67,7 @@ public class CompanyRoleService implements IService<CompanyRoleDto>{
 	}
 
 	@Override
-	public void delete(Long id) {
+	public void delete(@NonNull final Long id) {
 		CompanyRole companyRole = repository.findById(id).orElseThrow(
 				() -> new CompanyRoleNotFoundException("The company role with ID " + id + " has not found"));
 		

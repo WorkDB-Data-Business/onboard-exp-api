@@ -1,15 +1,11 @@
 package br.com.harvest.onboardexperience.domain.dto;
 
-import java.util.List;
+import java.io.Serializable;
 
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
-import br.com.harvest.onboardexperience.domain.entities.User;
 import br.com.harvest.onboardexperience.utils.RegexUtils;
 import br.com.harvest.onboardexperience.utils.ValidationUtils;
 import lombok.AllArgsConstructor;
@@ -21,8 +17,10 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ClientDto {
+public class ClientDto implements Serializable {
 	
+	private static final long serialVersionUID = 5480431954426852444L;
+
 	private Long id;
 	
 	@NotBlank
@@ -34,17 +32,17 @@ public class ClientDto {
 	@Size(min = ValidationUtils.MIN_SIZE_COMPANY_NAME, max = ValidationUtils.MAX_SIZE_COMPANY_NAME)
 	private String name;
 	
-	@JsonIgnore
-	@NotNull
-	private List<User> users;
+	@Builder.Default
+	private Boolean isActive = true;
 	
-	private Boolean isActive;
+	@Builder.Default
+	private Boolean isExpired = false;
 	
-	private Boolean isExpired;
-	
-	private Boolean isBlocked;
+	@Builder.Default
+	private Boolean isBlocked = false;
 	
 	private String tenant;
 	
-	private Boolean isMaster;
+	@Builder.Default
+	private Boolean isMaster = false;
 }

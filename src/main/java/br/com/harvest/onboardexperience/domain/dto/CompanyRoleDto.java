@@ -1,5 +1,7 @@
 package br.com.harvest.onboardexperience.domain.dto;
 
+import java.io.Serializable;
+
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 
@@ -13,8 +15,10 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CompanyRoleDto {
+public class CompanyRoleDto implements Serializable {
 	
+	private static final long serialVersionUID = 5968911277203889949L;
+
 	private Long id;
 	
 	@NotBlank

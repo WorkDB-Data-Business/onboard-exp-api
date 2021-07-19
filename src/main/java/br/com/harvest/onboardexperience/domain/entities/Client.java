@@ -1,13 +1,10 @@
 package br.com.harvest.onboardexperience.domain.entities;
 
-import java.util.List;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.OneToMany;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -35,9 +32,6 @@ public class Client extends BaseEntityAudit {
 	
 	@Column(name = "name")
 	private String name;
-	
-	@OneToMany(mappedBy="client")
-	private List<User> users;
 	
 	@Column(name = "is_active")
 	private Boolean isActive;

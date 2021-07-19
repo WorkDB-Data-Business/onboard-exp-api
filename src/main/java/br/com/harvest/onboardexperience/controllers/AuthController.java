@@ -2,7 +2,8 @@ package br.com.harvest.onboardexperience.controllers;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.TimeZone;
+
+import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -44,11 +45,10 @@ public class AuthController {
 	@Autowired
 	private UserRepository repository;
 	
-	
+	// TODO: Need to implement multi-tenancy getting the subdomain in request, same to timezone
 	@Operation(description = "Realiza a autenticação e retorna o token JWT.")
 	@RequestMapping(value = "/auth", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.POST)
-	public ResponseEntity<?> createAuthenticationToken(@RequestBody JwtRequest authenticationRequest, TimeZone timezone) throws Exception {
-		System.out.print(timezone.getID());
+	public ResponseEntity<?> createAuthenticationToken(@RequestBody JwtRequest authenticationRequest, HttpServletRequest request) throws Exception {
 		authenticate(authenticationRequest.getUsername(), authenticationRequest.getPassword());
 
 		final UserDetails userDetails = userDetailsService
@@ -76,7 +76,7 @@ public class AuthController {
 		claims.put("user_id", user.getId());
 		claims.put("user_tenant", user.getClient().getTenant());
 		claims.put("user_is_active", user.getIsActive());
-//		claims.put("timeZoneOffset", claims)
+//		claims.put("timeZoneOffset", )
 		
 		return claims;
 	}
