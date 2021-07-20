@@ -24,6 +24,16 @@ public class MessageBuilder {
 		return this;
 	}
 	
+	public MessageBuilder withError(final String message, final String cause) {
+		
+		BuilderUtils.validateNullObject(message, "Message");
+		BuilderUtils.validateNullObject(cause, "Cause");
+		MessageError error = MessageError.builder().message(message).cause(cause).build();
+		
+		this.message.getErrors().add(error);
+		return this;
+	}
+	
 
 	public MessageBuilder withErrors(final List<MessageError> errors) {
 

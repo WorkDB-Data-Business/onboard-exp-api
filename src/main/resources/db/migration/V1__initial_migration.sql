@@ -18,11 +18,12 @@ CREATE TABLE IF NOT EXISTS public.tbclient(
 CREATE TABLE IF NOT EXISTS public.tbcompany_role(
 	idcompany_role bigserial NOT NULL,
 	name CHARACTER VARYING NOT NULL,
+	idclient BIGINT NOT NULL, 
 	created_by CHARACTER VARYING,
 	updated_by CHARACTER VARYING,
 	created_at TIMESTAMP default now(),
 	updated_at TIMESTAMP,
-	
+	FOREIGN KEY (idclient) REFERENCES tbclient(idclient),
 	CONSTRAINT tbcompany_role_pk PRIMARY KEY (idcompany_role)
 );
 

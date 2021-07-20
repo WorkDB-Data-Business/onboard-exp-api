@@ -179,7 +179,7 @@ public class UserService implements IService<UserDto>{
 	}
 
 	private void checkIfUserAlreadyExists(@NonNull UserDto dto) {
-		if(repository.findByUsernameContainingIgnoreCase(dto.getUsername()).isPresent()) {
+		if(repository.findByUsernameContainingIgnoreCaseAndClient(dto.getUsername(), dto.getClient()).isPresent()) {
 			throw new UserAlreadyExistsException(ExceptionMessageFactory.createAlreadyExistsMessage("user", "username", dto.getUsername()));
 		}
 
@@ -302,7 +302,7 @@ public class UserService implements IService<UserDto>{
 		
 		encryptPassword(dto);
 		
-		fetchAndSetClient(dto);
+//		fetchAndSetClient(dto);
 
 		fetchAndSetCompanyRole(dto);
 		

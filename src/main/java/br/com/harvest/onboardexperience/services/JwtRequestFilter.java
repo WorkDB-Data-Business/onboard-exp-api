@@ -7,14 +7,19 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.web.servlet.HandlerExceptionResolver;
 
+import br.com.harvest.onboardexperience.domain.exceptions.TenantForbiddenException;
+import br.com.harvest.onboardexperience.utils.GenericUtils;
 import br.com.harvest.onboardexperience.utils.JwtTokenUtils;
 import io.jsonwebtoken.ExpiredJwtException;
 import lombok.extern.slf4j.Slf4j;
@@ -28,20 +33,33 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
 	@Autowired
 	private JwtTokenUtils jwtTokenUtil;
+	
+	@Autowired
+	@Qualifier("handlerExceptionResolver")
+	private HandlerExceptionResolver resolver;
 
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
 			throws ServletException, IOException {
-
+		
 		final String requestTokenHeader = request.getHeader("Authorization");
 
-		String username = null;
+		String email = null;
 		String jwtToken = null;
 		
-		if (requestTokenHeader != null && requestTokenHeader.startsWith("Bearer ")) {
+		if (ObjectUtils.isNotEmpty(requestTokenHeader) && !requestTokenHeader.contains("null") && requestTokenHeader.startsWith("Bearer ")) {
 			jwtToken = requestTokenHeader.substring(7);
+			
+			final String subdomain = GenericUtils.getSubDomainOrThrownException(request, response, resolver);
+			
+			if(!subdomain.equalsIgnoreCase(jwtTokenUtil.getUsernameTenant(jwtToken))) {
+				resolver.resolveException(request, response, null, new TenantForbiddenException("The tenant from token and from subdomain is different.",
+						new Throwable("Access another tenant is forbidden.")));
+				return;
+			}
+			
 			try {
-				username = jwtTokenUtil.getUsernameFromToken(jwtToken);
+				email = jwtTokenUtil.getEmailFromToken(jwtToken);
 			} catch (IllegalArgumentException e) {
 				log.error("Unable to get JWT Token");
 			} catch (ExpiredJwtException e) {
@@ -52,9 +70,9 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 			log.warn("JWT Token does not begin with Bearer String");
 		}
 
-		if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-
-			UserDetails userDetails = this.jwtUserDetailsService.loadUserByUsername(username);
+		if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+			
+			UserDetails userDetails = this.jwtUserDetailsService.loadUserByUsername(email);
 
 			if (jwtTokenUtil.validateToken(jwtToken, userDetails)) {
 

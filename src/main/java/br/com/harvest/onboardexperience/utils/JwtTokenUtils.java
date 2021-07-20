@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
@@ -25,17 +26,44 @@ public class JwtTokenUtils implements Serializable {
 	@Autowired
 	private EnvironmentVariable env;
 
-	public String getUsernameFromToken(String token) {
+	public String getEmailFromToken(String token) {
 		return getClaimFromToken(token, Claims::getSubject);
 	}
 
 	public Date getExpirationDateFromToken(String token) {
 		return getClaimFromToken(token, Claims::getExpiration);
 	}
+	
+	public String getUsernameTimeZoneFromToken(String token) {
+		return getAllClaimsFromToken(token).get("user_time_zone", String.class);
+	}
+	
+	public String getUsernameTenant(String token) {
+		return getAllClaimsFromToken(token).get("user_tenant", String.class);
+	}
+	
+	public Boolean getUsernameIsActive(String token) {
+		return getAllClaimsFromToken(token).get("user_is_active", Boolean.class);
+	}
+	
+	public Long getUsernameId(String token) {
+		return getAllClaimsFromToken(token).get("user_id", Long.class);
+	}
+	
+	public <T> T getAnyClaimFromToken(String token, String claim, Class<T> requiredType){
+		return getAllClaimsFromToken(token).get(claim, requiredType);
+	}
 
 	public <T> T getClaimFromToken(String token, Function<Claims, T> claimsResolver) {
 		final Claims claims = getAllClaimsFromToken(token);
 		return claimsResolver.apply(claims);
+	}
+	
+	public <T> T extractTokenAndGetClaim(String token, String claim, Class<T> requiredType) {
+		if(ObjectUtils.isNotEmpty(token) && token.startsWith("Bearer ")) {
+			return getAnyClaimFromToken(token.substring(7), claim, requiredType);
+		}
+		return null;
 	}
 
 	private Claims getAllClaimsFromToken(String token) {
@@ -61,8 +89,8 @@ public class JwtTokenUtils implements Serializable {
 	}
 
 	public Boolean validateToken(String token, UserDetails userDetails) {
-		final String username = getUsernameFromToken(token);
-		return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
+		final String email = getEmailFromToken(token);
+		return (email.equals(userDetails.getUsername()) && !isTokenExpired(token));
 	}
 
 }

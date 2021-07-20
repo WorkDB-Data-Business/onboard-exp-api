@@ -12,17 +12,18 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.RestController;
 
 import br.com.harvest.onboardexperience.builders.MessageBuilder;
 import br.com.harvest.onboardexperience.domain.dto.responses.Message;
 import br.com.harvest.onboardexperience.domain.dto.responses.MessageError;
 import br.com.harvest.onboardexperience.domain.exceptions.BusinessException;
 import br.com.harvest.onboardexperience.domain.exceptions.FactoryException;
+import br.com.harvest.onboardexperience.domain.exceptions.SubdomainNotFoundException;
+import br.com.harvest.onboardexperience.domain.exceptions.TenantForbiddenException;
 import br.com.harvest.onboardexperience.domain.exceptions.UserAlreadyExistsException;
 
 
-@ControllerAdvice(annotations = RestController.class)
+@ControllerAdvice
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class ApiExceptionHandler  {
 	
@@ -37,6 +38,22 @@ public class ApiExceptionHandler  {
 		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).contentType(MediaType.APPLICATION_JSON).body(e);
 	}
 	
+	
+	@ExceptionHandler(SubdomainNotFoundException.class)
+	public ResponseEntity<?> handleSubdomainNotFoundException(SubdomainNotFoundException e){
+		
+		var message = new MessageBuilder().addMessage(e.getMessage()).withError(e.getMessage(), e.getCause().getMessage()).build();
+								  
+		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).contentType(MediaType.APPLICATION_JSON).body(message);
+	}
+	
+	@ExceptionHandler(TenantForbiddenException.class)
+	public ResponseEntity<?> handleTenantForbiddenException(TenantForbiddenException e){
+		
+		var message = new MessageBuilder().addMessage(e.getMessage()).withError(e.getMessage(), e.getCause().getMessage()).build();
+								  
+		return ResponseEntity.status(HttpStatus.FORBIDDEN).contentType(MediaType.APPLICATION_JSON).body(message);
+	}
 	
 	//TODO: need to verify why this is not working xP
 	@ExceptionHandler(UserAlreadyExistsException.class)

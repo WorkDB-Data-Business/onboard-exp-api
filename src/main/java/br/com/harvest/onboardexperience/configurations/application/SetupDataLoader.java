@@ -63,9 +63,9 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
 
 		setupRoles();
 		
-		setupMasterCompanyRole();
-		
 		setupMasterClient();
+		
+		setupMasterCompanyRole();
 
 		setupMasterUser();
 
@@ -155,7 +155,7 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
 	@Transactional
 	private void setupMasterUser() {
 
-		if(userRepository.findByUsername("harvest").isPresent()) return;
+		if(userRepository.findByUsernameAndTenant("harvest", "harvest").isPresent()) return;
 
 		try {
 			Role masterRole = roleRepository.findByRole(RoleEnum.MASTER).orElseThrow(() -> new RoleNotFoundException("Permission with name " + RoleEnum.MASTER.getName() + " was not found"));
@@ -189,8 +189,10 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
 	private void setupMasterCompanyRole() {
 		if(companyRoleRepository.findByNameContainingIgnoreCase("system owner").isPresent()) return; 
 		
+		Client client = clientRepository.findByTenantContainingIgnoreCase("harvest").orElseThrow(() -> new ClientNotFoundException("Client with name harvest not found"));
+		
 		try {
-			CompanyRole companyRole = CompanyRole.builder().name("System Owner").build();
+			CompanyRole companyRole = CompanyRole.builder().name("System Owner").client(client).build();
 			companyRoleRepository.save(companyRole);
 			log.info("The load of master user's company role occurred successful");
 		} catch (Exception e) {

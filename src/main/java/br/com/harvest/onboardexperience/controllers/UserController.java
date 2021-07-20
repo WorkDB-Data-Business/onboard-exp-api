@@ -37,11 +37,12 @@ public class UserController {
 	@Autowired
 	private UserService service;
 	
+
 	@Operation(description = "Retorna os usuários cadastrados.")
 	@GetMapping(path = "/users", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Page<UserDto>> findAll(Pageable pageable) {
 		return ResponseEntity.ok(service.findAll(pageable));
-	}
+	}	
 	
 	@Operation(description = "Retorna o usuário cadastrado pelo ID.")
 	@GetMapping(path = "/users/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
