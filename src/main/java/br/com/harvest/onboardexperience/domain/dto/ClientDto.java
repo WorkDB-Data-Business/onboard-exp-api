@@ -45,4 +45,8 @@ public class ClientDto implements Serializable {
 	
 	@Builder.Default
 	private Boolean isMaster = false;
+	
+	@NotBlank
+	@Pattern(regexp = RegexUtils.EMAIL_VALIDATION)
+	private String email;
 }

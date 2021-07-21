@@ -51,4 +51,8 @@ public class GenericUtils {
 		} 
 		return subdomain;
 	}
+	
+	public static String formatNameToUsername(String name) {
+		return name.toLowerCase().replace(" ", ".");
+	}
 }

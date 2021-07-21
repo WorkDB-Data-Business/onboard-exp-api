@@ -29,7 +29,7 @@ public class JwtUserDetailsService implements UserDetailsService {
 		User user = repository.findByEmailContainingIgnoreCase(email).orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
 		List<GrantedAuthority> userAuthorities = getAuthorities(user.getRoles());
 		
-		return new org.springframework.security.core.userdetails.User(user.getUsername(), user.getPassword(), user.getIsActive(), !user.getIsExpired(), !user.getIsExpired(),
+		return new org.springframework.security.core.userdetails.User(user.getEmail(), user.getPassword(), user.getIsActive(), !user.getIsExpired(), !user.getIsExpired(),
 				!user.getIsBlocked(), userAuthorities);
 	}
 	

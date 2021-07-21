@@ -211,6 +211,7 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
 					.isExpired(false)
 					.isMaster(true)
 					.tenant("harvest")
+					.email("harvest@gmail.com")
 					.build();
 			
 			log.info("The load of master client occurred successful");

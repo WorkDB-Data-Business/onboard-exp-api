@@ -48,4 +48,7 @@ public class Client extends BaseEntityAudit {
 	@Column(name = "is_master")
 	private Boolean isMaster;
 	
+	@Column(name = "email")
+	private String email;
+	
 }

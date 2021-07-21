@@ -25,9 +25,11 @@ import br.com.harvest.onboardexperience.domain.exceptions.InvalidCpfException;
 import br.com.harvest.onboardexperience.domain.exceptions.UserAlreadyExistsException;
 import br.com.harvest.onboardexperience.domain.exceptions.UserNotFoundException;
 import br.com.harvest.onboardexperience.domain.factories.ExceptionMessageFactory;
+import br.com.harvest.onboardexperience.mappers.ClientMapper;
 import br.com.harvest.onboardexperience.mappers.UserMapper;
 import br.com.harvest.onboardexperience.repositories.UserRepository;
 import br.com.harvest.onboardexperience.utils.GenericUtils;
+import br.com.harvest.onboardexperience.utils.JwtTokenUtils;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
@@ -52,6 +54,9 @@ public class UserService implements IService<UserDto>{
 	
 	@Autowired
 	private RoleService roleService;
+	
+	@Autowired
+	private JwtTokenUtils jwtUtils;
 
 	@Override
 	public UserDto create(@NonNull UserDto dto) {
@@ -74,7 +79,7 @@ public class UserService implements IService<UserDto>{
 			User user = repository.findById(id).orElseThrow(
 					() -> new UserNotFoundException(ExceptionMessageFactory.createNotFoundMessage("user", "ID", id.toString())));
 			
-			//TODO: workaround (A.K.A gambiarra) to solve the bug of password encrypt when not updated
+			//workaround (A.K.A gambiarra) to solve the bug of password encrypt when not updated
 			String[] fieldParameters = new String[2];
 			fieldParameters[0] = "id";
 			
@@ -148,8 +153,9 @@ public class UserService implements IService<UserDto>{
 	}
 
 	@Override
-	public Page<UserDto> findAll(final Pageable pageable) {
-		List<UserDto> users = repository.findAll().stream().map(mapper::toDto).collect(Collectors.toList());
+	public Page<UserDto> findAllByTenant(final Pageable pageable, final String token) {
+		String tenant = jwtUtils.getUsernameTenant(token);
+		List<UserDto> users = repository.findAllByTenant(tenant).stream().map(mapper::toDto).collect(Collectors.toList());
 		return new PageImpl<>(users, pageable, users.size());
 	}
 
@@ -179,7 +185,7 @@ public class UserService implements IService<UserDto>{
 	}
 
 	private void checkIfUserAlreadyExists(@NonNull UserDto dto) {
-		if(repository.findByUsernameContainingIgnoreCaseAndClient(dto.getUsername(), dto.getClient()).isPresent()) {
+		if(repository.findByUsernameContainingIgnoreCaseAndClient(dto.getUsername(), ClientMapper.INSTANCE.toEntity(dto.getClient())).isPresent()) {
 			throw new UserAlreadyExistsException(ExceptionMessageFactory.createAlreadyExistsMessage("user", "username", dto.getUsername()));
 		}
 
@@ -192,10 +198,32 @@ public class UserService implements IService<UserDto>{
 		}
 	}
 	
-	private void checkIfUserAlreadyExists(@NonNull final User user, @NonNull final UserDto dto) {
-		if(!checkIfIsSameUser(user, dto)) {
-			checkIfUserAlreadyExists(dto);
+	private void checkIfUserAlreadyExists(@NonNull User user, @NonNull UserDto dto) {
+		if(!checkIfEmailChanged(user, dto)) {
+			return;
+		} else if(!checkIfUsernameChanged(user, dto)) {
+			return;
+		} else if(!checkIfCpfChanged(user, dto)) {
+			return;
 		}
+		checkIfUserAlreadyExists(dto);
+	}
+	
+	private Boolean checkIfUsernameChanged(@NonNull final User user, @NonNull final UserDto dto) {
+		if(user.getUsername().equals(dto.getUsername())) {
+			return false;
+		}
+		
+		return true;
+	}
+	
+	
+	
+	private Boolean checkIfEmailChanged(@NonNull final User user, @NonNull final UserDto dto) {
+		if(user.getEmail().equalsIgnoreCase(dto.getEmail())) {
+			return false;
+		}
+		return true;
 	}
 
 	private void validateCpf(@NonNull final UserDto dto) {
@@ -237,8 +265,8 @@ public class UserService implements IService<UserDto>{
 	}
 	
 	private void fetchAndSetCompanyRole(@NonNull User user, @NonNull UserDto userDto) {
-		if(checkIfCompanyRoleChanged(user, userDto)) {
-			fetchAndSetCompanyRole(userDto);
+		if(checkIfCompanyRoleChanged(user, userDto))	{
+			fetchAndSetCompanyRole(userDto);	
 		}
 	}
 
@@ -286,13 +314,6 @@ public class UserService implements IService<UserDto>{
 		return true;
 	}
 	
-	private Boolean checkIfIsSameUser(@NonNull User user, @NonNull UserDto dto) {
-		if(!user.getUsername().equals(dto.getUsername())) {
-			return false;
-		}
-		
-		return true;
-	}
 	
 	private void validateUser(@NonNull UserDto dto) {
 		
@@ -302,7 +323,7 @@ public class UserService implements IService<UserDto>{
 		
 		encryptPassword(dto);
 		
-//		fetchAndSetClient(dto);
+		fetchAndSetClient(dto);
 
 		fetchAndSetCompanyRole(dto);
 		

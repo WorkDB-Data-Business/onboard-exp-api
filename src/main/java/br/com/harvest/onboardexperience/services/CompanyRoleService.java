@@ -16,10 +16,11 @@ import br.com.harvest.onboardexperience.domain.exceptions.CompanyRoleNotFoundExc
 import br.com.harvest.onboardexperience.domain.factories.ExceptionMessageFactory;
 import br.com.harvest.onboardexperience.mappers.CompanyRoleMapper;
 import br.com.harvest.onboardexperience.repositories.CompanyRoleRepository;
+import br.com.harvest.onboardexperience.utils.JwtTokenUtils;
 import lombok.NonNull;
 
 @Service
-public class CompanyRoleService implements IService<CompanyRoleDto>{
+public class CompanyRoleService {
 
 	@Autowired
 	private CompanyRoleMapper mapper;
@@ -27,13 +28,16 @@ public class CompanyRoleService implements IService<CompanyRoleDto>{
 	@Autowired
 	private CompanyRoleRepository repository;
 	
-	@Override
+	@Autowired
+	private JwtTokenUtils jwtUtils;
+	
+	
 	public CompanyRoleDto create(@NonNull CompanyRoleDto dto) {
 		CompanyRole companyRole = repository.save(mapper.toEntity(dto));
 		return mapper.toDto(companyRole);
 	}
 
-	@Override
+	
 	public CompanyRoleDto update(@NonNull final Long id, @NonNull CompanyRoleDto dto) {
 		CompanyRole companyRole = repository.findById(id).orElseThrow(() -> new CompanyRoleNotFoundException(ExceptionMessageFactory.createNotFoundMessage("company role", "ID", id.toString())));
 		
@@ -44,15 +48,17 @@ public class CompanyRoleService implements IService<CompanyRoleDto>{
 		return mapper.toDto(companyRole);
 	}
 
-	@Override
+	
 	public CompanyRoleDto findById(@NonNull final Long id) {
 		CompanyRole companyRole = repository.findById(id).orElseThrow(() -> new CompanyRoleNotFoundException(ExceptionMessageFactory.createNotFoundMessage("company role", "ID", id.toString())));
 		
 		return mapper.toDto(companyRole);
 	}
 	
-	public CompanyRoleDto findByIdOrName(Long id, String name) {
-
+	public CompanyRoleDto findByIdOrName(Long id, String name, String token) {
+		String tenant = jwtUtils.getUsernameTenant(token);
+		
+		//TODO: finish the query by tenant
 		CompanyRole companyRole = repository.findByIdOrNameContainingIgnoreCase(id, name)
 				.orElseThrow(() -> new CompanyRoleNotFoundException("Company Role with ID " + id + " or name " 
 						+ name + " not found."));
@@ -60,15 +66,17 @@ public class CompanyRoleService implements IService<CompanyRoleDto>{
 		return mapper.toDto(companyRole);
 	}
 
-	@Override
-	public Page<CompanyRoleDto> findAll(Pageable pageable) {
-		List<CompanyRoleDto> companyRoles = repository.findAll().stream().map(mapper::toDto).collect(Collectors.toList());
+	
+	public Page<CompanyRoleDto> findAllByTenant(Pageable pageable, String token) {
+		String tenant = jwtUtils.getUsernameTenant(token);
+		List<CompanyRoleDto> companyRoles = repository.findAllByTenant(tenant).stream().map(mapper::toDto).collect(Collectors.toList());
 		return new PageImpl<>(companyRoles, pageable, companyRoles.size());
 	}
 
-	@Override
-	public void delete(@NonNull final Long id) {
-		CompanyRole companyRole = repository.findById(id).orElseThrow(
+	
+	public void delete(@NonNull final Long id, String token) {
+		String tenant = jwtUtils.getUsernameTenant(token);
+		CompanyRole companyRole = repository.findByIdAndTenant(id, tenant).orElseThrow(
 				() -> new CompanyRoleNotFoundException("The company role with ID " + id + " has not found"));
 		
 		repository.delete(companyRole);
