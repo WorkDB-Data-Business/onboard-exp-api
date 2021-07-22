@@ -18,5 +18,4 @@ public class UserExpiredException extends RuntimeException {
 		super(USER_EXPIRED + ": " +  message);
 	}
 	
-
 }

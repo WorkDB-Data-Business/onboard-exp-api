@@ -55,4 +55,5 @@ public class GenericUtils {
 	public static String formatNameToUsername(String name) {
 		return name.toLowerCase().replace(" ", ".");
 	}
+	
 }

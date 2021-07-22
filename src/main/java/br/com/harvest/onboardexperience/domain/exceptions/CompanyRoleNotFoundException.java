@@ -18,7 +18,4 @@ public class CompanyRoleNotFoundException extends RuntimeException {
 		super(COMPANY_ROLE_NOT_FOUND + ": " +  message);
 	}	
 
-	public static String buildMessage(String field, String value) {
-		return "The company role with " + field + " " + value + " not found"; 
-	}
 }

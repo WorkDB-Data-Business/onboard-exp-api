@@ -69,7 +69,7 @@ public class UserDto implements Serializable {
 	@NotEmpty
 	private Set<RoleDto> roles;
 	
-	@NotNull
+	@JsonProperty(access = Access.READ_ONLY)
 	private ClientDto client;
 	
 	@Builder.Default

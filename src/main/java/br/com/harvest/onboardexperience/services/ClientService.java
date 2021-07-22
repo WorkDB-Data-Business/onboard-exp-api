@@ -1,7 +1,6 @@
 package br.com.harvest.onboardexperience.services;
 
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.ObjectUtils;
@@ -14,21 +13,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import br.com.harvest.onboardexperience.domain.dto.ClientDto;
-import br.com.harvest.onboardexperience.domain.dto.CompanyRoleDto;
 import br.com.harvest.onboardexperience.domain.entities.Client;
-import br.com.harvest.onboardexperience.domain.entities.CompanyRole;
-import br.com.harvest.onboardexperience.domain.entities.Role;
-import br.com.harvest.onboardexperience.domain.entities.User;
-import br.com.harvest.onboardexperience.domain.enumerators.RoleEnum;
 import br.com.harvest.onboardexperience.domain.exceptions.ClientAlreadyExistsException;
 import br.com.harvest.onboardexperience.domain.exceptions.ClientNotFoundException;
 import br.com.harvest.onboardexperience.domain.exceptions.InvalidCnpjException;
 import br.com.harvest.onboardexperience.domain.factories.ExceptionMessageFactory;
 import br.com.harvest.onboardexperience.mappers.ClientMapper;
-import br.com.harvest.onboardexperience.mappers.CompanyRoleMapper;
-import br.com.harvest.onboardexperience.mappers.RoleMapper;
-import br.com.harvest.onboardexperience.mappers.UserMapper;
 import br.com.harvest.onboardexperience.repositories.ClientRepository;
+import br.com.harvest.onboardexperience.usecases.GenerateUserUseCase;
 import br.com.harvest.onboardexperience.utils.GenericUtils;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -44,13 +36,7 @@ public class ClientService {
 	private ClientMapper mapper;
 	
 	@Autowired
-	private RoleService roleService;
-	
-	@Autowired
-	private UserService userService;
-	
-	@Autowired
-	private CompanyRoleService companyRoleService;
+	private GenerateUserUseCase generateUser;
 
 	
 	@Transactional
@@ -60,7 +46,7 @@ public class ClientService {
 
 			Client client = repository.save(mapper.toEntity(dto));
 			log.info("The client with CNPJ " + dto.getCnpj() + " was saved successful.");
-			createAdminUserFromClient(client);
+			generateUser.createAdminUserFromClient(client);
 			return mapper.toDto(client);
 		} catch(Exception e) {
 			log.error("An error has occurred while saving client with CNPJ " + dto.getCnpj(), e);
@@ -95,14 +81,17 @@ public class ClientService {
 		return mapper.toDto(repository.findById(id).orElseThrow(
 				() -> new ClientNotFoundException(ExceptionMessageFactory.createNotFoundMessage("client", "ID", id.toString()))));
 	}
-
 	
+	public ClientDto findByTenant(@NonNull final String tenant) {
+		return mapper.toDto(repository.findByTenantContainingIgnoreCase(tenant).orElseThrow(
+				() -> new ClientNotFoundException(ExceptionMessageFactory.createNotFoundMessage("client", "ID", tenant))));
+	}
+
 	public Page<ClientDto> findAll(Pageable pageable) {
 		List<ClientDto> clients = repository.findAll().stream().map(mapper::toDto).collect(Collectors.toList());
 		return new PageImpl<>(clients, pageable, clients.size());
 	}
 
-	
 	@Transactional
 	public void delete(@NonNull final Long id) {
 		try {
@@ -115,7 +104,6 @@ public class ClientService {
 		}
 	}
 	
-
 	@Transactional
 	public void disableClient(@NonNull final Long id) {
 		try {
@@ -212,42 +200,4 @@ public class ClientService {
 		}
 		
 	}
-	
-	private void createAdminUserFromClient(@NonNull final Client client) {
-		try {
-			Role role = RoleMapper.INSTANCE.toEntity(roleService.findRoleByRole(RoleEnum.ADMIN));
-			CompanyRole companyRole = createAdminCompanyRoleFromClient(client);
-			User user = User.builder().client(client)
-					.companyRole(companyRole)
-					.email(client.getEmail())
-					.isClient(true)
-					.username(GenericUtils.formatNameToUsername(client.getName()))
-					.firstName(client.getName())
-					.isActive(true)
-					.isBlocked(false)
-					.isExpired(false)
-					.lastName("User")
-					.password(client.getName())
-					.roles(Set.of(role))
-					.build();
-			userService.create(UserMapper.INSTANCE.toDto(user));
-			log.info("Admin user from client of ID " + client.getId() + " created successful.");
-		} catch (Exception e) {
-			log.error("An error has occurred while creating user admin from client of ID " + client.getId(), e);
-		}
-	}
-	
-	private CompanyRole createAdminCompanyRoleFromClient(@NonNull final Client client) {
-		try {
-			CompanyRole companyRole = CompanyRoleMapper.INSTANCE.toEntity(companyRoleService.create(CompanyRoleDto.builder()
-					.client(ClientMapper.INSTANCE.toDto(client)).name(client.getName() + " Admin User").build()));  
-			log.info("Admin company role from client of ID " + client.getId() + " created successful.");
-			return companyRole;
-		} catch (Exception e) {
-			log.error("An error has occurred while creating company role admin from client of ID " + client.getId(), e);
-			return null;
-		}
-	}
-	
-
 }

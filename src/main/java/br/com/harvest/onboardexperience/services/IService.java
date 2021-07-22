@@ -5,10 +5,10 @@ import org.springframework.data.domain.Pageable;
 
 public interface IService <D> {
 
-	D create(D dto);
-	D update(Long id, D dto);
-	D findById(Long id);
+	D create(D dto, String token);
+	D update(Long id, D dto, String token);
+	D findByIdAndTenant(Long id, String token);
 	Page<D> findAllByTenant(Pageable pageable, String token);
-	void delete(Long id);
+	void delete(Long id, String token);
 	
 }

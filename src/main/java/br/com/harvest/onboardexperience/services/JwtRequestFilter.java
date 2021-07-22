@@ -50,14 +50,6 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 		if (ObjectUtils.isNotEmpty(requestTokenHeader) && !requestTokenHeader.contains("null") && requestTokenHeader.startsWith("Bearer ")) {
 			jwtToken = requestTokenHeader.substring(7);
 			
-			final String subdomain = GenericUtils.getSubDomainOrThrownException(request, response, resolver);
-			
-			if(!subdomain.equalsIgnoreCase(jwtTokenUtil.getUsernameTenant(jwtToken))) {
-				resolver.resolveException(request, response, null, new TenantForbiddenException("The tenant from token and from subdomain is different.",
-						new Throwable("Access another tenant is forbidden.")));
-				return;
-			}
-			
 			try {
 				email = jwtTokenUtil.getEmailFromToken(jwtToken);
 			} catch (IllegalArgumentException e) {

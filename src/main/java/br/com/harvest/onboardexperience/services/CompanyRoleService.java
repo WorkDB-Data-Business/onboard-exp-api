@@ -23,53 +23,59 @@ import lombok.NonNull;
 public class CompanyRoleService {
 
 	@Autowired
-	private CompanyRoleMapper mapper;
-	
-	@Autowired
 	private CompanyRoleRepository repository;
 	
 	@Autowired
 	private JwtTokenUtils jwtUtils;
 	
+	@Autowired
+	private TenantService tenantService;
 	
-	public CompanyRoleDto create(@NonNull CompanyRoleDto dto) {
-		CompanyRole companyRole = repository.save(mapper.toEntity(dto));
-		return mapper.toDto(companyRole);
+	
+	public CompanyRoleDto create(@NonNull CompanyRoleDto dto, String token) {
+		
+		dto.setClient(tenantService.fetchClientDtoByTenantFromToken(token));
+		
+		CompanyRole companyRole = repository.save(CompanyRoleMapper.INSTANCE.toEntity(dto));
+		return CompanyRoleMapper.INSTANCE.toDto(companyRole);
 	}
 
 	
-	public CompanyRoleDto update(@NonNull final Long id, @NonNull CompanyRoleDto dto) {
-		CompanyRole companyRole = repository.findById(id).orElseThrow(() -> new CompanyRoleNotFoundException(ExceptionMessageFactory.createNotFoundMessage("company role", "ID", id.toString())));
+	public CompanyRoleDto update(@NonNull final Long id, @NonNull CompanyRoleDto dto, String token) {
 		
-		BeanUtils.copyProperties(dto, companyRole, "id");
+		String tenant = jwtUtils.getUsernameTenant(token);
+		
+		CompanyRole companyRole = repository.findByIdAndTenant(id, tenant).orElseThrow(
+				() -> new CompanyRoleNotFoundException(ExceptionMessageFactory.createNotFoundMessage("company role", "ID", id.toString())));
+		
+		BeanUtils.copyProperties(dto, companyRole, "id", "client", "createdBy", "createdAt");
 		
 		companyRole = repository.save(companyRole);
 		
-		return mapper.toDto(companyRole);
+		return CompanyRoleMapper.INSTANCE.toDto(companyRole);
 	}
 
 	
-	public CompanyRoleDto findById(@NonNull final Long id) {
-		CompanyRole companyRole = repository.findById(id).orElseThrow(() -> new CompanyRoleNotFoundException(ExceptionMessageFactory.createNotFoundMessage("company role", "ID", id.toString())));
-		
-		return mapper.toDto(companyRole);
-	}
-	
-	public CompanyRoleDto findByIdOrName(Long id, String name, String token) {
+	public CompanyRoleDto findByIdAndTenant(@NonNull final Long id, @NonNull final String token) {
 		String tenant = jwtUtils.getUsernameTenant(token);
 		
-		//TODO: finish the query by tenant
-		CompanyRole companyRole = repository.findByIdOrNameContainingIgnoreCase(id, name)
-				.orElseThrow(() -> new CompanyRoleNotFoundException("Company Role with ID " + id + " or name " 
-						+ name + " not found."));
+		CompanyRole companyRole = repository.findByIdAndTenant(id, tenant).orElseThrow(() -> new CompanyRoleNotFoundException(ExceptionMessageFactory.createNotFoundMessage("company role", "ID", id.toString())));
+		
+		return CompanyRoleMapper.INSTANCE.toDto(companyRole);
+	}
+	
+	public CompanyRoleDto findByIdOrNameAndTenant(String name, String tenant) {
+		
+		CompanyRole companyRole = repository.findByNameContainingIgnoreCaseAndTenant(name, tenant)
+				.orElseThrow(() -> new CompanyRoleNotFoundException("Company Role with name " + name + " not found."));
 
-		return mapper.toDto(companyRole);
+		return CompanyRoleMapper.INSTANCE.toDto(companyRole);
 	}
 
 	
 	public Page<CompanyRoleDto> findAllByTenant(Pageable pageable, String token) {
 		String tenant = jwtUtils.getUsernameTenant(token);
-		List<CompanyRoleDto> companyRoles = repository.findAllByTenant(tenant).stream().map(mapper::toDto).collect(Collectors.toList());
+		List<CompanyRoleDto> companyRoles = repository.findAllByTenant(tenant).stream().map(CompanyRoleMapper.INSTANCE::toDto).collect(Collectors.toList());
 		return new PageImpl<>(companyRoles, pageable, companyRoles.size());
 	}
 

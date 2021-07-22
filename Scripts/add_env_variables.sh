@@ -1,6 +1,6 @@
 #!/bin/bash
 
-file=./.env
+file=.env
 envFile=/etc/profile.d/env_variables_onboardexp.sh
 
 if [ -e "$file" ];

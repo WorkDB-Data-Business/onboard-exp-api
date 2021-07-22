@@ -17,8 +17,5 @@ public class PermissionNotFoundException extends RuntimeException {
 	public PermissionNotFoundException(String message, String customCause) {
 		super(PERMISSION_NOT_FOUND + ": " +  message);
 	}	
-
-	public static String buildMessage(String field, String value) {
-		return "The permission with " + field + " " + value + " not found"; 
-	}
+	
 }

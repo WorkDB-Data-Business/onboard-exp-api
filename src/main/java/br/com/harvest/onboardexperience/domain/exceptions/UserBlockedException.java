@@ -18,5 +18,4 @@ public class UserBlockedException extends RuntimeException {
 		super(USER_BLOCKED + ": " +  message);
 	}
 	
-	
 }

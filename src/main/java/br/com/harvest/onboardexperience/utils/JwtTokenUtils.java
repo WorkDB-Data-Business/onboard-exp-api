@@ -35,23 +35,23 @@ public class JwtTokenUtils implements Serializable {
 	}
 	
 	public String getUsernameTimeZoneFromToken(String token) {
-		return getAllClaimsFromToken(token).get("user_time_zone", String.class);
+		return getAllClaimsFromToken(extractTokenFromHeader(token)).get("user_time_zone", String.class);
 	}
 	
 	public String getUsernameTenant(String token) {
-		return getAllClaimsFromToken(token).get("user_tenant", String.class);
+		return getAllClaimsFromToken(extractTokenFromHeader(token)).get("user_tenant", String.class);
 	}
 	
 	public Boolean getUsernameIsActive(String token) {
-		return getAllClaimsFromToken(token).get("user_is_active", Boolean.class);
+		return getAllClaimsFromToken(extractTokenFromHeader(token)).get("user_is_active", Boolean.class);
 	}
 	
 	public Long getUsernameId(String token) {
-		return getAllClaimsFromToken(token).get("user_id", Long.class);
+		return getAllClaimsFromToken(extractTokenFromHeader(token)).get("user_id", Long.class);
 	}
 	
 	public <T> T getAnyClaimFromToken(String token, String claim, Class<T> requiredType){
-		return getAllClaimsFromToken(token).get(claim, requiredType);
+		return getAllClaimsFromToken(extractTokenFromHeader(token)).get(claim, requiredType);
 	}
 
 	public <T> T getClaimFromToken(String token, Function<Claims, T> claimsResolver) {
@@ -91,6 +91,13 @@ public class JwtTokenUtils implements Serializable {
 	public Boolean validateToken(String token, UserDetails userDetails) {
 		final String email = getEmailFromToken(token);
 		return (email.equals(userDetails.getUsername()) && !isTokenExpired(token));
+	}
+	
+	public String extractTokenFromHeader(String token) {
+		if(ObjectUtils.isNotEmpty(token) && token.startsWith("Bearer ")) {
+			return token.substring(7);
+		}
+		return token;
 	}
 
 }

@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
@@ -40,53 +41,53 @@ public class UserController {
 
 	@Operation(description = "Retorna os usuários cadastrados.")
 	@GetMapping(path = "/users", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<Page<UserDto>> findAll(Pageable pageable) {
-		return ResponseEntity.ok(service.findAll(pageable));
+	public ResponseEntity<Page<UserDto>> findAll(Pageable pageable, @RequestHeader("Authorization") String token) {
+		return ResponseEntity.ok(service.findAllByTenant(pageable, token));
 	}	
 	
 	@Operation(description = "Retorna o usuário cadastrado pelo ID.")
 	@GetMapping(path = "/users/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<UserDto> findById(@PathVariable  @Pattern(regexp = RegexUtils.ONLY_NUMBERS) Long id) {
-		return ResponseEntity.ok(service.findById(id));
+	public ResponseEntity<UserDto> findById(@PathVariable  @Pattern(regexp = RegexUtils.ONLY_NUMBERS) Long id, @RequestHeader("Authorization") String token) {
+		return ResponseEntity.ok(service.findByIdAndTenant(id, token));
 	}
 	
 	@Operation(description = "Salva um usuário no banco de dados e o retorna.")
 	@PostMapping(path = "/users", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<UserDto> create(@Valid @RequestBody @NotNull UserDto dto) {
-		return ResponseEntity.ok().body(service.create(dto));
+	public ResponseEntity<UserDto> create(@Valid @RequestBody @NotNull UserDto dto, @RequestHeader("Authorization") String token) throws RuntimeException {
+		return ResponseEntity.ok().body(service.create(dto, token));
 	}
 	
 	@Operation(description = "Realiza a alteração de um usuário no banco de dados e o retorna atualizado.")
 	@PutMapping(path = "/users/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<UserDto> update(@PathVariable  @Pattern(regexp = RegexUtils.ONLY_NUMBERS) Long id, @RequestBody @Valid @NotNull UserDto dto) {
-		return ResponseEntity.ok().body(service.update(id, dto));
+	public ResponseEntity<UserDto> update(@PathVariable  @Pattern(regexp = RegexUtils.ONLY_NUMBERS) Long id, @RequestBody @Valid @NotNull UserDto dto, @RequestHeader("Authorization") String token) {
+		return ResponseEntity.ok().body(service.update(id, dto, token));
 	}
 	
 	@Operation(description = "Realiza a exclusão de um usuário no banco de dados.")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	@DeleteMapping(path = "/users/{id}")
-	public void delete(@PathVariable  @Pattern(regexp = RegexUtils.ONLY_NUMBERS) Long id) {
-		service.delete(id);
+	public void delete(@PathVariable  @Pattern(regexp = RegexUtils.ONLY_NUMBERS) Long id, @RequestHeader("Authorization") String token) {
+		service.delete(id, token);
 	}
 	
 	@Operation(description = "Realiza a inativação de um usuário no banco de dados.")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	@PatchMapping(path = "/users/disable/{id}")
-	public void disable(@PathVariable  @Pattern(regexp = RegexUtils.ONLY_NUMBERS) Long id) {
-		service.disableUser(id);
+	public void disable(@PathVariable  @Pattern(regexp = RegexUtils.ONLY_NUMBERS) Long id, @RequestHeader("Authorization") String token) {
+		service.disableUser(id, token);
 	}
 	
 	@Operation(description = "Realiza a expiração de um usuário no banco de dados.")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	@PatchMapping(path = "/users/expire/{id}")
-	public void expire(@PathVariable  @Pattern(regexp = RegexUtils.ONLY_NUMBERS) Long id) {
-		service.expireUser(id);
+	public void expire(@PathVariable  @Pattern(regexp = RegexUtils.ONLY_NUMBERS) Long id, @RequestHeader("Authorization") String token) {
+		service.expireUser(id, token);
 	}
 	
 	@Operation(description = "Realiza a  de um usuário no banco de dados.")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	@PatchMapping(path = "/users/block/{id}")
-	public void block(@PathVariable  @Pattern(regexp = RegexUtils.ONLY_NUMBERS) Long id) {
-		service.blockUser(id);
+	public void block(@PathVariable  @Pattern(regexp = RegexUtils.ONLY_NUMBERS) Long id, @RequestHeader("Authorization") String token) {
+		service.blockUser(id, token);
 	}
 }

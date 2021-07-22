@@ -59,9 +59,11 @@ public class UserService implements IService<UserDto>{
 	private JwtTokenUtils jwtUtils;
 
 	@Override
-	public UserDto create(@NonNull UserDto dto) {
+	public UserDto create(@NonNull UserDto dto, String token) {
 		try {
-			validateUser(dto);
+			String tenant = jwtUtils.getUsernameTenant(token);
+			
+			validateUser(dto, tenant);
 
 			User user = repository.save(mapper.toEntity(dto));
 			
@@ -74,14 +76,20 @@ public class UserService implements IService<UserDto>{
 	}
 
 	@Override
-	public UserDto update(@NonNull Long id, @NonNull UserDto dto) {
+	public UserDto update(@NonNull Long id, @NonNull UserDto dto, String token) {
 		try {
-			User user = repository.findById(id).orElseThrow(
+			
+			String tenant = jwtUtils.getUsernameTenant(token);
+			
+			User user = repository.findByIdAndTenant(id, tenant).orElseThrow(
 					() -> new UserNotFoundException(ExceptionMessageFactory.createNotFoundMessage("user", "ID", id.toString())));
 			
-			//workaround (A.K.A gambiarra) to solve the bug of password encrypt when not updated
-			String[] fieldParameters = new String[2];
+			//workaround (A.K.A gambiarra) to solve the bug of password not encrypting when not updated
+			String[] fieldParameters = new String[5];
 			fieldParameters[0] = "id";
+			fieldParameters[1] = "client";
+			fieldParameters[2] = "createdBy";
+			fieldParameters[3] = "createdAt";
 			
 			validateUser(user, dto, fieldParameters);
 			
@@ -100,9 +108,10 @@ public class UserService implements IService<UserDto>{
 	}
 	
 	@Transactional
-	public void disableUser(@NonNull final Long id) {
+	public void disableUser(@NonNull final Long id, @NonNull final String token) {
+		String tenant = jwtUtils.getUsernameTenant(token);
 		try {
-			User user = repository.findById(id).orElseThrow(
+			User user = repository.findByIdAndTenant(id, tenant).orElseThrow(
 					() -> new UserNotFoundException(ExceptionMessageFactory.createNotFoundMessage("user", "ID", id.toString())));
 			user.setIsActive(!user.getIsActive());
 			repository.save(user);
@@ -115,9 +124,10 @@ public class UserService implements IService<UserDto>{
 	}
 	
 	@Transactional
-	public void expireUser(@NonNull final Long id) {
+	public void expireUser(@NonNull final Long id, @NonNull final String token) {
+		String tenant = jwtUtils.getUsernameTenant(token);
 		try {
-			User user = repository.findById(id).orElseThrow(
+			User user = repository.findByIdAndTenant(id, tenant).orElseThrow(
 					() -> new UserNotFoundException(ExceptionMessageFactory.createNotFoundMessage("user", "ID", id.toString())));
 			user.setIsExpired(!user.getIsExpired());
 			repository.save(user);
@@ -130,9 +140,10 @@ public class UserService implements IService<UserDto>{
 	}
 	
 	@Transactional
-	public void blockUser(@NonNull final Long id) {
+	public void blockUser(@NonNull final Long id, @NonNull final String token) {
+		String tenant = jwtUtils.getUsernameTenant(token);
 		try {
-			User user = repository.findById(id).orElseThrow(
+			User user = repository.findByIdAndTenant(id, tenant).orElseThrow(
 					() -> new UserNotFoundException(ExceptionMessageFactory.createNotFoundMessage("user", "ID", id.toString())));
 			user.setIsBlocked(!user.getIsBlocked());
 			repository.save(user);
@@ -145,8 +156,9 @@ public class UserService implements IService<UserDto>{
 	
 
 	@Override
-	public UserDto findById(@NonNull final Long id) {
-		User user = repository.findById(id).orElseThrow(
+	public UserDto findByIdAndTenant(@NonNull final Long id, @NonNull final String token) {
+		String tenant = jwtUtils.getUsernameTenant(token);
+		User user = repository.findByIdAndTenant(id, tenant).orElseThrow(
 				() -> new UserNotFoundException(ExceptionMessageFactory.createNotFoundMessage("user", "ID", id.toString())));
 
 		return mapper.toDto(user);
@@ -160,9 +172,10 @@ public class UserService implements IService<UserDto>{
 	}
 
 	@Override
-	public void delete(@NonNull final Long id) {
+	public void delete(@NonNull final Long id, @NonNull final String token) {
+		String tenant = jwtUtils.getUsernameTenant(token);
 		try {
-			User user = repository.findById(id).orElseThrow(
+			User user = repository.findByIdAndTenant(id, tenant).orElseThrow(
 					() -> new UserNotFoundException(ExceptionMessageFactory.createNotFoundMessage("user", "ID", id.toString())));
 			roleService.deleteRelationshipFromUser(id);
 			repository.delete(user);
@@ -180,7 +193,7 @@ public class UserService implements IService<UserDto>{
 		if(checkIfPasswordChanged(user, userDto)) {
 			encryptPassword(userDto);
 		} else {
-			fieldParameters[1] = "password";
+			fieldParameters[4] = "password";
 		}
 	}
 
@@ -216,8 +229,6 @@ public class UserService implements IService<UserDto>{
 		
 		return true;
 	}
-	
-	
 	
 	private Boolean checkIfEmailChanged(@NonNull final User user, @NonNull final UserDto dto) {
 		if(user.getEmail().equalsIgnoreCase(dto.getEmail())) {
@@ -257,16 +268,16 @@ public class UserService implements IService<UserDto>{
 		return true;
 	}
 
-	private void fetchAndSetCompanyRole(@NonNull UserDto user) {
+	private void fetchAndSetCompanyRole(@NonNull UserDto user, String tenant) {
 
-		CompanyRoleDto companyRole = companyRoleService.findByIdOrName(user.getCompanyRole().getId(), user.getCompanyRole().getName()); 
+		CompanyRoleDto companyRole = companyRoleService.findByIdOrNameAndTenant(user.getCompanyRole().getName(), user.getClient().getTenant()); 
 
 		user.setCompanyRole(companyRole);
 	}
 	
-	private void fetchAndSetCompanyRole(@NonNull User user, @NonNull UserDto userDto) {
+	private void fetchAndSetCompanyRole(@NonNull User user, @NonNull UserDto userDto, String token) {
 		if(checkIfCompanyRoleChanged(user, userDto))	{
-			fetchAndSetCompanyRole(userDto);	
+			fetchAndSetCompanyRole(userDto, token);	
 		}
 	}
 
@@ -296,26 +307,12 @@ public class UserService implements IService<UserDto>{
 		}
 	}
 	
-	private void fetchAndSetClient(@NonNull UserDto dto) {
-		ClientDto client = clientService.findById(dto.getClient().getId());
+	private void fetchAndSetClient(@NonNull UserDto dto, String tenant) {
+		ClientDto client = clientService.findByTenant(tenant);
 		dto.setClient(client);
 	}
 	
-	private void fetchAndSetClient(@NonNull User user, @NonNull UserDto dto) {
-		if(checkIfClientChanged(user, dto)) {
-			fetchAndSetClient(dto);
-		}
-	}
-	
-	private Boolean checkIfClientChanged(@NonNull final User user, @NonNull final UserDto dto) {
-		if(user.getClient().getId().equals(dto.getClient().getId())) {
-			return false;
-		}
-		return true;
-	}
-	
-	
-	private void validateUser(@NonNull UserDto dto) {
+	private void validateUser(@NonNull UserDto dto, String tenant) {
 		
 		checkIfUserAlreadyExists(dto);
 		
@@ -323,9 +320,9 @@ public class UserService implements IService<UserDto>{
 		
 		encryptPassword(dto);
 		
-		fetchAndSetClient(dto);
+		fetchAndSetClient(dto, tenant);
 
-		fetchAndSetCompanyRole(dto);
+		fetchAndSetCompanyRole(dto, tenant);
 		
 		fetchAndSetRoles(dto);
 		
@@ -339,9 +336,7 @@ public class UserService implements IService<UserDto>{
 
 		encryptPassword(user, dto, fieldParameters);
 		
-		fetchAndSetClient(user, dto);
-		
-		fetchAndSetCompanyRole(user, dto);
+		fetchAndSetCompanyRole(user, dto, user.getClient().getTenant());
 		
 		fetchAndSetRoles(user, dto);		
 	}	

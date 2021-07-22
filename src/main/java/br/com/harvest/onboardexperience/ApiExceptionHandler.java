@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -12,11 +13,14 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import br.com.harvest.onboardexperience.builders.MessageBuilder;
 import br.com.harvest.onboardexperience.domain.dto.responses.Message;
 import br.com.harvest.onboardexperience.domain.dto.responses.MessageError;
 import br.com.harvest.onboardexperience.domain.exceptions.BusinessException;
+import br.com.harvest.onboardexperience.domain.exceptions.CompanyRoleNotFoundException;
 import br.com.harvest.onboardexperience.domain.exceptions.FactoryException;
 import br.com.harvest.onboardexperience.domain.exceptions.SubdomainNotFoundException;
 import br.com.harvest.onboardexperience.domain.exceptions.TenantForbiddenException;
@@ -25,7 +29,7 @@ import br.com.harvest.onboardexperience.domain.exceptions.UserAlreadyExistsExcep
 
 @ControllerAdvice
 @Order(Ordered.HIGHEST_PRECEDENCE)
-public class ApiExceptionHandler  {
+public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 	
 	@ExceptionHandler(FactoryException.class)
 	public ResponseEntity<?> handleFactoryException(FactoryException e){							  
@@ -38,11 +42,18 @@ public class ApiExceptionHandler  {
 		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).contentType(MediaType.APPLICATION_JSON).body(e);
 	}
 	
-	
 	@ExceptionHandler(SubdomainNotFoundException.class)
 	public ResponseEntity<?> handleSubdomainNotFoundException(SubdomainNotFoundException e){
 		
 		var message = new MessageBuilder().addMessage(e.getMessage()).withError(e.getMessage(), e.getCause().getMessage()).build();
+								  
+		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).contentType(MediaType.APPLICATION_JSON).body(message);
+	}
+	
+	@ExceptionHandler({CompanyRoleNotFoundException.class})
+	public ResponseEntity<?> handleNotFoundException(SubdomainNotFoundException e){
+		
+		var message = new MessageBuilder().addMessage(e.getMessage()).withError(e.getMessage(), e.getMessage()).build();
 								  
 		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).contentType(MediaType.APPLICATION_JSON).body(message);
 	}
@@ -62,8 +73,9 @@ public class ApiExceptionHandler  {
 		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).contentType(MediaType.APPLICATION_JSON).body(e);
 	}
 	
-	@ExceptionHandler(MethodArgumentNotValidException.class)
-	public ResponseEntity<?> handleMethodArgumentNotValidException(MethodArgumentNotValidException e){
+	@Override
+	protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException e,
+			HttpHeaders headers, HttpStatus status, WebRequest request) {
 		
 		List<MessageError> errors = new ArrayList<>();
 		

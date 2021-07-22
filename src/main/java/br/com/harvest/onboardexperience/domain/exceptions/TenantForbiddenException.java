@@ -19,4 +19,5 @@ public class TenantForbiddenException extends AuthenticationException {
 	public TenantForbiddenException(String message, String customCause) {
 		super(TENANT_FORBIDDEN_ACCESS + ": " +  message);
 	}	
+	
 }
