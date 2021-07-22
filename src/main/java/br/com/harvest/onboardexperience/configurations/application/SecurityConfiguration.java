@@ -41,7 +41,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
-		
+		//TODO: Disabling CSRF and CORS until we discuss better strategies
 		http.authorizeRequests().antMatchers("/**/auth").permitAll()
 			.anyRequest().authenticated()
 		.and()
