@@ -66,7 +66,6 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 		return ResponseEntity.status(HttpStatus.FORBIDDEN).contentType(MediaType.APPLICATION_JSON).body(message);
 	}
 	
-	//TODO: need to verify why this is not working xP
 	@ExceptionHandler(UserAlreadyExistsException.class)
 	public ResponseEntity<?> handleAlreadyExistsException(UserAlreadyExistsException e){
 								  

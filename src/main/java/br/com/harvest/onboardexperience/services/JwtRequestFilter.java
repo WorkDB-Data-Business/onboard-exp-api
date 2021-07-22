@@ -18,8 +18,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 
-import br.com.harvest.onboardexperience.domain.exceptions.TenantForbiddenException;
-import br.com.harvest.onboardexperience.utils.GenericUtils;
 import br.com.harvest.onboardexperience.utils.JwtTokenUtils;
 import io.jsonwebtoken.ExpiredJwtException;
 import lombok.extern.slf4j.Slf4j;
