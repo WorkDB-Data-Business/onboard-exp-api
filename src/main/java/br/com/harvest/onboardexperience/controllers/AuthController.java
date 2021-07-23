@@ -64,12 +64,15 @@ public class AuthController {
 	public ResponseEntity<?> createAuthenticationToken(@RequestBody JwtRequest authenticationRequest, HttpServletRequest request, HttpServletResponse 
 			response, TimeZone timeZone) throws Exception {
 		
+		
 		authenticate(authenticationRequest.getEmail(), authenticationRequest.getPassword());
+		
+		Boolean isFirstLogin = login.doFirstLoginByEmail(authenticationRequest.getEmail());
 		
 		final UserDetails userDetails = userDetailsService
 				.loadUserByUsername(authenticationRequest.getEmail());
 
-		final String token = jwtUtil.generateToken(createUserClaims(userDetails, timeZone), userDetails);
+		final String token = jwtUtil.generateToken(createUserClaims(userDetails, timeZone, isFirstLogin), userDetails);
 
 		return ResponseEntity.ok(new JwtResponse(token));
 	}
@@ -77,7 +80,6 @@ public class AuthController {
 	private void authenticate(String username, String password) throws Exception {
 		try {
 			authManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
-			login.doFirstLoginByEmail(username);
 		} catch (DisabledException e) {
 			throw new UserDisabledException("The user is disabled", e);
 		} catch (LockedException e) {
@@ -87,12 +89,13 @@ public class AuthController {
 		}
 	}
 	
-	private Map<String, Object> createUserClaims(UserDetails userDetails, TimeZone timeZone){
+	private Map<String, Object> createUserClaims(UserDetails userDetails, TimeZone timeZone, Boolean isFirstLogin){
 		User user = userService.findUserByEmail(userDetails.getUsername());
 		Map<String, Object> claims = new HashMap<>();
 		claims.put("user_id", user.getId());
 		claims.put("user_tenant", user.getClient().getTenant());
 		claims.put("user_time_zone", timeZone.getID());
+		claims.put("user_first_login", isFirstLogin);
 		
 		return claims;
 	}

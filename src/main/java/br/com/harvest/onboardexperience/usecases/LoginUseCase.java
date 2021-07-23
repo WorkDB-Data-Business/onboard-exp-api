@@ -16,12 +16,14 @@ public class LoginUseCase {
 	UserRepository userRepository;
 	
 	@Transactional
-	public void doFirstLoginByEmail(String email) {
+	public Boolean doFirstLoginByEmail(String email) {
 		User user = userRepository.findByEmailContainingIgnoreCase(email).orElseThrow(() -> new UsernameNotFoundException(ExceptionMessageFactory
 				.createNotFoundMessage("user", "email", email)));
 		if(user.getIsFirstLogin()) {
 			user.setIsFirstLogin(false);
+			return true;
 		}
+		return false;
 	}
 
 }
