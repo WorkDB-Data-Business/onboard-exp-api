@@ -88,3 +88,27 @@ CREATE TABLE IF NOT EXISTS public.tbuser_role(
 	CONSTRAINT tbuser_role_pk PRIMARY KEY (iduser, idrole)
 );
 
+CREATE TABLE IF NOT EXISTS public.tbcoin(
+	idcoin BIGSERIAL NOT NULL,
+	image_path CHARACTER VARYING NOT NULL,
+	name CHARACTER VARYING NOT NULL,
+	idclient BIGINT NOT NULL,
+	created_by CHARACTER VARYING,
+	updated_by CHARACTER VARYING,
+	created_at TIMESTAMP default now(),
+	updated_at TIMESTAMP,
+	
+	FOREIGN KEY (idclient) REFERENCES tbclient(idclient),
+	
+	CONSTRAINT tbcoin_pk PRIMARY KEY (idcoin)
+);
+
+
+CREATE TABLE IF NOT EXISTS public.tbuser_coin(
+	iduser bigint NOT NULL,
+	idcoin bigint NOT NULL,
+	FOREIGN KEY (iduser) REFERENCES tbuser(iduser),
+	FOREIGN KEY (idcoin) REFERENCES tbcoin(idcoin),
+	
+	CONSTRAINT tbuser_coin_pk PRIMARY KEY (iduser, idcoin)
+);

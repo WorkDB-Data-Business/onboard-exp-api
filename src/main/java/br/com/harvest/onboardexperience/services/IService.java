@@ -3,12 +3,14 @@ package br.com.harvest.onboardexperience.services;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import lombok.NonNull;
+
 public interface IService <D> {
 
-	D create(D dto, String token);
-	D update(Long id, D dto, String token);
-	D findByIdAndTenant(Long id, String token);
-	Page<D> findAllByTenant(Pageable pageable, String token);
-	void delete(Long id, String token);
+	D create(@NonNull D dto, final String token);
+	D update(@NonNull final Long id, @NonNull D dto, @NonNull final String token);
+	D findByIdAndTenant(@NonNull final Long id, @NonNull final String token);
+	Page<D> findAllByTenant(Pageable pageable, @NonNull final String token);
+	void delete(@NonNull final Long id, @NonNull final String token);
 	
 }

@@ -59,11 +59,11 @@ public class UserService implements IService<UserDto>{
 	private JwtTokenUtils jwtUtils;
 
 	@Override
-	public UserDto create(@NonNull UserDto dto, String token) {
+	public UserDto create(@NonNull UserDto dto, @NonNull final String token) {
 		try {
 			String tenant = jwtUtils.getUsernameTenant(token);
 			
-			validateUser(dto, tenant);
+			validate(dto, tenant);
 
 			User user = repository.save(mapper.toEntity(dto));
 			
@@ -76,7 +76,7 @@ public class UserService implements IService<UserDto>{
 	}
 
 	@Override
-	public UserDto update(@NonNull Long id, @NonNull UserDto dto, String token) {
+	public UserDto update(@NonNull Long id, @NonNull UserDto dto, @NonNull final String token) {
 		try {
 			
 			String tenant = jwtUtils.getUsernameTenant(token);
@@ -91,7 +91,7 @@ public class UserService implements IService<UserDto>{
 			fieldParameters[2] = "createdBy";
 			fieldParameters[3] = "createdAt";
 			
-			validateUser(user, dto, fieldParameters);
+			validate(user, dto, fieldParameters);
 			
 			// TODO: need to solve a bug that doesn't update the roles
 			BeanUtils.copyProperties(dto, user, fieldParameters);
@@ -173,7 +173,7 @@ public class UserService implements IService<UserDto>{
 	}
 
 	@Override
-	public Page<UserDto> findAllByTenant(final Pageable pageable, final String token) {
+	public Page<UserDto> findAllByTenant(final Pageable pageable, @NonNull final String token) {
 		String tenant = jwtUtils.getUsernameTenant(token);
 		List<UserDto> users = repository.findAllByTenant(tenant).stream().map(mapper::toDto).collect(Collectors.toList());
 		return new PageImpl<>(users, pageable, users.size());
@@ -288,7 +288,7 @@ public class UserService implements IService<UserDto>{
 		user.setCompanyRole(companyRole);
 	}
 	
-	private void fetchAndSetCompanyRole(@NonNull User user, @NonNull UserDto userDto, String token) {
+	private void fetchAndSetCompanyRole(@NonNull User user, @NonNull UserDto userDto, @NonNull final String token) {
 		if(checkIfCompanyRoleChanged(user, userDto))	{
 			fetchAndSetCompanyRole(userDto, token);	
 		}
@@ -325,7 +325,7 @@ public class UserService implements IService<UserDto>{
 		dto.setClient(client);
 	}
 	
-	private void validateUser(@NonNull UserDto dto, String tenant) {
+	private void validate(@NonNull UserDto dto, String tenant) {
 		
 		checkIfUserAlreadyExists(dto);
 		
@@ -341,7 +341,7 @@ public class UserService implements IService<UserDto>{
 		
 	}
 	
-	private void validateUser(@NonNull User user, @NonNull UserDto dto, String[] fieldParameters) {
+	private void validate(@NonNull User user, @NonNull UserDto dto, String[] fieldParameters) {
 		
 		checkIfUserAlreadyExists(user, dto);
 

@@ -32,7 +32,7 @@ public class CompanyRoleService {
 	private TenantService tenantService;
 	
 	
-	public CompanyRoleDto create(@NonNull CompanyRoleDto dto, String token) {
+	public CompanyRoleDto create(@NonNull CompanyRoleDto dto, @NonNull final String token) {
 		
 		dto.setClient(tenantService.fetchClientDtoByTenantFromToken(token));
 		
@@ -41,7 +41,7 @@ public class CompanyRoleService {
 	}
 
 	
-	public CompanyRoleDto update(@NonNull final Long id, @NonNull CompanyRoleDto dto, String token) {
+	public CompanyRoleDto update(@NonNull final Long id, @NonNull CompanyRoleDto dto, @NonNull final String token) {
 		
 		String tenant = jwtUtils.getUsernameTenant(token);
 		
@@ -73,14 +73,14 @@ public class CompanyRoleService {
 	}
 
 	
-	public Page<CompanyRoleDto> findAllByTenant(Pageable pageable, String token) {
+	public Page<CompanyRoleDto> findAllByTenant(Pageable pageable, @NonNull final String token) {
 		String tenant = jwtUtils.getUsernameTenant(token);
 		List<CompanyRoleDto> companyRoles = repository.findAllByTenant(tenant).stream().map(CompanyRoleMapper.INSTANCE::toDto).collect(Collectors.toList());
 		return new PageImpl<>(companyRoles, pageable, companyRoles.size());
 	}
 
 	
-	public void delete(@NonNull final Long id, String token) {
+	public void delete(@NonNull final Long id, @NonNull final String token) {
 		String tenant = jwtUtils.getUsernameTenant(token);
 		CompanyRole companyRole = repository.findByIdAndTenant(id, tenant).orElseThrow(
 				() -> new CompanyRoleNotFoundException("The company role with ID " + id + " has not found"));

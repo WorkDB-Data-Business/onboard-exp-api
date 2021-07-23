@@ -42,7 +42,7 @@ public class ClientService {
 	@Transactional
 	public ClientDto create(@NonNull ClientDto dto) {
 		try {
-			validateClient(dto);
+			validate(dto);
 
 			Client client = repository.save(mapper.toEntity(dto));
 			log.info("The client with CNPJ " + dto.getCnpj() + " was saved successful.");
@@ -61,9 +61,9 @@ public class ClientService {
 			Client client = repository.findById(id).orElseThrow(
 					() -> new ClientNotFoundException(ExceptionMessageFactory.createNotFoundMessage("client", "ID", id.toString())));
 
-			validateClient(client, dto);
+			validate(client, dto);
 
-			BeanUtils.copyProperties(dto, client, "id");
+			BeanUtils.copyProperties(dto, client, "id", "createdAt", "createdBy");
 
 			client = repository.save(client);
 			
@@ -185,12 +185,12 @@ public class ClientService {
 		return true;
 	}
 
-	private void validateClient(@NonNull ClientDto dto) {
+	private void validate(@NonNull ClientDto dto) {
 		checkIfClientAlreadyExists(dto);
 		validateCnpj(dto);
 	}
 
-	private void validateClient(@NonNull Client client, @NonNull ClientDto dto) {
+	private void validate(@NonNull Client client, @NonNull ClientDto dto) {
 		validateCnpj(client, dto);
 	}
 	
