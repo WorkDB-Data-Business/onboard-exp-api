@@ -28,9 +28,9 @@ import br.com.harvest.onboardexperience.domain.dto.JwtResponse;
 import br.com.harvest.onboardexperience.domain.entities.User;
 import br.com.harvest.onboardexperience.domain.exceptions.UserBlockedException;
 import br.com.harvest.onboardexperience.domain.exceptions.UserDisabledException;
-import br.com.harvest.onboardexperience.domain.exceptions.UserNotFoundException;
-import br.com.harvest.onboardexperience.repositories.UserRepository;
 import br.com.harvest.onboardexperience.services.JwtUserDetailsService;
+import br.com.harvest.onboardexperience.services.UserService;
+import br.com.harvest.onboardexperience.usecases.LoginUseCase;
 import br.com.harvest.onboardexperience.utils.JwtTokenUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -50,23 +50,29 @@ public class AuthController {
 	private JwtUserDetailsService userDetailsService;
 	
 	@Autowired
-	private UserRepository repository;
+	private UserService userService;
 	
 	@Autowired
 	@Qualifier("handlerExceptionResolver")
 	private HandlerExceptionResolver resolver;
+	
+	@Autowired
+	private LoginUseCase login;
 
 	@Operation(description = "Realiza a autenticação e retorna o token JWT.")
 	@RequestMapping(value = "/auth", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.POST)
-	public ResponseEntity<?> createAuthenticationToken(@RequestBody JwtRequest authenticationRequest, HttpServletRequest request,HttpServletResponse 
+	public ResponseEntity<?> createAuthenticationToken(@RequestBody JwtRequest authenticationRequest, HttpServletRequest request, HttpServletResponse 
 			response, TimeZone timeZone) throws Exception {
 		
+		
 		authenticate(authenticationRequest.getEmail(), authenticationRequest.getPassword());
+		
+		Boolean isFirstLogin = login.doFirstLoginByEmail(authenticationRequest.getEmail());
 		
 		final UserDetails userDetails = userDetailsService
 				.loadUserByUsername(authenticationRequest.getEmail());
 
-		final String token = jwtUtil.generateToken(createUserClaims(userDetails, timeZone), userDetails);
+		final String token = jwtUtil.generateToken(createUserClaims(userDetails, timeZone, isFirstLogin), userDetails);
 
 		return ResponseEntity.ok(new JwtResponse(token));
 	}
@@ -83,13 +89,13 @@ public class AuthController {
 		}
 	}
 	
-	private Map<String, Object> createUserClaims(UserDetails userDetails, TimeZone timeZone){
-		User user = repository.findByEmailContainingIgnoreCase(userDetails.getUsername()).orElseThrow(() -> new UserNotFoundException("User with email " 
-				+ userDetails.getUsername() + " not found."));
+	private Map<String, Object> createUserClaims(UserDetails userDetails, TimeZone timeZone, Boolean isFirstLogin){
+		User user = userService.findUserByEmail(userDetails.getUsername());
 		Map<String, Object> claims = new HashMap<>();
 		claims.put("user_id", user.getId());
 		claims.put("user_tenant", user.getClient().getTenant());
 		claims.put("user_time_zone", timeZone.getID());
+		claims.put("user_first_login", isFirstLogin);
 		
 		return claims;
 	}

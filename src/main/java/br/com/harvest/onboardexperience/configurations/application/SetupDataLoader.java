@@ -169,6 +169,7 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
 					.username("harvest")
 					.password(passwordConfiguration.encoder().encode("harvest"))
 					.isActive(true)
+					.isFirstLogin(true)
 					.isExpired(false)
 					.isBlocked(false)
 					.client(client)
