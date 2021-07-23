@@ -19,6 +19,7 @@ import org.springframework.security.web.FilterInvocation;
 import org.springframework.security.web.access.expression.DefaultWebSecurityExpressionHandler;
 import org.springframework.security.web.access.expression.WebSecurityExpressionRoot;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
 
 import br.com.harvest.onboardexperience.services.JwtAuthenticationEntryPoint;
 import br.com.harvest.onboardexperience.services.JwtRequestFilter;
@@ -41,7 +42,6 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
-		//TODO: Disabling CSRF and CORS until we discuss better strategies
 		http.authorizeRequests().antMatchers("/**/auth").permitAll()
 			.anyRequest().authenticated()
 		.and()
@@ -53,10 +53,11 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 		.and()
 			.httpBasic()
 				.disable()
+				//TODO: Disabling CSRF until we discuss better strategies
 			.csrf()
 				.disable()
-			.cors()
-				.disable();
+				//TODO: Applying permit default values until we discuss better strategies
+			.cors().configurationSource(request -> new CorsConfiguration().applyPermitDefaultValues());
 		
 		http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
 		
