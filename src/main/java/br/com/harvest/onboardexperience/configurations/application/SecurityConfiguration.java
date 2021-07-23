@@ -42,8 +42,12 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
-		http.authorizeRequests().antMatchers("/**/auth").permitAll()
-			.anyRequest().authenticated()
+		http
+			.authorizeRequests()
+				.antMatchers("/**/auth", "/**/api-docs/**", "/**/swagger-ui/**")
+					.permitAll()
+				.anyRequest()
+					.authenticated()
 		.and()
 			.exceptionHandling()
 				.authenticationEntryPoint(jwtAuthenticationEntryPoint)
@@ -57,7 +61,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 			.csrf()
 				.disable()
 				//TODO: Applying permit default values until we discuss better strategies
-			.cors().configurationSource(request -> new CorsConfiguration().applyPermitDefaultValues());
+			.cors()
+				.configurationSource(request -> new CorsConfiguration().applyPermitDefaultValues());
 		
 		http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
 		
@@ -90,7 +95,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 	@Bean
 	public RoleHierarchy roleHierarchy() {
 	    RoleHierarchyImpl roleHierarchy = new RoleHierarchyImpl();
-	    String hierarchy = "MASTER > ADMIN \n ADMIN > COLABORATOR";
+	    String hierarchy = "ADMIN > COLABORATOR";
 	    roleHierarchy.setHierarchy(hierarchy);
 	    return roleHierarchy;
 	}

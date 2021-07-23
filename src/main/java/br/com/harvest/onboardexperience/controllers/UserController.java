@@ -10,6 +10,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -33,37 +34,45 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RequestMapping("/v1")
 public class UserController {
 	
-	//TODO: Implement the protection of endpoints using roles
-	
 	@Autowired
 	private UserService service;
 	
-
 	@Operation(description = "Retorna os usuários cadastrados.")
+	@PreAuthorize("hasAuthority('ADMIN')")
 	@GetMapping(path = "/users", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Page<UserDto>> findAll(Pageable pageable, @RequestHeader("Authorization") String token) {
 		return ResponseEntity.ok(service.findAllByTenant(pageable, token));
 	}	
 	
 	@Operation(description = "Retorna o usuário cadastrado pelo ID.")
+	@PreAuthorize("hasAuthority('ADMIN')")
 	@GetMapping(path = "/users/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<UserDto> findById(@PathVariable  @Pattern(regexp = RegexUtils.ONLY_NUMBERS) Long id, @RequestHeader("Authorization") String token) {
 		return ResponseEntity.ok(service.findByIdAndTenant(id, token));
 	}
 	
+	@Operation(description = "Retorna o usuário cadastrado pelo ID.")
+	@GetMapping(path = "/users/my-user", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<UserDto> findMyUser(@RequestHeader("Authorization") String token) {
+		return ResponseEntity.ok(service.findMyUser(token));
+	}
+	
 	@Operation(description = "Salva um usuário no banco de dados e o retorna.")
+	@PreAuthorize("hasAuthority('ADMIN')")
 	@PostMapping(path = "/users", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<UserDto> create(@Valid @RequestBody @NotNull UserDto dto, @RequestHeader("Authorization") String token) throws RuntimeException {
 		return ResponseEntity.ok().body(service.create(dto, token));
 	}
 	
 	@Operation(description = "Realiza a alteração de um usuário no banco de dados e o retorna atualizado.")
+	@PreAuthorize("hasAuthority('ADMIN')")
 	@PutMapping(path = "/users/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<UserDto> update(@PathVariable  @Pattern(regexp = RegexUtils.ONLY_NUMBERS) Long id, @RequestBody @Valid @NotNull UserDto dto, @RequestHeader("Authorization") String token) {
 		return ResponseEntity.ok().body(service.update(id, dto, token));
 	}
 	
 	@Operation(description = "Realiza a exclusão de um usuário no banco de dados.")
+	@PreAuthorize("hasAuthority('ADMIN')")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	@DeleteMapping(path = "/users/{id}")
 	public void delete(@PathVariable  @Pattern(regexp = RegexUtils.ONLY_NUMBERS) Long id, @RequestHeader("Authorization") String token) {
@@ -72,12 +81,14 @@ public class UserController {
 	
 	@Operation(description = "Realiza a inativação de um usuário no banco de dados.")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
+	@PreAuthorize("hasAuthority('ADMIN')")
 	@PatchMapping(path = "/users/disable/{id}")
 	public void disable(@PathVariable  @Pattern(regexp = RegexUtils.ONLY_NUMBERS) Long id, @RequestHeader("Authorization") String token) {
 		service.disableUser(id, token);
 	}
 	
 	@Operation(description = "Realiza a expiração de um usuário no banco de dados.")
+	@PreAuthorize("hasAuthority('ADMIN')")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	@PatchMapping(path = "/users/expire/{id}")
 	public void expire(@PathVariable  @Pattern(regexp = RegexUtils.ONLY_NUMBERS) Long id, @RequestHeader("Authorization") String token) {
@@ -85,6 +96,7 @@ public class UserController {
 	}
 	
 	@Operation(description = "Realiza a  de um usuário no banco de dados.")
+	@PreAuthorize("hasAuthority('ADMIN')")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	@PatchMapping(path = "/users/block/{id}")
 	public void block(@PathVariable  @Pattern(regexp = RegexUtils.ONLY_NUMBERS) Long id, @RequestHeader("Authorization") String token) {

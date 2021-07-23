@@ -21,6 +21,7 @@ public class OpenApiConfig {
 	              .info(new Info().title("Onboard Experience API")
 	              .description(env.getApplicationDescription())
 	              .version(env.getApiVersion()));
+	      		
 	  }
 
 }

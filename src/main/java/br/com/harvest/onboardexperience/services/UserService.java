@@ -163,6 +163,14 @@ public class UserService implements IService<UserDto>{
 
 		return mapper.toDto(user);
 	}
+	
+	public UserDto findMyUser(@NonNull final String token) {
+		Long idUser = jwtUtils.getUsernameId(token);
+		User user = repository.findById(idUser).orElseThrow(
+				() -> new UserNotFoundException(ExceptionMessageFactory.createNotFoundMessage("user", "ID", idUser.toString())));
+
+		return mapper.toDto(user);
+	}
 
 	@Override
 	public Page<UserDto> findAllByTenant(final Pageable pageable, final String token) {
