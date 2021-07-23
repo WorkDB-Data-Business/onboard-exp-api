@@ -15,13 +15,18 @@ check:
 # make commands
 help:
 	@echo "--------------------------------------------HELP---------------------------------------------"
-	@echo "Em construcao."
-	@echo
+	@echo "install-env-variables-windows -> Instala as variaveis de ambiente no Windows. Requer que reinicie a maquina."
+	@echo "remove-env-variables-windows -> Remove as variaveis de ambiente no Windows. Requer que reinicie a maquina."
+	@echo "install-env-variables-linux -> Instala as variaveis de ambiente no Linux. Requer que reinicie a maquina."
+	@echo "remove-env-variables-linux ->  Remove as variaveis de ambiente no Windows. Requer que reinicie a maquina."
+	@echo "install -> Instala as dependencias do projeto descritas no pom.xml."
+	@echo "build -> Instala as dependencias do projeto descritas no pom.xml e gera o .jar."
+	@echo "run -> Cria/recria os containers do Docker conforme a descricao no docker-compose e Dockerfiles."
+	@echo "reset-database -> apaga os volumes do container do banco de dados e o recria."
 
-reset-db:
+reset-database: check
 	docker-compose down -v
-	docker-compose up -d db1
-
+	docker-compose up -d database
 
 .ONESHELL:
 

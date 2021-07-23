@@ -13,9 +13,7 @@ import lombok.Data;
 public class MessageError {
 	
 	private String message; 
-	private String messageKey;
 	private String cause;
-	private String causeKey;
 	private List<Comment> comments;
 	
 	public MessageError() {

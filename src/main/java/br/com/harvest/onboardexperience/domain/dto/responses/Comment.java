@@ -8,6 +8,5 @@ import lombok.Data;
 public class Comment {
 	
 	private String message;
-	private String messageKey;
 	
 }
