@@ -66,6 +66,9 @@ public class User extends BaseEntityAudit {
 	@Column(name = "is_expired")
 	private Boolean isExpired;
 	
+	@Column(name = "is_first_login")
+	private Boolean isFirstLogin;
+	
 	@ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
 	@JoinTable(
 	  name = "tbuser_role", 

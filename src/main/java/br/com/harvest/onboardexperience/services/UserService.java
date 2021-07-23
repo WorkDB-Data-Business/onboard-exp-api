@@ -192,6 +192,11 @@ public class UserService implements IService<UserDto>{
 			log.error("An error has occurred when deleting user with ID " + id, e);
 		}
 	}
+	
+	public User findUserByEmail(String email) {
+		return repository.findByEmailContainingIgnoreCase(email).orElseThrow(() -> new UserNotFoundException("User with email " 
+				+ email + " not found."));
+	}
 
 	private void encryptPassword(@NonNull UserDto user) {
 		user.setPassword(passwordConfiguration.encoder().encode(user.getPassword()));
