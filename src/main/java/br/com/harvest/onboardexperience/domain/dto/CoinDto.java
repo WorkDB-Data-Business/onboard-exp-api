@@ -2,7 +2,9 @@ package br.com.harvest.onboardexperience.domain.dto;
 
 import javax.validation.constraints.NotEmpty;
 
-import com.sun.istack.NotNull;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty.Access;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -17,13 +19,13 @@ public class CoinDto {
 	
 	private Long id;
 	
-	@NotEmpty
+	@JsonIgnore
 	private String imagePath;
 	
 	@NotEmpty
 	private String name;
 	
-	@NotNull
+	@JsonProperty(access = Access.READ_ONLY)
 	private ClientDto client;
 	
 	@Builder.Default

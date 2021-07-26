@@ -5,7 +5,9 @@ import java.math.BigDecimal;
 import javax.validation.constraints.DecimalMin;
 import javax.validation.constraints.Digits;
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty.Access;
 
 import br.com.harvest.onboardexperience.utils.ValidationUtils;
 import lombok.AllArgsConstructor;
@@ -21,7 +23,7 @@ public class RewardDto {
 	
 	private Long id;
 	
-	@NotBlank
+	@JsonIgnore
 	private String imagePath;
 	
 	@NotBlank
@@ -31,10 +33,10 @@ public class RewardDto {
 	@Digits(fraction = ValidationUtils.MAX_PRICE_FRACTION, integer = ValidationUtils.MAX_PRICE)
 	private BigDecimal price;
 	
-	@NotNull
+	@JsonProperty(access = Access.READ_ONLY)
 	private ClientDto client;
 	
 	@Builder.Default
 	private Boolean isActive = true;
-
+	
 }

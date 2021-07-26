@@ -1,4 +1,4 @@
-package br.com.harvest.onboardexperience.services;
+package br.com.harvest.onboardexperience.services.interfaces;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

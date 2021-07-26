@@ -48,6 +48,7 @@ public class GenerateUserUseCase {
 					.username(GenericUtils.formatNameToUsername(client.getName()))
 					.firstName(client.getName())
 					.isActive(true)
+					.isFirstLogin(true)
 					.isBlocked(false)
 					.isExpired(false)
 					.lastName("User")

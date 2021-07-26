@@ -28,6 +28,7 @@ import br.com.harvest.onboardexperience.domain.factories.ExceptionMessageFactory
 import br.com.harvest.onboardexperience.mappers.ClientMapper;
 import br.com.harvest.onboardexperience.mappers.UserMapper;
 import br.com.harvest.onboardexperience.repositories.UserRepository;
+import br.com.harvest.onboardexperience.services.interfaces.IService;
 import br.com.harvest.onboardexperience.utils.GenericUtils;
 import br.com.harvest.onboardexperience.utils.JwtTokenUtils;
 import lombok.NonNull;
@@ -58,7 +59,7 @@ public class UserService implements IService<UserDto>{
 	@Override
 	public UserDto create(@NonNull UserDto dto, @NonNull final String token) {
 		try {
-			String tenant = jwtUtils.getUsernameTenant(token);
+			String tenant = jwtUtils.getUserTenant(token);
 			
 			validate(dto, tenant);
 
@@ -76,7 +77,7 @@ public class UserService implements IService<UserDto>{
 	public UserDto update(@NonNull Long id, @NonNull UserDto dto, @NonNull final String token) {
 		try {
 			
-			String tenant = jwtUtils.getUsernameTenant(token);
+			String tenant = jwtUtils.getUserTenant(token);
 			
 			User user = repository.findByIdAndTenant(id, tenant).orElseThrow(
 					() -> new UserNotFoundException(ExceptionMessageFactory.createNotFoundMessage("user", "ID", id.toString())));
@@ -106,7 +107,7 @@ public class UserService implements IService<UserDto>{
 	
 	@Transactional
 	public void disableUser(@NonNull final Long id, @NonNull final String token) {
-		String tenant = jwtUtils.getUsernameTenant(token);
+		String tenant = jwtUtils.getUserTenant(token);
 		try {
 			User user = repository.findByIdAndTenant(id, tenant).orElseThrow(
 					() -> new UserNotFoundException(ExceptionMessageFactory.createNotFoundMessage("user", "ID", id.toString())));
@@ -122,7 +123,7 @@ public class UserService implements IService<UserDto>{
 	
 	@Transactional
 	public void expireUser(@NonNull final Long id, @NonNull final String token) {
-		String tenant = jwtUtils.getUsernameTenant(token);
+		String tenant = jwtUtils.getUserTenant(token);
 		try {
 			User user = repository.findByIdAndTenant(id, tenant).orElseThrow(
 					() -> new UserNotFoundException(ExceptionMessageFactory.createNotFoundMessage("user", "ID", id.toString())));
@@ -138,7 +139,7 @@ public class UserService implements IService<UserDto>{
 	
 	@Transactional
 	public void blockUser(@NonNull final Long id, @NonNull final String token) {
-		String tenant = jwtUtils.getUsernameTenant(token);
+		String tenant = jwtUtils.getUserTenant(token);
 		try {
 			User user = repository.findByIdAndTenant(id, tenant).orElseThrow(
 					() -> new UserNotFoundException(ExceptionMessageFactory.createNotFoundMessage("user", "ID", id.toString())));
@@ -154,7 +155,7 @@ public class UserService implements IService<UserDto>{
 
 	@Override
 	public UserDto findByIdAndTenant(@NonNull final Long id, @NonNull final String token) {
-		String tenant = jwtUtils.getUsernameTenant(token);
+		String tenant = jwtUtils.getUserTenant(token);
 		User user = repository.findByIdAndTenant(id, tenant).orElseThrow(
 				() -> new UserNotFoundException(ExceptionMessageFactory.createNotFoundMessage("user", "ID", id.toString())));
 
@@ -162,7 +163,7 @@ public class UserService implements IService<UserDto>{
 	}
 	
 	public UserDto findMyUser(@NonNull final String token) {
-		Long idUser = jwtUtils.getUsernameId(token);
+		Long idUser = jwtUtils.getUserId(token);
 		User user = repository.findById(idUser).orElseThrow(
 				() -> new UserNotFoundException(ExceptionMessageFactory.createNotFoundMessage("user", "ID", idUser.toString())));
 
@@ -171,14 +172,14 @@ public class UserService implements IService<UserDto>{
 
 	@Override
 	public Page<UserDto> findAllByTenant(final Pageable pageable, @NonNull final String token) {
-		String tenant = jwtUtils.getUsernameTenant(token);
+		String tenant = jwtUtils.getUserTenant(token);
 		List<UserDto> users = repository.findAllByTenant(tenant).stream().map(UserMapper.INSTANCE::toDto).collect(Collectors.toList());
 		return new PageImpl<>(users, pageable, users.size());
 	}
 
 	@Override
 	public void delete(@NonNull final Long id, @NonNull final String token) {
-		String tenant = jwtUtils.getUsernameTenant(token);
+		String tenant = jwtUtils.getUserTenant(token);
 		try {
 			User user = repository.findByIdAndTenant(id, tenant).orElseThrow(
 					() -> new UserNotFoundException(ExceptionMessageFactory.createNotFoundMessage("user", "ID", id.toString())));

@@ -13,15 +13,17 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import br.com.harvest.onboardexperience.domain.dto.RewardDto;
 import br.com.harvest.onboardexperience.services.RewardService;
@@ -53,16 +55,17 @@ public class RewardController {
 	
 	@Operation(description = "Salva uma recompensa no banco de dados e a retorna.")
 	@PreAuthorize("hasAuthority('ADMIN')")
-	@PostMapping(path = "/rewards", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<RewardDto> create(@Valid @RequestBody @NotNull RewardDto dto, @RequestHeader("Authorization") String token) throws RuntimeException {
-		return ResponseEntity.ok().body(service.create(dto, token));
+	@PostMapping(path = "/rewards", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<RewardDto> create(@Valid @ModelAttribute @NotNull RewardDto dto, @RequestParam("file") MultipartFile file, @RequestHeader("Authorization") String token) throws RuntimeException {
+		return ResponseEntity.ok().body(service.create(dto, file, token));
 	}
 	
 	@Operation(description = "Realiza a alteração de uma recompensa no banco de dados e a retorna atualizada.")
 	@PreAuthorize("hasAuthority('ADMIN')")
-	@PutMapping(path = "/rewards/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<RewardDto> update(@PathVariable  @Pattern(regexp = RegexUtils.ONLY_NUMBERS) Long id, @RequestBody @Valid @NotNull RewardDto dto, @RequestHeader("Authorization") String token) {
-		return ResponseEntity.ok().body(service.update(id, dto, token));
+	@PutMapping(path = "/rewards/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<RewardDto> update(@PathVariable  @Pattern(regexp = RegexUtils.ONLY_NUMBERS) Long id, @ModelAttribute @Valid @NotNull RewardDto dto, 
+			@RequestParam("file") MultipartFile file, @RequestHeader("Authorization") String token) {
+		return ResponseEntity.ok().body(service.update(id, dto, file, token));
 	}
 	
 	@Operation(description = "Realiza a exclusão de uma recompensa no banco de dados.")

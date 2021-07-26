@@ -36,3 +36,4 @@ build/
 .mvn/
 .history/
 /src/main/resources/logs
+resources/
