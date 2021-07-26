@@ -9,6 +9,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import br.com.harvest.onboardexperience.domain.dto.ClientDto;
 import br.com.harvest.onboardexperience.domain.dto.CoinDto;
@@ -71,7 +72,7 @@ public class CoinService implements IService<CoinDto>{
 
 			return CoinMapper.INSTANCE.toDto(coin);
 		} catch (Exception e) {
-			log.error("An error has occurred when updating user with ID " + id, e);
+			log.error("An error has occurred when updating coin with ID " + id, e);
 			return null;
 		}
 	}
@@ -101,6 +102,23 @@ public class CoinService implements IService<CoinDto>{
 				() -> new CoinNotFoundException(ExceptionMessageFactory.createNotFoundMessage("coin", "ID", id.toString())));
 		
 		repository.delete(coin);
+	}
+	
+	@Transactional
+	public void disableCoin(@NonNull final Long id, @NonNull final String token) {
+		String tenant = jwtUtils.getUsernameTenant(token);
+		try {
+			Coin coin = repository.findByIdAndTenant(id, tenant).orElseThrow(
+					() -> new CoinNotFoundException(ExceptionMessageFactory.createNotFoundMessage("coin", "ID", id.toString())));
+			
+			coin.setIsActive(!coin.getIsActive());
+			repository.save(coin);
+			
+			String isEnabled = coin.getIsActive().equals(true) ? "disabled" : "enabled";
+			log.info("The coin with ID " + id + " was " + isEnabled + " successful.");
+		} catch (Exception e) {
+			log.error("An error has occurred when disabling or enabling coin with ID " + id, e);
+		}
 	}
 	
 	private Boolean checkIfIsSameCoin(@NonNull Coin coin, @NonNull CoinDto coinDto) {
