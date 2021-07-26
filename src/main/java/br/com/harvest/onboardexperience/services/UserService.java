@@ -41,9 +41,6 @@ public class UserService implements IService<UserDto>{
 	private UserRepository repository;
 
 	@Autowired
-	private UserMapper mapper;
-
-	@Autowired
 	private PasswordConfiguration passwordConfiguration;
 
 	@Autowired
@@ -65,10 +62,10 @@ public class UserService implements IService<UserDto>{
 			
 			validate(dto, tenant);
 
-			User user = repository.save(mapper.toEntity(dto));
+			User user = repository.save(UserMapper.INSTANCE.toEntity(dto));
 			
 			log.info("The user " + dto.getUsername() + " was saved successful.");
-			return mapper.toDto(user);
+			return UserMapper.INSTANCE.toDto(user);
 		} catch (Exception e) {
 			log.error("An error has occurred when saving user " + dto.getUsername() , e);
 			return null;
@@ -100,7 +97,7 @@ public class UserService implements IService<UserDto>{
 			
 			log.info("The user " + dto.getUsername() + " was updated successful.");
 
-			return mapper.toDto(user);
+			return UserMapper.INSTANCE.toDto(user);
 		} catch (Exception e) {
 			log.error("An error has occurred when updating user with ID " + id, e);
 			return null;
@@ -161,7 +158,7 @@ public class UserService implements IService<UserDto>{
 		User user = repository.findByIdAndTenant(id, tenant).orElseThrow(
 				() -> new UserNotFoundException(ExceptionMessageFactory.createNotFoundMessage("user", "ID", id.toString())));
 
-		return mapper.toDto(user);
+		return UserMapper.INSTANCE.toDto(user);
 	}
 	
 	public UserDto findMyUser(@NonNull final String token) {
@@ -169,13 +166,13 @@ public class UserService implements IService<UserDto>{
 		User user = repository.findById(idUser).orElseThrow(
 				() -> new UserNotFoundException(ExceptionMessageFactory.createNotFoundMessage("user", "ID", idUser.toString())));
 
-		return mapper.toDto(user);
+		return UserMapper.INSTANCE.toDto(user);
 	}
 
 	@Override
 	public Page<UserDto> findAllByTenant(final Pageable pageable, @NonNull final String token) {
 		String tenant = jwtUtils.getUsernameTenant(token);
-		List<UserDto> users = repository.findAllByTenant(tenant).stream().map(mapper::toDto).collect(Collectors.toList());
+		List<UserDto> users = repository.findAllByTenant(tenant).stream().map(UserMapper.INSTANCE::toDto).collect(Collectors.toList());
 		return new PageImpl<>(users, pageable, users.size());
 	}
 

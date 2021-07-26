@@ -1,18 +1,20 @@
 package br.com.harvest.onboardexperience.services;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import br.com.harvest.onboardexperience.domain.dto.ClientDto;
 import br.com.harvest.onboardexperience.domain.dto.CoinDto;
 import br.com.harvest.onboardexperience.domain.entities.Coin;
-import br.com.harvest.onboardexperience.domain.entities.User;
 import br.com.harvest.onboardexperience.domain.exceptions.CoinAlreadyExistsException;
 import br.com.harvest.onboardexperience.domain.exceptions.CoinNotFoundException;
-import br.com.harvest.onboardexperience.domain.exceptions.UserNotFoundException;
 import br.com.harvest.onboardexperience.domain.factories.ExceptionMessageFactory;
 import br.com.harvest.onboardexperience.mappers.CoinMapper;
 import br.com.harvest.onboardexperience.repositories.CoinRepository;
@@ -59,8 +61,7 @@ public class CoinService implements IService<CoinDto>{
 			Coin coin = repository.findByIdAndTenant(id, tenant).orElseThrow(
 					() -> new CoinNotFoundException(ExceptionMessageFactory.createNotFoundMessage("coin", "ID", id.toString())));
 
-
-			validate(dto);
+			validate(coin, dto, tenant);
 
 			BeanUtils.copyProperties(dto, coin, "id", "client", "createdAt", "createdBy");
 
@@ -77,24 +78,33 @@ public class CoinService implements IService<CoinDto>{
 
 	@Override
 	public CoinDto findByIdAndTenant(@NonNull Long id, @NonNull String token) {
-		// TODO Auto-generated method stub
-		return null;
+		String tenant = jwtUtils.getUsernameTenant(token);
+		
+		Coin coin = repository.findByIdAndTenant(id, tenant).orElseThrow(
+				() -> new CoinNotFoundException(ExceptionMessageFactory.createNotFoundMessage("coin", "ID", id.toString())));
+		
+		return CoinMapper.INSTANCE.toDto(coin);
 	}
 
 	@Override
 	public Page<CoinDto> findAllByTenant(Pageable pageable, @NonNull String token) {
-		// TODO Auto-generated method stub
-		return null;
+		String tenant = jwtUtils.getUsernameTenant(token);
+		List<CoinDto> coins = repository.findAllByTenant(tenant).stream().map(CoinMapper.INSTANCE::toDto).collect(Collectors.toList());
+		return new PageImpl<>(coins, pageable, coins.size());
 	}
 
 	@Override
 	public void delete(@NonNull Long id, @NonNull String token) {
-		// TODO Auto-generated method stub
-
+		String tenant = jwtUtils.getUsernameTenant(token);
+		
+		Coin coin = repository.findByIdAndTenant(id, tenant).orElseThrow(
+				() -> new CoinNotFoundException(ExceptionMessageFactory.createNotFoundMessage("coin", "ID", id.toString())));
+		
+		repository.delete(coin);
 	}
 	
 	private Boolean checkIfIsSameCoin(@NonNull Coin coin, @NonNull CoinDto coinDto) {
-		Boolean sameName = coin.getName().equals(coinDto.getName());
+		Boolean sameName = coin.getName().equalsIgnoreCase(coinDto.getName());
 		
 		if(sameName) {
 			return true;
@@ -107,9 +117,8 @@ public class CoinService implements IService<CoinDto>{
 		fetchAndSetClient(coin, tenant);
 	}
 	
-	private void validate(@NonNull Coin coin, @NonNull CoinDto dto) {
-		checkIfCoinAlreadyExists(coin, dto);
-		
+	private void validate(@NonNull Coin coin, @NonNull CoinDto dto, @NonNull final String tenant) {
+		checkIfCoinAlreadyExists(coin, dto, tenant);
 	}
 
 	private void fetchAndSetClient(@NonNull CoinDto dto, String tenant) {

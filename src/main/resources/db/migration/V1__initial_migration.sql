@@ -93,6 +93,7 @@ CREATE TABLE IF NOT EXISTS public.tbcoin(
 	image_path CHARACTER VARYING NOT NULL,
 	name CHARACTER VARYING NOT NULL,
 	idclient BIGINT NOT NULL,
+	is_active BOOLEAN NOT NULL,
 	created_by CHARACTER VARYING,
 	updated_by CHARACTER VARYING,
 	created_at TIMESTAMP default now(),
@@ -102,7 +103,6 @@ CREATE TABLE IF NOT EXISTS public.tbcoin(
 	
 	CONSTRAINT tbcoin_pk PRIMARY KEY (idcoin)
 );
-
 
 CREATE TABLE IF NOT EXISTS public.tbuser_coin(
 	iduser bigint NOT NULL,

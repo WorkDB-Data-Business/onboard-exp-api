@@ -39,5 +39,8 @@ public class Coin extends BaseEntityAudit {
 	@ManyToOne
 	@JoinColumn(name = "idclient")
 	private Client client;
+	
+	@Column(name = "is_active")
+	private Boolean isActive;
 
 }

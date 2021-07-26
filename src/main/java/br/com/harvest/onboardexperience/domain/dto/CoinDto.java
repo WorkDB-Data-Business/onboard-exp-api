@@ -25,5 +25,8 @@ public class CoinDto {
 	
 	@NotNull
 	private ClientDto client;
+	
+	@Builder.Default
+	private Boolean isActive = true;
 
 }
