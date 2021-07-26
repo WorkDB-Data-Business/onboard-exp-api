@@ -1,5 +1,8 @@
 package br.com.harvest.onboardexperience.controllers;
 
+import java.io.IOException;
+
+import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -32,12 +35,12 @@ public class FileStorageController {
 	private UserService userService;
 	
 	@GetMapping("/files/{filename:.+}")
-	public ResponseEntity<Resource> getFile(@PathVariable String filename, @RequestHeader("Authorization") String token) {
+	public ResponseEntity<byte[]> getFile(@PathVariable String filename, @RequestHeader("Authorization") String token) throws IOException {
 		UserDto user = userService.findByIdAndTenant(jwtUtils.getUserId(token), token);
 		
 		Resource file = storageService.load(filename, user.getClient().getCnpj());
 		return ResponseEntity.ok()
-				.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getFilename() + "\"").body(file);
+				.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getFilename() + "\"").body(FileUtils.readFileToByteArray(file.getFile()));
 	}
 
 }
