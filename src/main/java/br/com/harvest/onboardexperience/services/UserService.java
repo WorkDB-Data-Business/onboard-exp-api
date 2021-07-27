@@ -118,7 +118,6 @@ public class UserService implements IService<UserDto> {
             User user = repository.findByIdAndTenant(id, tenant).orElseThrow(
                     () -> new UserNotFoundException(ExceptionMessageFactory.createNotFoundMessage("user", "ID", id.toString())));
 
-            userDto.setPassword(user.getPassword());
             //workaround (A.K.A gambiarra) to solve the bug of password not encrypting when not updated
             // TODO: create method to update password only.
             String[] fieldParameters = new String[6];
