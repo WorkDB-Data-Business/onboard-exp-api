@@ -118,12 +118,15 @@ public class UserService implements IService<UserDto> {
             User user = repository.findByIdAndTenant(id, tenant).orElseThrow(
                     () -> new UserNotFoundException(ExceptionMessageFactory.createNotFoundMessage("user", "ID", id.toString())));
 
+            userDto.setPassword(user.getPassword());
             //workaround (A.K.A gambiarra) to solve the bug of password not encrypting when not updated
-            String[] fieldParameters = new String[5];
+            // TODO: create method to update password only.
+            String[] fieldParameters = new String[6];
             fieldParameters[0] = "id";
             fieldParameters[1] = "client";
             fieldParameters[2] = "createdBy";
             fieldParameters[3] = "createdAt";
+            fieldParameters[4] = "password";
 
             validateUser(user, userDto, fieldParameters);
 
@@ -378,7 +381,7 @@ public class UserService implements IService<UserDto> {
 
         validateCpf(user, dto);
 
-        encryptPassword(user, dto, fieldParameters);
+        //encryptPassword(user, dto, fieldParameters);
 
         fetchAndSetCompanyRole(user, dto, user.getClient().getTenant());
 
