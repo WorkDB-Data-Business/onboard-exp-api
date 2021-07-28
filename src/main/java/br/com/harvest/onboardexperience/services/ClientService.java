@@ -10,6 +10,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import br.com.harvest.onboardexperience.domain.dto.ClientDto;
@@ -39,7 +40,7 @@ public class ClientService {
 	private GenerateUserUseCase generateUser;
 
 	
-	@Transactional
+	@Transactional(noRollbackFor=RuntimeException.class)
 	public ClientDto create(@NonNull ClientDto dto) {
 		try {
 			validateClient(dto);
