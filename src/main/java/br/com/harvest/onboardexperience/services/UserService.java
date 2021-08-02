@@ -6,9 +6,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import br.com.harvest.onboardexperience.domain.dto.*;
-import br.com.harvest.onboardexperience.domain.entities.CompanyRole;
-import br.com.harvest.onboardexperience.domain.enumerators.RoleEnum;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +16,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import br.com.harvest.onboardexperience.configurations.application.PasswordConfiguration;
+import br.com.harvest.onboardexperience.domain.dto.ClientDto;
+import br.com.harvest.onboardexperience.domain.dto.CompanyRoleDto;
+import br.com.harvest.onboardexperience.domain.dto.RoleDto;
+import br.com.harvest.onboardexperience.domain.dto.UserDto;
+import br.com.harvest.onboardexperience.domain.dto.UserForm;
 import br.com.harvest.onboardexperience.domain.entities.User;
+import br.com.harvest.onboardexperience.domain.enumerators.RoleEnum;
 import br.com.harvest.onboardexperience.domain.exceptions.InvalidCpfException;
 import br.com.harvest.onboardexperience.domain.exceptions.UserAlreadyExistsException;
 import br.com.harvest.onboardexperience.domain.exceptions.UserNotFoundException;
@@ -34,7 +37,8 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
-public class UserService implements IService<UserDto> {
+
+public class UserService {
 
     @Autowired
     private UserRepository repository;
@@ -56,7 +60,8 @@ public class UserService implements IService<UserDto> {
 
     @Autowired
     private JwtTokenUtils jwtUtils;
-
+    
+    
     public UserDto create(@NonNull UserForm dto, String token) {
 		UserDto userDto = convetFormToUserDto(dto, token);
     	try {
@@ -74,16 +79,6 @@ public class UserService implements IService<UserDto> {
         }
     }
 
-    @Override
-    public UserDto create(UserDto dto, String token) {
-        return null;
-    }
-
-    @Override
-    public UserDto update(Long id, UserDto dto, String token) {
-        return null;
-    }
-
     private UserDto convetFormToUserDto(UserForm dto, String token) {
         var userDto = new UserDto();
         userDto.setFirstName(dto.getFirstName());
@@ -95,7 +90,7 @@ public class UserService implements IService<UserDto> {
         userDto.setIsActive(dto.getIsActive());
         userDto.setIsBlocked(dto.getIsBlocked());
 
-		Set<RoleDto> rolesDto = new HashSet();
+		Set<RoleDto> rolesDto = new HashSet<>();
 		var companyRole = new CompanyRoleDto();
 
 		if(dto.getIsAdmin()) rolesDto.add(roleService.findRoleByRole(RoleEnum.ADMIN));
@@ -109,7 +104,8 @@ public class UserService implements IService<UserDto> {
 
         return userDto;
     }
-
+    
+    
     public UserDto update(@NonNull Long id, @NonNull UserForm dto, String token) {
         try {
             UserDto userDto = convetFormToUserDto(dto, token);
@@ -191,7 +187,7 @@ public class UserService implements IService<UserDto> {
     }
 
 
-    @Override
+    
     public UserDto findByIdAndTenant(@NonNull final Long id, @NonNull final String token) {
         String tenant = jwtUtils.getUsernameTenant(token);
         User user = repository.findByIdAndTenant(id, tenant).orElseThrow(
@@ -208,14 +204,14 @@ public class UserService implements IService<UserDto> {
         return mapper.toDto(user);
     }
 
-    @Override
+    
     public Page<UserDto> findAllByTenant(final Pageable pageable, final String token) {
         String tenant = jwtUtils.getUsernameTenant(token);
         List<UserDto> users = repository.findAllByTenant(tenant).stream().map(mapper::toDto).collect(Collectors.toList());
         return new PageImpl<>(users, pageable, users.size());
     }
 
-    @Override
+    
     public void delete(@NonNull final Long id, @NonNull final String token) {
         String tenant = jwtUtils.getUsernameTenant(token);
         try {

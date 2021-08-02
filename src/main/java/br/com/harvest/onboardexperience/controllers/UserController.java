@@ -43,7 +43,7 @@ public class UserController {
 		return ResponseEntity.ok(service.findByIdAndTenant(id, token));
 	}
 	
-	@Operation(description = "Retorna o usuário cadastrado pelo ID.")
+	@Operation(description = "Retorna o usuário autenticado.")
 	@GetMapping(path = "/users/my-user", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<UserDto> findMyUser(@RequestHeader("Authorization") String token) {
 		return ResponseEntity.ok(service.findMyUser(token));

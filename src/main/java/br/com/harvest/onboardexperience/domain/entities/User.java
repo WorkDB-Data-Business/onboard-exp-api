@@ -1,5 +1,6 @@
 package br.com.harvest.onboardexperience.domain.entities;
 
+import java.util.List;
 import java.util.Set;
 
 import javax.persistence.CascadeType;
@@ -13,6 +14,8 @@ import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
+
+import org.apache.commons.lang3.ObjectUtils;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -82,4 +85,20 @@ public class User extends BaseEntityAudit {
 	
 	@Column(name = "is_client")
 	private Boolean isClient;
+	
+	@ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
+	@JoinTable(
+	  name = "tbuser_coin", 
+	  joinColumns = @JoinColumn(name = "iduser"), 
+	  inverseJoinColumns = @JoinColumn(name = "idcoin"))
+	private List<Coin> coins;
+	
+	public Integer getAmountOfCoins() {
+		if(ObjectUtils.isEmpty(this.coins)) {
+			return 0;
+		}
+		
+		return this.coins.size();
+	}
+	
 }
