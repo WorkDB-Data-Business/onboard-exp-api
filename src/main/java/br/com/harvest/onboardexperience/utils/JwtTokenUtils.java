@@ -34,19 +34,19 @@ public class JwtTokenUtils implements Serializable {
 		return getClaimFromToken(token, Claims::getExpiration);
 	}
 	
-	public String getUsernameTimeZoneFromToken(String token) {
+	public String getUserTimeZone(String token) {
 		return getAllClaimsFromToken(extractTokenFromHeader(token)).get("user_time_zone", String.class);
 	}
 	
-	public String getUsernameTenant(String token) {
+	public String getUserTenant(String token) {
 		return getAllClaimsFromToken(extractTokenFromHeader(token)).get("user_tenant", String.class);
 	}
 	
-	public Boolean getUsernameIsActive(String token) {
+	public Boolean getUserIsActive(String token) {
 		return getAllClaimsFromToken(extractTokenFromHeader(token)).get("user_is_active", Boolean.class);
 	}
 	
-	public Long getUsernameId(String token) {
+	public Long getUserId(String token) {
 		return getAllClaimsFromToken(extractTokenFromHeader(token)).get("user_id", Long.class);
 	}
 	

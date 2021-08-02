@@ -27,6 +27,7 @@ import br.com.harvest.onboardexperience.repositories.CompanyRoleRepository;
 import br.com.harvest.onboardexperience.repositories.PermissionRepository;
 import br.com.harvest.onboardexperience.repositories.RoleRepository;
 import br.com.harvest.onboardexperience.repositories.UserRepository;
+import br.com.harvest.onboardexperience.services.FileStorageService;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -52,6 +53,9 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
 	
 	@Autowired
 	private ClientRepository clientRepository;
+	
+	@Autowired
+	private FileStorageService fileService;
 
 	@Override
 	@Transactional
@@ -68,6 +72,8 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
 		setupMasterCompanyRole();
 
 		setupMasterUser();
+		
+		fileService.init();
 
 		alreadySetup = true;
 	}

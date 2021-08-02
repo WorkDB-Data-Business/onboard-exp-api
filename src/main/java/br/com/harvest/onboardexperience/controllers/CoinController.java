@@ -13,15 +13,17 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import br.com.harvest.onboardexperience.domain.dto.CoinDto;
 import br.com.harvest.onboardexperience.services.CoinService;
@@ -53,16 +55,16 @@ public class CoinController {
 	
 	@Operation(description = "Salva uma moeda no banco de dados e a retorna.")
 	@PreAuthorize("hasAuthority('ADMIN')")
-	@PostMapping(path = "/coins", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<CoinDto> create(@Valid @RequestBody @NotNull CoinDto dto, @RequestHeader("Authorization") String token) throws RuntimeException {
-		return ResponseEntity.ok().body(service.create(dto, token));
+	@PostMapping(path = "/coins", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<CoinDto> create(@Valid @ModelAttribute @NotNull CoinDto dto, @RequestParam("file") MultipartFile file, @RequestHeader("Authorization") String token) throws RuntimeException {
+		return ResponseEntity.ok().body(service.create(dto, file, token));
 	}
 	
 	@Operation(description = "Realiza a alteração de uma moeda no banco de dados e a retorna atualizada.")
 	@PreAuthorize("hasAuthority('ADMIN')")
 	@PutMapping(path = "/coins/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<CoinDto> update(@PathVariable  @Pattern(regexp = RegexUtils.ONLY_NUMBERS) Long id, @RequestBody @Valid @NotNull CoinDto dto, @RequestHeader("Authorization") String token) {
-		return ResponseEntity.ok().body(service.update(id, dto, token));
+	public ResponseEntity<CoinDto> update(@PathVariable  @Pattern(regexp = RegexUtils.ONLY_NUMBERS) Long id, @Valid @ModelAttribute @NotNull CoinDto dto, @RequestParam("file") MultipartFile file, @RequestHeader("Authorization") String token) {
+		return ResponseEntity.ok().body(service.update(id, dto, file, token));
 	}
 	
 	@Operation(description = "Realiza a exclusão de uma moeda no banco de dados.")

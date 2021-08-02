@@ -10,6 +10,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import br.com.harvest.onboardexperience.domain.dto.ClientDto;
 import br.com.harvest.onboardexperience.domain.dto.CoinDto;
@@ -25,7 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
-public class CoinService implements IService<CoinDto>{
+public class CoinService {
 
 	@Autowired
 	private JwtTokenUtils jwtUtils;
@@ -35,13 +36,17 @@ public class CoinService implements IService<CoinDto>{
 
 	@Autowired
 	private ClientService clientService;
+	
+	@Autowired
+	private FileStorageService fileStorageService;
 
-	@Override
-	public CoinDto create(@NonNull CoinDto dto, String token) {
+	
+	public CoinDto create(@NonNull CoinDto dto, MultipartFile file, String token) {
 		try {
-			String tenant = jwtUtils.getUsernameTenant(token);
+			String tenant = jwtUtils.getUserTenant(token);
 
 			validate(dto, tenant);
+			saveImage(file, dto);
 
 			Coin coin = repository.save(CoinMapper.INSTANCE.toEntity(dto));
 
@@ -53,16 +58,17 @@ public class CoinService implements IService<CoinDto>{
 		}
 	}
 
-	@Override
-	public CoinDto update(@NonNull Long id, @NonNull CoinDto dto, @NonNull String token) {
+	
+	public CoinDto update(@NonNull Long id, @NonNull CoinDto dto, MultipartFile file, @NonNull String token) {
 		try {
 
-			String tenant = jwtUtils.getUsernameTenant(token);
+			String tenant = jwtUtils.getUserTenant(token);
 
 			Coin coin = repository.findByIdAndTenant(id, tenant).orElseThrow(
 					() -> new CoinNotFoundException(ExceptionMessageFactory.createNotFoundMessage("coin", "ID", id.toString())));
 
 			validate(coin, dto, tenant);
+			saveImage(file, dto);
 
 			BeanUtils.copyProperties(dto, coin, "id", "client", "createdAt", "createdBy");
 
@@ -77,26 +83,26 @@ public class CoinService implements IService<CoinDto>{
 		}
 	}
 
-	@Override
+	
 	public CoinDto findByIdAndTenant(@NonNull Long id, @NonNull String token) {
-		String tenant = jwtUtils.getUsernameTenant(token);
+		String tenant = jwtUtils.getUserTenant(token);
 		
-		Coin coin = repository.findByIdAndTenant(id, tenant).orElseThrow(
-				() -> new CoinNotFoundException(ExceptionMessageFactory.createNotFoundMessage("coin", "ID", id.toString())));
+		CoinDto coin = CoinMapper.INSTANCE.toDto(repository.findByIdAndTenant(id, tenant).orElseThrow(
+				() -> new CoinNotFoundException(ExceptionMessageFactory.createNotFoundMessage("coin", "ID", id.toString()))));
 		
-		return CoinMapper.INSTANCE.toDto(coin);
+		return coin;
 	}
 
-	@Override
+	
 	public Page<CoinDto> findAllByTenant(Pageable pageable, @NonNull String token) {
-		String tenant = jwtUtils.getUsernameTenant(token);
+		String tenant = jwtUtils.getUserTenant(token);
 		List<CoinDto> coins = repository.findAllByTenant(tenant).stream().map(CoinMapper.INSTANCE::toDto).collect(Collectors.toList());
 		return new PageImpl<>(coins, pageable, coins.size());
 	}
 
-	@Override
+	
 	public void delete(@NonNull Long id, @NonNull String token) {
-		String tenant = jwtUtils.getUsernameTenant(token);
+		String tenant = jwtUtils.getUserTenant(token);
 		
 		Coin coin = repository.findByIdAndTenant(id, tenant).orElseThrow(
 				() -> new CoinNotFoundException(ExceptionMessageFactory.createNotFoundMessage("coin", "ID", id.toString())));
@@ -106,7 +112,7 @@ public class CoinService implements IService<CoinDto>{
 	
 	@Transactional
 	public void disableCoin(@NonNull final Long id, @NonNull final String token) {
-		String tenant = jwtUtils.getUsernameTenant(token);
+		String tenant = jwtUtils.getUserTenant(token);
 		try {
 			Coin coin = repository.findByIdAndTenant(id, tenant).orElseThrow(
 					() -> new CoinNotFoundException(ExceptionMessageFactory.createNotFoundMessage("coin", "ID", id.toString())));
@@ -119,6 +125,11 @@ public class CoinService implements IService<CoinDto>{
 		} catch (Exception e) {
 			log.error("An error has occurred when disabling or enabling coin with ID " + id, e);
 		}
+	}
+	
+	private void saveImage(MultipartFile file, CoinDto dto) {
+		String filePath = fileStorageService.save(file, dto.getClient().getCnpj());
+		dto.setImagePath(filePath);
 	}
 	
 	private Boolean checkIfIsSameCoin(@NonNull Coin coin, @NonNull CoinDto coinDto) {

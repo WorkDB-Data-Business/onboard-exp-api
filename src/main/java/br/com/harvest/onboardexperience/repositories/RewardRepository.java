@@ -5,9 +5,11 @@ import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
 
 import br.com.harvest.onboardexperience.domain.entities.Reward;
 
+@Repository
 public interface RewardRepository extends JpaRepository<Reward, Long>{
 	
 	@Query(value = "SELECT tbreward.* FROM tbreward, tbclient WHERE tbreward.idclient = tbclient.idclient AND tbreward.idcoin = ?1"

@@ -43,7 +43,7 @@ public class CompanyRoleService {
 	
 	public CompanyRoleDto update(@NonNull final Long id, @NonNull CompanyRoleDto dto, @NonNull final String token) {
 		
-		String tenant = jwtUtils.getUsernameTenant(token);
+		String tenant = jwtUtils.getUserTenant(token);
 		
 		CompanyRole companyRole = repository.findByIdAndTenant(id, tenant).orElseThrow(
 				() -> new CompanyRoleNotFoundException(ExceptionMessageFactory.createNotFoundMessage("company role", "ID", id.toString())));
@@ -57,7 +57,7 @@ public class CompanyRoleService {
 
 	
 	public CompanyRoleDto findByIdAndTenant(@NonNull final Long id, @NonNull final String token) {
-		String tenant = jwtUtils.getUsernameTenant(token);
+		String tenant = jwtUtils.getUserTenant(token);
 		
 		CompanyRole companyRole = repository.findByIdAndTenant(id, tenant).orElseThrow(() -> new CompanyRoleNotFoundException(ExceptionMessageFactory.createNotFoundMessage("company role", "ID", id.toString())));
 		
@@ -74,14 +74,14 @@ public class CompanyRoleService {
 
 	
 	public Page<CompanyRoleDto> findAllByTenant(Pageable pageable, @NonNull final String token) {
-		String tenant = jwtUtils.getUsernameTenant(token);
+		String tenant = jwtUtils.getUserTenant(token);
 		List<CompanyRoleDto> companyRoles = repository.findAllByTenant(tenant).stream().map(CompanyRoleMapper.INSTANCE::toDto).collect(Collectors.toList());
 		return new PageImpl<>(companyRoles, pageable, companyRoles.size());
 	}
 
 	
 	public void delete(@NonNull final Long id, @NonNull final String token) {
-		String tenant = jwtUtils.getUsernameTenant(token);
+		String tenant = jwtUtils.getUserTenant(token);
 		CompanyRole companyRole = repository.findByIdAndTenant(id, tenant).orElseThrow(
 				() -> new CompanyRoleNotFoundException("The company role with ID " + id + " has not found"));
 		
