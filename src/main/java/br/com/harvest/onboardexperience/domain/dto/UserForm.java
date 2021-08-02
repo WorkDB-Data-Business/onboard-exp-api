@@ -2,8 +2,6 @@ package br.com.harvest.onboardexperience.domain.dto;
 
 import br.com.harvest.onboardexperience.utils.RegexUtils;
 import br.com.harvest.onboardexperience.utils.ValidationUtils;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonProperty.Access;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -11,7 +9,6 @@ import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.*;
 import java.io.Serializable;
-import java.util.Set;
 
 @Data
 @Builder
@@ -19,6 +16,8 @@ import java.util.Set;
 @AllArgsConstructor
 public class UserForm implements Serializable {
 	
+	private static final long serialVersionUID = -9062421413300029902L;
+
 	@NotBlank
 	@Size(min = ValidationUtils.MIN_SIZE_NAME , max = ValidationUtils.MAX_SIZE_NAME)
 	private String firstName;

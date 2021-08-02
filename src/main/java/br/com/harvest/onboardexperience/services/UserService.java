@@ -6,7 +6,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import br.com.harvest.onboardexperience.domain.dto.*;
+
 import br.com.harvest.onboardexperience.domain.enumerators.RoleEnum;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.BeanUtils;
@@ -18,6 +18,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import br.com.harvest.onboardexperience.configurations.application.PasswordConfiguration;
+import br.com.harvest.onboardexperience.domain.dto.ClientDto;
+import br.com.harvest.onboardexperience.domain.dto.CompanyRoleDto;
+import br.com.harvest.onboardexperience.domain.dto.RoleDto;
+import br.com.harvest.onboardexperience.domain.dto.UserDto;
+import br.com.harvest.onboardexperience.domain.dto.UserForm;
 import br.com.harvest.onboardexperience.domain.entities.User;
 import br.com.harvest.onboardexperience.domain.exceptions.InvalidCpfException;
 import br.com.harvest.onboardexperience.domain.exceptions.UserAlreadyExistsException;
@@ -55,7 +60,8 @@ public class UserService {
 
     @Autowired
     private JwtTokenUtils jwtUtils;
-
+    
+    
     public UserDto create(@NonNull UserForm dto, String token) {
 		UserDto userDto = convetFormToUserDto(dto, token);
     	try {
@@ -98,7 +104,8 @@ public class UserService {
 
         return userDto;
     }
-
+    
+    
     public UserDto update(@NonNull Long id, @NonNull UserForm dto, String token) {
         try {
             UserDto userDto = convetFormToUserDto(dto, token);
