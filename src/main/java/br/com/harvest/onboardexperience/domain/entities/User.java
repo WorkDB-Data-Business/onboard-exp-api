@@ -16,7 +16,11 @@ import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 
 import org.apache.commons.lang3.ObjectUtils;
+import org.hibernate.annotations.ResultCheckStyle;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
 
+import br.com.harvest.onboardexperience.utils.SQLQueryUtils;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -29,6 +33,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity(name = "tbuser")
+@SQLDelete(sql = SQLQueryUtils.SOFT_DELETE_USER, check = ResultCheckStyle.COUNT)
+@Where(clause = SQLQueryUtils.IS_ACTIVE_FILTER)
 public class User extends BaseEntityAudit {
 
 	private static final long serialVersionUID = -4309141727418094357L;

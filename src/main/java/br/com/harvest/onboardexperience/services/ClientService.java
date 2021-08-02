@@ -10,7 +10,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import br.com.harvest.onboardexperience.domain.dto.ClientDto;
@@ -39,8 +38,10 @@ public class ClientService {
 	@Autowired
 	private GenerateUserUseCase generateUser;
 
+	@Autowired
+	private CompanyRoleService companyRoleService;
 	
-	@Transactional(noRollbackFor=RuntimeException.class)
+	@Transactional(noRollbackFor = RuntimeException.class)
 	public ClientDto create(@NonNull ClientDto dto) {
 		try {
 			validate(dto);
@@ -72,7 +73,7 @@ public class ClientService {
 
 			return mapper.toDto(client);
 		} catch(Exception e) {
-			log.error("An error has occurred while updating client with CNPJ " + dto.getCnpj(), e);
+			log.error("An erro has occurred while updating client with CNPJ " + dto.getCnpj(), e);
 			return null;
 		}
 	}
@@ -100,6 +101,8 @@ public class ClientService {
 					() -> new ClientNotFoundException(ExceptionMessageFactory.createNotFoundMessage("client", "ID", id.toString())));
 
 			repository.delete(client);
+			companyRoleService.disableAllByClient(client);
+			repository.disableAllUsersFromAClient(false, client.getId());
 		} catch(Exception e) {
 			log.error("An error has occurred while deleting client with ID " + id, e);
 		}

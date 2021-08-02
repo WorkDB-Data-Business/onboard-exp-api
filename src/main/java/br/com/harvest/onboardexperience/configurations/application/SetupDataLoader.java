@@ -199,7 +199,7 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
 		Client client = clientRepository.findByTenantContainingIgnoreCase("harvest").orElseThrow(() -> new ClientNotFoundException("Client with name harvest not found"));
 		
 		try {
-			CompanyRole companyRole = CompanyRole.builder().name("System Owner").client(client).build();
+			CompanyRole companyRole = CompanyRole.builder().isActive(true).name("System Owner").client(client).build();
 			companyRoleRepository.save(companyRole);
 			log.info("The load of master user's company role occurred successful");
 		} catch (Exception e) {

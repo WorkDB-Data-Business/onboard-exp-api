@@ -10,6 +10,11 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 
+import org.hibernate.annotations.ResultCheckStyle;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
+
+import br.com.harvest.onboardexperience.utils.SQLQueryUtils;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -22,6 +27,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity(name = "tbreward")
+@SQLDelete(sql = SQLQueryUtils.SOFT_DELETE_REWARD, check = ResultCheckStyle.COUNT)
+@Where(clause = SQLQueryUtils.IS_ACTIVE_FILTER)
 public class Reward extends BaseEntityAudit {
 
 	private static final long serialVersionUID = 5140137284616785810L;

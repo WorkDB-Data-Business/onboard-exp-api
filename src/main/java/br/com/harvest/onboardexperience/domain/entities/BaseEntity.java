@@ -1,7 +1,8 @@
 package br.com.harvest.onboardexperience.domain.entities;
 
-import javax.persistence.*;
 import java.io.Serializable;
+
+import javax.persistence.MappedSuperclass;
 
 @MappedSuperclass
 public abstract class BaseEntity implements Serializable {
