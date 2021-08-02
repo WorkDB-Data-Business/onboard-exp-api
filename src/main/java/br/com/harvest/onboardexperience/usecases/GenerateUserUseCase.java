@@ -51,6 +51,7 @@ public class GenerateUserUseCase {
 					.isBlocked(false)
 					.isExpired(false)
 					.lastName("User")
+					.isFirstLogin(true)
 					.password(passwordConfiguration.encoder().encode(client.getName()))
 					.roles(Set.of(role))
 					.build();
