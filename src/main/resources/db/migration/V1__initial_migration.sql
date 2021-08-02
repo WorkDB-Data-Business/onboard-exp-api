@@ -104,6 +104,23 @@ CREATE TABLE IF NOT EXISTS public.tbcoin(
 	CONSTRAINT tbcoin_pk PRIMARY KEY (idcoin)
 );
 
+CREATE TABLE IF NOT EXISTS public.tbreward(
+	idreward BIGSERIAL NOT NULL,
+	image_path CHARACTER VARYING NOT NULL,
+	price DECIMAL NOT NULL,
+	name CHARACTER VARYING NOT NULL,
+	idclient BIGINT NOT NULL,
+	is_active BOOLEAN NOT NULL,
+	created_by CHARACTER VARYING,
+	updated_by CHARACTER VARYING,
+	created_at TIMESTAMP default now(),
+	updated_at TIMESTAMP,
+	
+	FOREIGN KEY (idclient) REFERENCES tbclient(idclient),
+	
+	CONSTRAINT tbreward_pk PRIMARY KEY (idreward)
+);
+
 CREATE TABLE IF NOT EXISTS public.tbuser_coin(
 	iduser bigint NOT NULL,
 	idcoin bigint NOT NULL,

@@ -41,6 +41,7 @@ public class ClientDto implements Serializable {
 	@Builder.Default
 	private Boolean isBlocked = false;
 	
+	@NotBlank
 	private String tenant;
 	
 	@Builder.Default

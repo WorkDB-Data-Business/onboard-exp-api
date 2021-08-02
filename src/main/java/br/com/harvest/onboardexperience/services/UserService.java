@@ -6,6 +6,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+
+import br.com.harvest.onboardexperience.domain.enumerators.RoleEnum;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +24,6 @@ import br.com.harvest.onboardexperience.domain.dto.RoleDto;
 import br.com.harvest.onboardexperience.domain.dto.UserDto;
 import br.com.harvest.onboardexperience.domain.dto.UserForm;
 import br.com.harvest.onboardexperience.domain.entities.User;
-import br.com.harvest.onboardexperience.domain.enumerators.RoleEnum;
 import br.com.harvest.onboardexperience.domain.exceptions.InvalidCpfException;
 import br.com.harvest.onboardexperience.domain.exceptions.UserAlreadyExistsException;
 import br.com.harvest.onboardexperience.domain.exceptions.UserNotFoundException;
@@ -37,7 +38,6 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
-
 public class UserService {
 
     @Autowired

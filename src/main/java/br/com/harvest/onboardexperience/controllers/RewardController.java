@@ -23,62 +23,62 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import br.com.harvest.onboardexperience.domain.dto.CoinDto;
-import br.com.harvest.onboardexperience.services.CoinService;
+import br.com.harvest.onboardexperience.domain.dto.RewardDto;
+import br.com.harvest.onboardexperience.services.RewardService;
 import br.com.harvest.onboardexperience.utils.RegexUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
-@Tag(name = "Coins")
+@Tag(name = "Rewards")
 @RestController
 @RequestMapping("/v1")
-public class CoinController {
+public class RewardController {
 	
 	@Autowired
-	private CoinService service;
+	private RewardService service;
 	
-	@Operation(description = "Retorna as moedas cadastradas.")
+	@Operation(description = "Retorna as recompensas cadastradas.")
 	@PreAuthorize("hasAuthority('ADMIN')")
-	@GetMapping(path = "/coins", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<Page<CoinDto>> findAll(Pageable pageable, @RequestHeader("Authorization") String token) {
+	@GetMapping(path = "/rewards", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<Page<RewardDto>> findAll(Pageable pageable, @RequestHeader("Authorization") String token) {
 		return ResponseEntity.ok(service.findAllByTenant(pageable, token));
 	}	
 	
-	@Operation(description = "Retorna a moeda cadastrada pelo ID.")
+	@Operation(description = "Retorna a recompensa cadastrada pelo ID.")
 	@PreAuthorize("hasAuthority('ADMIN')")
-	@GetMapping(path = "/coins/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<CoinDto> findById(@PathVariable  @Pattern(regexp = RegexUtils.ONLY_NUMBERS) Long id, @RequestHeader("Authorization") String token) {
+	@GetMapping(path = "/rewards/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<RewardDto> findById(@PathVariable  @Pattern(regexp = RegexUtils.ONLY_NUMBERS) Long id, @RequestHeader("Authorization") String token) {
 		return ResponseEntity.ok(service.findByIdAndTenant(id, token));
 	}
 	
-	@Operation(description = "Salva uma moeda no banco de dados e a retorna.")
+	@Operation(description = "Salva uma recompensa no banco de dados e a retorna.")
 	@PreAuthorize("hasAuthority('ADMIN')")
-	@PostMapping(path = "/coins", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<CoinDto> create(@Valid @RequestBody @NotNull CoinDto dto, @RequestHeader("Authorization") String token) throws RuntimeException {
+	@PostMapping(path = "/rewards", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<RewardDto> create(@Valid @RequestBody @NotNull RewardDto dto, @RequestHeader("Authorization") String token) throws RuntimeException {
 		return ResponseEntity.ok().body(service.create(dto, token));
 	}
 	
-	@Operation(description = "Realiza a alteração de uma moeda no banco de dados e a retorna atualizada.")
+	@Operation(description = "Realiza a alteração de uma recompensa no banco de dados e a retorna atualizada.")
 	@PreAuthorize("hasAuthority('ADMIN')")
-	@PutMapping(path = "/coins/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<CoinDto> update(@PathVariable  @Pattern(regexp = RegexUtils.ONLY_NUMBERS) Long id, @RequestBody @Valid @NotNull CoinDto dto, @RequestHeader("Authorization") String token) {
+	@PutMapping(path = "/rewards/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<RewardDto> update(@PathVariable  @Pattern(regexp = RegexUtils.ONLY_NUMBERS) Long id, @RequestBody @Valid @NotNull RewardDto dto, @RequestHeader("Authorization") String token) {
 		return ResponseEntity.ok().body(service.update(id, dto, token));
 	}
 	
-	@Operation(description = "Realiza a exclusão de uma moeda no banco de dados.")
+	@Operation(description = "Realiza a exclusão de uma recompensa no banco de dados.")
 	@PreAuthorize("hasAuthority('ADMIN')")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
-	@DeleteMapping(path = "/coins/{id}")
+	@DeleteMapping(path = "/rewards/{id}")
 	public void delete(@PathVariable  @Pattern(regexp = RegexUtils.ONLY_NUMBERS) Long id, @RequestHeader("Authorization") String token) {
 		service.delete(id, token);
 	}
 	
-	@Operation(description = "Realiza a inativação de uma moeda no banco de dados.")
+	@Operation(description = "Realiza a inativação de uma recompensa no banco de dados.")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	@PreAuthorize("hasAuthority('ADMIN')")
-	@PatchMapping(path = "/coins/disable/{id}")
+	@PatchMapping(path = "/rewards/disable/{id}")
 	public void disable(@PathVariable  @Pattern(regexp = RegexUtils.ONLY_NUMBERS) Long id, @RequestHeader("Authorization") String token) {
-		service.disableCoin(id, token);
+		service.disableReward(id, token);
 	}
-	
+
 }

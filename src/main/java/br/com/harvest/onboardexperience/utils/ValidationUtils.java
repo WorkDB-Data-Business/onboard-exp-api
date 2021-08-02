@@ -20,4 +20,8 @@ public class ValidationUtils {
 
 	public static final int CNPJ_SIZE = 14;
 	
+	public static final int MAX_PRICE = 8;
+	public static final int MAX_PRICE_FRACTION= 2;
+	public static final String MIN_PRICE = "0.00";
+	
 }
