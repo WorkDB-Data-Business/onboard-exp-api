@@ -48,6 +48,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 					.permitAll()
 				.anyRequest()
 					.authenticated()
+				.and()
+					.httpBasic()
 		.and()
 			.exceptionHandling()
 				.authenticationEntryPoint(jwtAuthenticationEntryPoint)
@@ -62,7 +64,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 				.disable()
 				//TODO: Applying permit default values until we discuss better strategies
 			.cors()
-				.configurationSource(request -> new CorsConfiguration().applyPermitDefaultValues());
+		//		.configurationSource(request -> new CorsConfiguration().applyPermitDefaultValues())
+		;
 		
 		http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
 		

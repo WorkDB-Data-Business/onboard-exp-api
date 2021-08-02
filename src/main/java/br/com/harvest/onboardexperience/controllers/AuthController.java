@@ -17,10 +17,7 @@ import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.LockedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 
 import br.com.harvest.onboardexperience.domain.dto.JwtRequest;
@@ -38,6 +35,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @Tag(name = "Authentication")
 @RestController
 @RequestMapping("/v1")
+@CrossOrigin(origins = "*", maxAge = 36000)
 public class AuthController {
 	
 	@Autowired
