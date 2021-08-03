@@ -62,7 +62,7 @@ public class CoinController {
 	
 	@Operation(description = "Realiza a alteração de uma moeda no banco de dados e a retorna atualizada.")
 	@PreAuthorize("hasAuthority('ADMIN')")
-	@PutMapping(path = "/coins/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+	@PutMapping(path = "/coins/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<CoinDto> update(@PathVariable  @Pattern(regexp = RegexUtils.ONLY_NUMBERS) Long id, @Valid @ModelAttribute @NotNull CoinDto dto, @RequestParam("file") MultipartFile file, @RequestHeader("Authorization") String token) {
 		return ResponseEntity.ok().body(service.update(id, dto, file, token));
 	}
