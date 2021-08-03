@@ -31,7 +31,6 @@ import br.com.harvest.onboardexperience.domain.factories.ExceptionMessageFactory
 import br.com.harvest.onboardexperience.mappers.ClientMapper;
 import br.com.harvest.onboardexperience.mappers.UserMapper;
 import br.com.harvest.onboardexperience.repositories.UserRepository;
-import br.com.harvest.onboardexperience.services.interfaces.IService;
 import br.com.harvest.onboardexperience.utils.GenericUtils;
 import br.com.harvest.onboardexperience.utils.JwtTokenUtils;
 import lombok.NonNull;

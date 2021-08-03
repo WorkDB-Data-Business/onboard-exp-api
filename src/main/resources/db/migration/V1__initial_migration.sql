@@ -20,6 +20,7 @@ CREATE TABLE IF NOT EXISTS public.tbcompany_role(
 	idcompany_role bigserial NOT NULL,
 	name CHARACTER VARYING NOT NULL,
 	idclient BIGINT NOT NULL, 
+	is_active BOOLEAN,
 	created_by CHARACTER VARYING,
 	updated_by CHARACTER VARYING,
 	created_at TIMESTAMP default now(),
