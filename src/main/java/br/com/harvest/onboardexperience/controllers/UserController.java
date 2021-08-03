@@ -50,14 +50,14 @@ public class UserController {
 	}
 	
 	@Operation(description = "Salva um usuário no banco de dados e o retorna.")
-//	@PreAuthorize("hasAuthority('ADMIN')")
+	@PreAuthorize("hasAuthority('ADMIN')")
 	@PostMapping(path = "/users", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<UserDto> create(@Valid @RequestBody @NotNull UserForm dto, @RequestHeader("Authorization") String token) throws RuntimeException {
 		return ResponseEntity.ok().body(service.create(dto, token));
 	}
 	
 	@Operation(description = "Realiza a alteração de um usuário no banco de dados e o retorna atualizado.")
-//	@PreAuthorize("hasAuthority('ADMIN')")
+	@PreAuthorize("hasAuthority('ADMIN')")
 	@PutMapping(path = "/users/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<UserDto> update(@PathVariable  @Pattern(regexp = RegexUtils.ONLY_NUMBERS) Long id, @RequestBody @Valid @NotNull UserForm dto, @RequestHeader("Authorization") String token) {
 		return ResponseEntity.ok().body(service.update(id, dto, token));
