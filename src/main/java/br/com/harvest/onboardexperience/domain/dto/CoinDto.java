@@ -18,10 +18,10 @@ import lombok.NoArgsConstructor;
 public class CoinDto {
 	
 	private Long id;
-	
-	@JsonIgnore
+
+	@JsonProperty(access = Access.READ_ONLY)
 	private String imagePath;
-	
+
 	@NotEmpty
 	private String name;
 	

@@ -3,15 +3,12 @@ package br.com.harvest.onboardexperience.controllers;
 import java.io.IOException;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.tomcat.util.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import br.com.harvest.onboardexperience.domain.dto.UserDto;
 import br.com.harvest.onboardexperience.services.FileStorageService;
@@ -23,6 +20,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @Tag(name = "Files")
 @RestController
 @RequestMapping("/v1")
+@CrossOrigin(origins = "*", maxAge = 36000)
 public class FileStorageController {
 
 	@Autowired
@@ -35,12 +33,12 @@ public class FileStorageController {
 	private UserService userService;
 	
 	@GetMapping("/files/{filename:.+}")
-	public ResponseEntity<byte[]> getFile(@PathVariable String filename, @RequestHeader("Authorization") String token) throws IOException {
+	public ResponseEntity<String> getFile(@PathVariable String filename, @RequestHeader("Authorization") String token) throws IOException {
 		UserDto user = userService.findByIdAndTenant(jwtUtils.getUserId(token), token);
 		
 		Resource file = storageService.load(filename, user.getClient().getCnpj());
 		return ResponseEntity.ok()
-				.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getFilename() + "\"").body(FileUtils.readFileToByteArray(file.getFile()));
+				.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getFilename() + "\"").body(Base64.encodeBase64String(FileUtils.readFileToByteArray(file.getFile())));
 	}
 
 }

@@ -67,7 +67,7 @@ public class FileStorageService implements IFileStorageService {
 				dirPath.mkdirs();
 			}
 
-			Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+			Files.copy(file.getInputStream(), filePath);
 			log.info("File " + file.getOriginalFilename() + " saved successful.");
 			return filePath.toString();
 		} catch (Exception e) {
@@ -106,7 +106,7 @@ public class FileStorageService implements IFileStorageService {
 			
 			Resource resource = new UrlResource(file.toUri());
 
-			if (resource.exists() || resource.isReadable()) {
+			if (resource != null) {
 				return resource;
 			} else {
 				throw new RuntimeException("Could not read the file!");
