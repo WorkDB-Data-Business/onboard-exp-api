@@ -3,6 +3,8 @@ package br.com.harvest.onboardexperience.services;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import br.com.harvest.onboardexperience.domain.exceptions.BusinessException;
+import br.com.harvest.onboardexperience.mappers.ClientMapper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -28,143 +30,147 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 public class CoinService {
 
-	@Autowired
-	private JwtTokenUtils jwtUtils;
+    @Autowired
+    private JwtTokenUtils jwtUtils;
 
-	@Autowired
-	private CoinRepository repository;
+    @Autowired
+    private CoinRepository repository;
 
-	@Autowired
-	private ClientService clientService;
-	
-	@Autowired
-	private FileStorageService fileStorageService;
+    @Autowired
+    private ClientService clientService;
 
-	
-	public CoinDto create(@NonNull CoinDto dto, MultipartFile file, String token) {
-		try {
-			String tenant = jwtUtils.getUserTenant(token);
 
-			validate(dto, tenant);
-			saveImage(file, dto);
+    @Autowired
+    private ClientMapper clientMapper;
 
-			Coin coin = repository.save(CoinMapper.INSTANCE.toEntity(dto));
+    @Autowired
+    private FileStorageService fileStorageService;
 
-			log.info("The coin " + dto.getName() + " was saved successful.");
-			return CoinMapper.INSTANCE.toDto(coin);
-		} catch (Exception e) {
-			log.error("An error has occurred when saving coin " + dto.getName() , e);
-			return null;
+
+    public CoinDto create(@NonNull CoinDto dto, MultipartFile file, String token) {
+        String tenant = jwtUtils.getUserTenant(token);
+
+        validate(dto, tenant);
+        saveImage(file, dto);
+
+        Coin coin = repository.save(CoinMapper.INSTANCE.toEntity(dto));
+
+        log.info("The coin " + dto.getName() + " was saved successful.");
+        return CoinMapper.INSTANCE.toDto(coin);
+
+    }
+
+
+    public CoinDto update(@NonNull Long id, @NonNull CoinDto dto, MultipartFile file, @NonNull String token) {
+        String tenant = jwtUtils.getUserTenant(token);
+
+        Coin coin = repository.findByIdAndTenant(id, tenant).orElseThrow(
+                () -> new CoinNotFoundException(ExceptionMessageFactory.createNotFoundMessage("coin", "ID", id.toString())));
+
+        dto.setClient(clientMapper.toDto(coin.getClient()));
+        dto.setImagePath(coin.getImagePath());
+
+        validate(coin, dto, tenant);
+
+        saveImage(file, dto);
+
+        BeanUtils.copyProperties(dto, coin, "id", "client", "createdAt", "createdBy", dto.getImagePath() == null ? "imagePath" : "");
+
+        coin = repository.save(coin);
+
+        log.info("The coin " + dto.getName() + " was updated successful.");
+
+        return CoinMapper.INSTANCE.toDto(coin);
+    }
+
+
+    public CoinDto findByIdAndTenant(@NonNull Long id, @NonNull String token) {
+        String tenant = jwtUtils.getUserTenant(token);
+
+        CoinDto coin = CoinMapper.INSTANCE.toDto(repository.findByIdAndTenant(id, tenant).orElseThrow(
+                () -> new CoinNotFoundException(ExceptionMessageFactory.createNotFoundMessage("coin", "ID", id.toString()))));
+
+        return coin;
+    }
+
+
+    public Page<CoinDto> findAllByTenant(Pageable pageable, @NonNull String token) {
+        String tenant = jwtUtils.getUserTenant(token);
+        List<CoinDto> coins = repository.findAllByTenant(tenant).stream().map(CoinMapper.INSTANCE::toDto).collect(Collectors.toList());
+        return new PageImpl<>(coins, pageable, coins.size());
+    }
+
+
+    public void delete(@NonNull Long id, @NonNull String token) {
+        String tenant = jwtUtils.getUserTenant(token);
+
+        Coin coin = repository.findByIdAndTenant(id, tenant).orElseThrow(
+                () -> new CoinNotFoundException(ExceptionMessageFactory.createNotFoundMessage("coin", "ID", id.toString())));
+
+        repository.delete(coin);
+    }
+
+    @Transactional
+    public void disableCoin(@NonNull final Long id, @NonNull final String token) {
+        String tenant = jwtUtils.getUserTenant(token);
+        try {
+            Coin coin = repository.findByIdAndTenant(id, tenant).orElseThrow(
+                    () -> new CoinNotFoundException(ExceptionMessageFactory.createNotFoundMessage("coin", "ID", id.toString())));
+
+            coin.setIsActive(!coin.getIsActive());
+            repository.save(coin);
+
+            String isEnabled = coin.getIsActive().equals(true) ? "disabled" : "enabled";
+            log.info("The coin with ID " + id + " was " + isEnabled + " successful.");
+        } catch (Exception e) {
+            log.error("An error has occurred when disabling or enabling coin with ID " + id, e);
+        }
+    }
+
+    private void saveImage(MultipartFile file, CoinDto dto) {
+		String filePath = "";
+    	if(file != null){
+			filePath = fileStorageService.save(file, dto.getName(), dto.getClient().getCnpj());
+		}else{
+			filePath = fileStorageService.rename(dto.getName(), dto.getImagePath());
 		}
-	}
 
-	
-	public CoinDto update(@NonNull Long id, @NonNull CoinDto dto, MultipartFile file, @NonNull String token) {
-		try {
+        dto.setImagePath(filePath);
+    }
 
-			String tenant = jwtUtils.getUserTenant(token);
+    private Boolean checkIfIsSameCoin(@NonNull Coin coin, @NonNull CoinDto coinDto) {
+        Boolean sameName = coin.getName().equalsIgnoreCase(coinDto.getName());
 
-			Coin coin = repository.findByIdAndTenant(id, tenant).orElseThrow(
-					() -> new CoinNotFoundException(ExceptionMessageFactory.createNotFoundMessage("coin", "ID", id.toString())));
+        if (sameName) {
+            return true;
+        }
+        return false;
+    }
 
-			validate(coin, dto, tenant);
-			saveImage(file, dto);
+    private void validate(@NonNull CoinDto coin, @NonNull final String tenant) {
+        checkIfCoinAlreadyExists(coin, tenant);
+        fetchAndSetClient(coin, tenant);
+    }
 
-			BeanUtils.copyProperties(dto, coin, "id", "client", "createdAt", "createdBy");
+    private void validate(@NonNull Coin coin, @NonNull CoinDto dto, @NonNull final String tenant) {
+        checkIfCoinAlreadyExists(coin, dto, tenant);
+    }
 
-			coin = repository.save(coin);
+    private void fetchAndSetClient(@NonNull CoinDto dto, String tenant) {
+        ClientDto client = clientService.findByTenant(tenant);
+        dto.setClient(client);
+    }
 
-			log.info("The coin " + dto.getName() + " was updated successful.");
+    private void checkIfCoinAlreadyExists(@NonNull CoinDto dto, @NonNull final String tenant) {
+        if (repository.findByNameContainingIgnoreCaseAndTenant(dto.getName(), tenant).isPresent()) {
+            throw new BusinessException(ExceptionMessageFactory.createAlreadyExistsMessage("coin", "name", dto.getName()));
+        }
+    }
 
-			return CoinMapper.INSTANCE.toDto(coin);
-		} catch (Exception e) {
-			log.error("An error has occurred when updating coin with ID " + id, e);
-			return null;
-		}
-	}
+    private void checkIfCoinAlreadyExists(@NonNull Coin coin, @NonNull CoinDto dto, @NonNull final String tenant) {
+        if (!checkIfIsSameCoin(coin, dto)) {
+            checkIfCoinAlreadyExists(dto, tenant);
+        }
+    }
 
-	
-	public CoinDto findByIdAndTenant(@NonNull Long id, @NonNull String token) {
-		String tenant = jwtUtils.getUserTenant(token);
-		
-		CoinDto coin = CoinMapper.INSTANCE.toDto(repository.findByIdAndTenant(id, tenant).orElseThrow(
-				() -> new CoinNotFoundException(ExceptionMessageFactory.createNotFoundMessage("coin", "ID", id.toString()))));
-		
-		return coin;
-	}
-
-	
-	public Page<CoinDto> findAllByTenant(Pageable pageable, @NonNull String token) {
-		String tenant = jwtUtils.getUserTenant(token);
-		List<CoinDto> coins = repository.findAllByTenant(tenant).stream().map(CoinMapper.INSTANCE::toDto).collect(Collectors.toList());
-		return new PageImpl<>(coins, pageable, coins.size());
-	}
-
-	
-	public void delete(@NonNull Long id, @NonNull String token) {
-		String tenant = jwtUtils.getUserTenant(token);
-		
-		Coin coin = repository.findByIdAndTenant(id, tenant).orElseThrow(
-				() -> new CoinNotFoundException(ExceptionMessageFactory.createNotFoundMessage("coin", "ID", id.toString())));
-		
-		repository.delete(coin);
-	}
-	
-	@Transactional
-	public void disableCoin(@NonNull final Long id, @NonNull final String token) {
-		String tenant = jwtUtils.getUserTenant(token);
-		try {
-			Coin coin = repository.findByIdAndTenant(id, tenant).orElseThrow(
-					() -> new CoinNotFoundException(ExceptionMessageFactory.createNotFoundMessage("coin", "ID", id.toString())));
-			
-			coin.setIsActive(!coin.getIsActive());
-			repository.save(coin);
-			
-			String isEnabled = coin.getIsActive().equals(true) ? "disabled" : "enabled";
-			log.info("The coin with ID " + id + " was " + isEnabled + " successful.");
-		} catch (Exception e) {
-			log.error("An error has occurred when disabling or enabling coin with ID " + id, e);
-		}
-	}
-	
-	private void saveImage(MultipartFile file, CoinDto dto) {
-		String filePath = fileStorageService.save(file, dto.getClient().getCnpj());
-		dto.setImagePath(filePath);
-	}
-	
-	private Boolean checkIfIsSameCoin(@NonNull Coin coin, @NonNull CoinDto coinDto) {
-		Boolean sameName = coin.getName().equalsIgnoreCase(coinDto.getName());
-		
-		if(sameName) {
-			return true;
-		}
-		return false;
-	}
-
-	private void validate(@NonNull CoinDto coin, @NonNull final String tenant) {
-		checkIfCoinAlreadyExists(coin, tenant);
-		fetchAndSetClient(coin, tenant);
-	}
-	
-	private void validate(@NonNull Coin coin, @NonNull CoinDto dto, @NonNull final String tenant) {
-		checkIfCoinAlreadyExists(coin, dto, tenant);
-	}
-
-	private void fetchAndSetClient(@NonNull CoinDto dto, String tenant) {
-		ClientDto client = clientService.findByTenant(tenant);
-		dto.setClient(client);
-	}
-	
-	private void checkIfCoinAlreadyExists(@NonNull CoinDto dto, @NonNull final String tenant) {
-		if(repository.findByNameContainingIgnoreCaseAndTenant(dto.getName(), tenant).isPresent()) {
-			throw new CoinAlreadyExistsException(ExceptionMessageFactory.createAlreadyExistsMessage("coin", "name", dto.getName()));
-		}
-	}
-	
-	private void checkIfCoinAlreadyExists(@NonNull Coin coin, @NonNull CoinDto dto, @NonNull final String tenant) {
-		if(!checkIfIsSameCoin(coin, dto)) {
-			checkIfCoinAlreadyExists(dto, tenant);
-		}
-	}
-	
 }

@@ -12,7 +12,7 @@ public interface IFileStorageService {
 	
 	public void save(MultipartFile file);
 	
-	public String save(MultipartFile file, String... path);
+	public String save(MultipartFile file, String name, String... path);
 	
 	public Resource load(String filename);
 	
@@ -23,5 +23,7 @@ public interface IFileStorageService {
 	public void deleteAll(String pathDir);
 	
 	public Stream<Path> loadAll();
+
+	public String rename(String name, String path);
 
 }
