@@ -7,11 +7,11 @@ public class BusinessException extends RuntimeException {
 	private static final String BUSINESS_ERROR = "This action breaks a business rule";
 
 	public BusinessException(String message) {
-		super(BUSINESS_ERROR + ": " + message);
+		super(message);
 	}
 
 	public BusinessException(String message, Throwable cause) {
-		super(BUSINESS_ERROR + ": " + message, cause);
+		super(message, cause, false, true);
 	}
 
 	public BusinessException(String message, String customCause) {

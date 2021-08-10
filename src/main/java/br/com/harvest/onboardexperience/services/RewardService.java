@@ -48,7 +48,7 @@ public class RewardService {
 
 			validate(dto, tenant);
 			
-			saveImage(file, dto);
+			saveImage(file, false, dto);
 
 			Reward reward = repository.save(RewardMapper.INSTANCE.toEntity(dto));
 
@@ -70,7 +70,7 @@ public class RewardService {
 					() -> new RewardNotFoundException(ExceptionMessageFactory.createNotFoundMessage("reward", "ID", id.toString())));
 
 			validate(reward, dto, tenant);
-			saveImage(file, dto);
+			saveImage(file, true, dto);
 
 			BeanUtils.copyProperties(dto, reward, "id", "client", "createdAt", "createdBy");
 
@@ -129,8 +129,8 @@ public class RewardService {
 		}
 	}
 	
-	private void saveImage(MultipartFile file, RewardDto dto) {
-		String filePath = fileStorageService.save(file, dto.getClient().getCnpj());
+	private void saveImage(MultipartFile file, Boolean overwrite, RewardDto dto) {
+		String filePath = fileStorageService.save(file, dto.getName(), dto.getClient().getCnpj());
 		dto.setImagePath(filePath);
 	}
 
