@@ -29,179 +29,152 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 public class ClientService {
 
-	@Autowired
-	private ClientRepository repository;
+    @Autowired
+    private ClientRepository repository;
 
-	@Autowired
-	private ClientMapper mapper;
-	
-	@Autowired
-	private GenerateUserUseCase generateUser;
+    @Autowired
+    private ClientMapper mapper;
 
-	@Autowired
-	private CompanyRoleService companyRoleService;
-	
-	@Transactional(noRollbackFor = RuntimeException.class)
-	public ClientDto create(@NonNull ClientDto dto) {
-		try {
-			validate(dto);
+    @Autowired
+    private GenerateUserUseCase generateUser;
 
-			Client client = repository.save(mapper.toEntity(dto));
-			log.info("The client with CNPJ " + dto.getCnpj() + " was saved successful.");
-			generateUser.createAdminUserFromClient(client);
-			return mapper.toDto(client);
-		} catch(Exception e) {
-			log.error("An error has occurred while saving client with CNPJ " + dto.getCnpj(), e);
-			return null;
-		}
-	}
+    @Autowired
+    private CompanyRoleService companyRoleService;
 
-	
-	@Transactional
-	public ClientDto update(@NonNull final Long id, @NonNull ClientDto dto) {
-		try {
-			Client client = repository.findById(id).orElseThrow(
-					() -> new ClientNotFoundException(ExceptionMessageFactory.createNotFoundMessage("client", "ID", id.toString())));
+    @Transactional(noRollbackFor = RuntimeException.class)
+    public ClientDto create(@NonNull ClientDto dto) {
+        validate(dto);
 
-			validate(client, dto);
+        Client client = repository.save(mapper.toEntity(dto));
+        log.info("The client with CNPJ " + dto.getCnpj() + " was saved successful.");
+        generateUser.createAdminUserFromClient(client);
+        return mapper.toDto(client);
+    }
 
-			BeanUtils.copyProperties(dto, client, "id", "createdAt", "createdBy");
 
-			client = repository.save(client);
-			
-			log.info("The client with CNPJ " + dto.getCnpj() + " was updated successful.");
+    @Transactional
+    public ClientDto update(@NonNull final Long id, @NonNull ClientDto dto) {
+        Client client = repository.findById(id).orElseThrow(
+                () -> new ClientNotFoundException(ExceptionMessageFactory.createNotFoundMessage("client", "ID", id.toString())));
 
-			return mapper.toDto(client);
-		} catch(Exception e) {
-			log.error("An erro has occurred while updating client with CNPJ " + dto.getCnpj(), e);
-			return null;
-		}
-	}
+        validate(client, dto);
 
-	
-	public ClientDto findById(@NonNull final Long id) {
-		return mapper.toDto(repository.findById(id).orElseThrow(
-				() -> new ClientNotFoundException(ExceptionMessageFactory.createNotFoundMessage("client", "ID", id.toString()))));
-	}
-	
-	public ClientDto findByTenant(@NonNull final String tenant) {
-		return mapper.toDto(repository.findByTenantContainingIgnoreCase(tenant).orElseThrow(
-				() -> new ClientNotFoundException(ExceptionMessageFactory.createNotFoundMessage("client", "ID", tenant))));
-	}
+        BeanUtils.copyProperties(dto, client, "id", "createdAt", "createdBy");
 
-	public Page<ClientDto> findAll(Pageable pageable) {
-		List<ClientDto> clients = repository.findAll().stream().map(mapper::toDto).collect(Collectors.toList());
-		return new PageImpl<>(clients, pageable, clients.size());
-	}
+        client = repository.save(client);
 
-	@Transactional
-	public void delete(@NonNull final Long id) {
-		try {
-			Client client = repository.findById(id).orElseThrow(
-					() -> new ClientNotFoundException(ExceptionMessageFactory.createNotFoundMessage("client", "ID", id.toString())));
+        log.info("The client with CNPJ " + dto.getCnpj() + " was updated successful.");
 
-			repository.delete(client);
-			companyRoleService.disableAllByClient(client);
-			repository.disableAllUsersFromAClient(false, client.getId());
-		} catch(Exception e) {
-			log.error("An error has occurred while deleting client with ID " + id, e);
-		}
-	}
-	
-	@Transactional
-	public void disableClient(@NonNull final Long id) {
-		try {
-			Client client = repository.findById(id).orElseThrow(
-					() -> new ClientNotFoundException(ExceptionMessageFactory.createNotFoundMessage("client", "ID", id.toString())));
-			Boolean isActive = !client.getIsActive();
-			client.setIsActive(isActive);
-			repository.save(client);
-			repository.disableAllUsersFromAClient(isActive, client.getId());
-			
-			String isEnabled = isActive ? "enabled" : "disabled";
-			
-			log.info("The client with ID " + id + " was " + isEnabled +" successful.");
-			log.info("The users from the client with ID " + id + " was " + isEnabled + " successful.");
-		} catch (Exception e) {
-			log.error("An error has occurred while disabling or enabling client with ID " + id, e);
-		}
-	}
-	
-	@Transactional
-	public void expireClient(@NonNull final Long id) {
-		try {
-			Client client = repository.findById(id).orElseThrow(
-					() -> new ClientNotFoundException(ExceptionMessageFactory.createNotFoundMessage("client", "ID", id.toString())));
-			Boolean isExpired = !client.getIsExpired();
-			client.setIsExpired(isExpired);
-			repository.save(client);
-			repository.expireAllUsersFromAClient(isExpired, client.getId());
-			
-			String expired = isExpired ? "expired" : "expired reverted";
-			
-			log.info("The client with ID " + id + " was " + expired +" successful.");
-			log.info("The users from the client with ID " + id + " was " + expired + " successful.");
-		} catch (Exception e) {
-			log.error("An error has occurred while expiring or reverting expiration from client with ID " + id, e);
-		}
-	}
-	
-	@Transactional
-	public void blockClient(@NonNull final Long id) {
-		try {
-			Client client = repository.findById(id).orElseThrow(
-					() -> new ClientNotFoundException(ExceptionMessageFactory.createNotFoundMessage("client", "ID", id.toString())));
-			Boolean isBlocked = !client.getIsBlocked();
-			client.setIsExpired(isBlocked);
-			repository.save(client);
-			repository.blockAllUsersFromAClient(isBlocked, client.getId());
-			
-			String blocked = isBlocked ? "blocked" : "disblocked";
-			
-			log.info("The client with ID " + id + " was " + blocked +" successful.");
-			log.info("The users from the client with ID " + id + " was " + blocked + " successful.");
-		} catch (Exception e) {
-			log.error("An error has occurred while blocking or disblocking client with ID " + id, e);
-		}
-	}
+        return mapper.toDto(client);
+    }
 
-	private void validateCnpj(@NonNull final ClientDto dto) {
 
-		if(ObjectUtils.isNotEmpty(dto.getCnpj()) && !GenericUtils.validateCNPJ(dto.getCnpj())) {
-			throw new InvalidCnpjException(dto.getCnpj());
-		}
+    public ClientDto findById(@NonNull final Long id) {
+        return mapper.toDto(repository.findById(id).orElseThrow(
+                () -> new ClientNotFoundException(ExceptionMessageFactory.createNotFoundMessage("client", "ID", id.toString()))));
+    }
 
-	}
+    public ClientDto findByTenant(@NonNull final String tenant) {
+        return mapper.toDto(repository.findByTenantContainingIgnoreCase(tenant).orElseThrow(
+                () -> new ClientNotFoundException(ExceptionMessageFactory.createNotFoundMessage("client", "ID", tenant))));
+    }
 
-	private void validateCnpj(@NonNull final Client client, @NonNull final ClientDto dto) {
+    public Page<ClientDto> findAll(Pageable pageable) {
+        List<ClientDto> clients = repository.findAll().stream().map(mapper::toDto).collect(Collectors.toList());
+        return new PageImpl<>(clients, pageable, clients.size());
+    }
 
-		if(checkIfCnpjChanged(client, dto)) {
-			validateCnpj(dto);
-		}
-		
-	}
+    @Transactional
+    public void delete(@NonNull final Long id) {
+        Client client = repository.findById(id).orElseThrow(
+                () -> new ClientNotFoundException(ExceptionMessageFactory.createNotFoundMessage("client", "ID", id.toString())));
 
-	private Boolean checkIfCnpjChanged(@NonNull final Client client, @NonNull final ClientDto dto) {
-		if(client.getCnpj().equals(dto.getCnpj())) {
-			return false;
-		}
+        repository.delete(client);
+        companyRoleService.disableAllByClient(client);
+        repository.disableAllUsersFromAClient(false, client.getId());
 
-		return true;
-	}
+    }
 
-	private void validate(@NonNull ClientDto dto) {
-		checkIfClientAlreadyExists(dto);
-		validateCnpj(dto);
-	}
+    @Transactional
+    public void disableClient(@NonNull final Long id) {
+        Client client = repository.findById(id).orElseThrow(
+                () -> new ClientNotFoundException(ExceptionMessageFactory.createNotFoundMessage("client", "ID", id.toString())));
+        Boolean isActive = !client.getIsActive();
+        client.setIsActive(isActive);
+        repository.save(client);
+        repository.disableAllUsersFromAClient(isActive, client.getId());
 
-	private void validate(@NonNull Client client, @NonNull ClientDto dto) {
-		validateCnpj(client, dto);
-	}
-	
-	private void checkIfClientAlreadyExists(@NonNull ClientDto dto) {
-		if(repository.findByCnpj(dto.getCnpj()).isPresent()) {
-			throw new ClientAlreadyExistsException(ExceptionMessageFactory.createAlreadyExistsMessage("client", "CNPJ", dto.getCnpj()));
-		}
-		
-	}
+        String isEnabled = isActive ? "enabled" : "disabled";
+
+        log.info("The client with ID " + id + " was " + isEnabled + " successful.");
+        log.info("The users from the client with ID " + id + " was " + isEnabled + " successful.");
+    }
+
+    @Transactional
+    public void expireClient(@NonNull final Long id) {
+        Client client = repository.findById(id).orElseThrow(
+                () -> new ClientNotFoundException(ExceptionMessageFactory.createNotFoundMessage("client", "ID", id.toString())));
+        Boolean isExpired = !client.getIsExpired();
+        client.setIsExpired(isExpired);
+        repository.save(client);
+        repository.expireAllUsersFromAClient(isExpired, client.getId());
+
+        String expired = isExpired ? "expired" : "expired reverted";
+
+        log.info("The client with ID " + id + " was " + expired + " successful.");
+        log.info("The users from the client with ID " + id + " was " + expired + " successful.");
+
+    }
+
+    @Transactional
+    public void blockClient(@NonNull final Long id) {
+
+        Client client = repository.findById(id).orElseThrow(
+                () -> new ClientNotFoundException(ExceptionMessageFactory.createNotFoundMessage("client", "ID", id.toString())));
+        Boolean isBlocked = !client.getIsBlocked();
+        client.setIsExpired(isBlocked);
+        repository.save(client);
+        repository.blockAllUsersFromAClient(isBlocked, client.getId());
+
+        String blocked = isBlocked ? "blocked" : "disblocked";
+
+        log.info("The client with ID " + id + " was " + blocked + " successful.");
+        log.info("The users from the client with ID " + id + " was " + blocked + " successful.");
+    }
+
+    private void validateCnpj(@NonNull final ClientDto dto) {
+
+        if (ObjectUtils.isNotEmpty(dto.getCnpj()) && !GenericUtils.validateCNPJ(dto.getCnpj())) {
+            throw new InvalidCnpjException(dto.getCnpj());
+        }
+
+    }
+
+    private void validateCnpj(@NonNull final Client client, @NonNull final ClientDto dto) {
+        if (checkIfCnpjChanged(client, dto)) {
+            validateCnpj(dto);
+        }
+    }
+
+    private Boolean checkIfCnpjChanged(@NonNull final Client client, @NonNull final ClientDto dto) {
+        if (client.getCnpj().equals(dto.getCnpj())) {
+            return false;
+        }
+        return true;
+    }
+
+    private void validate(@NonNull ClientDto dto) {
+        checkIfClientAlreadyExists(dto);
+        validateCnpj(dto);
+    }
+
+    private void validate(@NonNull Client client, @NonNull ClientDto dto) {
+        validateCnpj(client, dto);
+    }
+
+    private void checkIfClientAlreadyExists(@NonNull ClientDto dto) {
+        if (repository.findByCnpj(dto.getCnpj()).isPresent()) {
+            throw new ClientAlreadyExistsException(ExceptionMessageFactory.createAlreadyExistsMessage("client", "CNPJ", dto.getCnpj()));
+        }
+    }
 }

@@ -66,7 +66,7 @@ public class RewardService {
 
 			String tenant = jwtUtils.getUserTenant(token);
 
-			Reward reward = repository.findByIdAndTenant(id, tenant).orElseThrow(
+			Reward reward = repository.findByIdAndClient_Tenant(id, tenant).orElseThrow(
 					() -> new RewardNotFoundException(ExceptionMessageFactory.createNotFoundMessage("reward", "ID", id.toString())));
 
 			validate(reward, dto, tenant);
@@ -89,7 +89,7 @@ public class RewardService {
 	public RewardDto findByIdAndTenant(@NonNull Long id, @NonNull final String token) {
 		String tenant = jwtUtils.getUserTenant(token);
 
-		Reward reward = repository.findByIdAndTenant(id, tenant).orElseThrow(
+		Reward reward = repository.findByIdAndClient_Tenant(id, tenant).orElseThrow(
 				() -> new RewardNotFoundException(ExceptionMessageFactory.createNotFoundMessage("reward", "ID", id.toString())));
 
 		return RewardMapper.INSTANCE.toDto(reward);
@@ -98,7 +98,7 @@ public class RewardService {
 	
 	public Page<RewardDto> findAllByTenant(Pageable pageable, @NonNull final String token) {
 		String tenant = jwtUtils.getUserTenant(token);
-		List<RewardDto> rewards = repository.findAllByTenant(tenant).stream().map(RewardMapper.INSTANCE::toDto).collect(Collectors.toList());
+		List<RewardDto> rewards = repository.findAllByClient_Tenant(tenant).stream().map(RewardMapper.INSTANCE::toDto).collect(Collectors.toList());
 		return new PageImpl<>(rewards, pageable, rewards.size());
 	}
 
@@ -106,7 +106,7 @@ public class RewardService {
 	public void delete(@NonNull Long id, @NonNull final String token) {
 		String tenant = jwtUtils.getUserTenant(token);
 
-		Reward reward = repository.findByIdAndTenant(id, tenant).orElseThrow(
+		Reward reward = repository.findByIdAndClient_Tenant(id, tenant).orElseThrow(
 				() -> new RewardNotFoundException(ExceptionMessageFactory.createNotFoundMessage("reward", "ID", id.toString())));
 
 		repository.delete(reward);
@@ -115,8 +115,7 @@ public class RewardService {
 	@Transactional
 	public void disableReward(@NonNull final Long id, @NonNull final String token) {
 		String tenant = jwtUtils.getUserTenant(token);
-		try {
-			Reward reward = repository.findByIdAndTenant(id, tenant).orElseThrow(
+			Reward reward = repository.findByIdAndClient_Tenant(id, tenant).orElseThrow(
 					() -> new RewardNotFoundException(ExceptionMessageFactory.createNotFoundMessage("reward", "ID", id.toString())));
 
 			reward.setIsActive(!reward.getIsActive());
@@ -124,9 +123,6 @@ public class RewardService {
 
 			String isEnabled = reward.getIsActive().equals(true) ? "disabled" : "enabled";
 			log.info("The Reward with ID " + id + " was " + isEnabled + " successful.");
-		} catch (Exception e) {
-			log.error("An error has occurred when disabling or enabling reward with ID " + id, e);
-		}
 	}
 	
 	private void saveImage(MultipartFile file, Boolean overwrite, RewardDto dto) {
@@ -158,7 +154,7 @@ public class RewardService {
 	}
 
 	private void checkIfRewardAlreadyExists(@NonNull RewardDto dto, @NonNull final String tenant) {
-		if(repository.findByNameContainingIgnoreCaseAndTenant(dto.getName(), tenant).isPresent()) {
+		if(repository.findByNameContainingIgnoreCaseAndClient_Tenant(dto.getName(), tenant).isPresent()) {
 			throw new RewardAlreadyExistsException(ExceptionMessageFactory.createAlreadyExistsMessage("reward", "name", dto.getName()));
 		}
 	}

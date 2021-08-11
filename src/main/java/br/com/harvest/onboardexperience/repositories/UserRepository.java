@@ -13,25 +13,11 @@ import br.com.harvest.onboardexperience.domain.entities.User;
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
 	
-	
-	@Query(value = "SELECT tbuser.* FROM tbuser, tbclient WHERE tbuser.idclient = tbclient.idclient AND tbclient.tenant = ?1", 
-			nativeQuery = true)
-	List<User> findAllByTenant(String tenant);
-	
-	@Query(value = "SELECT tbuser.* FROM tbuser, tbclient WHERE tbuser.idclient = tbclient.idclient AND tbuser.username = ?1"
-			+ " AND tbclient.tenant = ?2", 
-			nativeQuery = true)
-	Optional<User> findByUsernameAndTenant(String username, String tenant);
-	
-	@Query(value = "SELECT tbuser.* FROM tbuser, tbclient WHERE tbuser.idclient = tbclient.idclient AND tbuser.iduser = ?1"
-			+ " AND tbclient.tenant = ?2", 
-			nativeQuery = true)
-	Optional<User> findByIdAndTenant(Long id, String tenant);
-	
+	List<User> findAllByClient_Tenant(String tenant);
+	Optional<User> findByUsernameAndClient_Tenant(String username, String tenant);
+	Optional<User> findByIdAndClient_Tenant(Long id, String tenant);
 	Optional<User> findByUsernameContainingIgnoreCaseAndClient(String username, Client client);
-	
 	Optional<User> findByEmailContainingIgnoreCase(String email);
-	
 	Optional<User> findByCpf(String cpf);
 		
 }

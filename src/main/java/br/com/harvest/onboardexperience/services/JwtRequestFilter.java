@@ -25,57 +25,58 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Component
 public class JwtRequestFilter extends OncePerRequestFilter {
-	
-	@Autowired
-	private JwtUserDetailsService jwtUserDetailsService;
 
-	@Autowired
-	private JwtTokenUtils jwtTokenUtil;
-	
-	@Autowired
-	@Qualifier("handlerExceptionResolver")
-	private HandlerExceptionResolver resolver;
+    @Autowired
+    private JwtUserDetailsService jwtUserDetailsService;
 
-	@Override
-	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
-			throws ServletException, IOException {
-		
-		final String requestTokenHeader = request.getHeader("Authorization");
+    @Autowired
+    private JwtTokenUtils jwtTokenUtil;
 
-		String email = null;
-		String jwtToken = null;
-		
-		if (ObjectUtils.isNotEmpty(requestTokenHeader) && !requestTokenHeader.contains("null") && requestTokenHeader.startsWith("Bearer ")) {
-			jwtToken = requestTokenHeader.substring(7);
-			
-			try {
-				email = jwtTokenUtil.getEmailFromToken(jwtToken);
-			} catch (IllegalArgumentException e) {
-				log.error("Unable to get JWT Token");
-			} catch (ExpiredJwtException e) {
-				log.error("JWT Token has expired");
-			}
-			
-		} else {
-			log.warn("JWT Token does not begin with Bearer String");
-		}
+    @Autowired
+    @Qualifier("handlerExceptionResolver")
+    private HandlerExceptionResolver resolver;
 
-		if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-			
-			UserDetails userDetails = this.jwtUserDetailsService.loadUserByUsername(email);
+    @Override
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+            throws ServletException, IOException {
 
-			if (jwtTokenUtil.validateToken(jwtToken, userDetails)) {
+        final String requestTokenHeader = request.getHeader("Authorization");
 
-				UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
-						userDetails, null, userDetails.getAuthorities());
-				usernamePasswordAuthenticationToken
-						.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-				
-				SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
-			}
-		}
-		chain.doFilter(request, response);
-	}
+        String email = null;
+        String jwtToken = null;
 
+        if (ObjectUtils.isNotEmpty(requestTokenHeader) && !requestTokenHeader.contains("null") && requestTokenHeader.startsWith("Bearer ")) {
+            jwtToken = requestTokenHeader.substring(7);
+
+            try {
+                email = jwtTokenUtil.getEmailFromToken(jwtToken);
+            } catch (IllegalArgumentException e) {
+                log.error("Unable to get JWT Token");
+                throw e;
+            } catch (ExpiredJwtException e) {
+                log.error("JWT Token has expired");
+                throw e;
+            }
+
+        } else {
+            log.warn("JWT Token does not begin with Bearer String");
+        }
+
+        if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+
+            UserDetails userDetails = this.jwtUserDetailsService.loadUserByUsername(email);
+
+            if (jwtTokenUtil.validateToken(jwtToken, userDetails)) {
+
+                UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
+                        userDetails, null, userDetails.getAuthorities());
+                usernamePasswordAuthenticationToken
+                        .setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
+                SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
+            }
+        }
+        chain.doFilter(request, response);
+    }
 
 }

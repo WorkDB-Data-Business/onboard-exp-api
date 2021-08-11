@@ -17,7 +17,6 @@ import org.springframework.web.multipart.MultipartFile;
 import br.com.harvest.onboardexperience.domain.dto.ClientDto;
 import br.com.harvest.onboardexperience.domain.dto.CoinDto;
 import br.com.harvest.onboardexperience.domain.entities.Coin;
-import br.com.harvest.onboardexperience.domain.exceptions.CoinAlreadyExistsException;
 import br.com.harvest.onboardexperience.domain.exceptions.CoinNotFoundException;
 import br.com.harvest.onboardexperience.domain.factories.ExceptionMessageFactory;
 import br.com.harvest.onboardexperience.mappers.CoinMapper;
@@ -57,14 +56,13 @@ public class CoinService {
 
         log.info("The coin " + dto.getName() + " was saved successful.");
         return CoinMapper.INSTANCE.toDto(coin);
-
     }
 
 
     public CoinDto update(@NonNull Long id, @NonNull CoinDto dto, MultipartFile file, @NonNull String token) {
         String tenant = jwtUtils.getUserTenant(token);
 
-        Coin coin = repository.findByIdAndTenant(id, tenant).orElseThrow(
+        Coin coin = repository.findByIdAndClient_Tenant(id, tenant).orElseThrow(
                 () -> new CoinNotFoundException(ExceptionMessageFactory.createNotFoundMessage("coin", "ID", id.toString())));
 
         dto.setClient(clientMapper.toDto(coin.getClient()));
@@ -87,7 +85,7 @@ public class CoinService {
     public CoinDto findByIdAndTenant(@NonNull Long id, @NonNull String token) {
         String tenant = jwtUtils.getUserTenant(token);
 
-        CoinDto coin = CoinMapper.INSTANCE.toDto(repository.findByIdAndTenant(id, tenant).orElseThrow(
+        CoinDto coin = CoinMapper.INSTANCE.toDto(repository.findByIdAndClient_Tenant(id, tenant).orElseThrow(
                 () -> new CoinNotFoundException(ExceptionMessageFactory.createNotFoundMessage("coin", "ID", id.toString()))));
 
         return coin;
@@ -96,7 +94,7 @@ public class CoinService {
 
     public Page<CoinDto> findAllByTenant(Pageable pageable, @NonNull String token) {
         String tenant = jwtUtils.getUserTenant(token);
-        List<CoinDto> coins = repository.findAllByTenant(tenant).stream().map(CoinMapper.INSTANCE::toDto).collect(Collectors.toList());
+        List<CoinDto> coins = repository.findAllByClient_Tenant(tenant).stream().map(CoinMapper.INSTANCE::toDto).collect(Collectors.toList());
         return new PageImpl<>(coins, pageable, coins.size());
     }
 
@@ -104,7 +102,7 @@ public class CoinService {
     public void delete(@NonNull Long id, @NonNull String token) {
         String tenant = jwtUtils.getUserTenant(token);
 
-        Coin coin = repository.findByIdAndTenant(id, tenant).orElseThrow(
+        Coin coin = repository.findByIdAndClient_Tenant(id, tenant).orElseThrow(
                 () -> new CoinNotFoundException(ExceptionMessageFactory.createNotFoundMessage("coin", "ID", id.toString())));
 
         repository.delete(coin);
@@ -113,8 +111,7 @@ public class CoinService {
     @Transactional
     public void disableCoin(@NonNull final Long id, @NonNull final String token) {
         String tenant = jwtUtils.getUserTenant(token);
-        try {
-            Coin coin = repository.findByIdAndTenant(id, tenant).orElseThrow(
+            Coin coin = repository.findByIdAndClient_Tenant(id, tenant).orElseThrow(
                     () -> new CoinNotFoundException(ExceptionMessageFactory.createNotFoundMessage("coin", "ID", id.toString())));
 
             coin.setIsActive(!coin.getIsActive());
@@ -122,9 +119,6 @@ public class CoinService {
 
             String isEnabled = coin.getIsActive().equals(true) ? "disabled" : "enabled";
             log.info("The coin with ID " + id + " was " + isEnabled + " successful.");
-        } catch (Exception e) {
-            log.error("An error has occurred when disabling or enabling coin with ID " + id, e);
-        }
     }
 
     private void saveImage(MultipartFile file, CoinDto dto) {
@@ -162,7 +156,7 @@ public class CoinService {
     }
 
     private void checkIfCoinAlreadyExists(@NonNull CoinDto dto, @NonNull final String tenant) {
-        if (repository.findByNameContainingIgnoreCaseAndTenant(dto.getName(), tenant).isPresent()) {
+        if (repository.findByNameContainingIgnoreCaseAndClient_Tenant(dto.getName(), tenant).isPresent()) {
             throw new BusinessException(ExceptionMessageFactory.createAlreadyExistsMessage("coin", "name", dto.getName()));
         }
     }

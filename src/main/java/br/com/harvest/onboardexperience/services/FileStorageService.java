@@ -119,6 +119,7 @@ public class FileStorageService implements IFileStorageService {
             log.info("All folders was deleted successful.");
         } catch (Exception e) {
             log.error("Error while deleting the specified folder: " + root.getFileName(), e);
+            throw e;
         }
     }
 
@@ -129,6 +130,7 @@ public class FileStorageService implements IFileStorageService {
             FileSystemUtils.deleteRecursively(path);
         } catch (Exception e) {
             log.error("Error while deleting the specified folder: " + path.getName(), e);
+            throw e;
         }
     }
 
@@ -145,7 +147,7 @@ public class FileStorageService implements IFileStorageService {
     public String rename(String name, String path) {
         Path file = Paths.get(path);
         String extension = path.substring(path.indexOf('.'));
-        String fullName = name+extension;
+        String fullName = name + extension;
         try {
             Files.move(file, file.resolveSibling(fullName));
         } catch (IOException e) {
@@ -154,7 +156,7 @@ public class FileStorageService implements IFileStorageService {
         return path.replace(file.getFileName().toString(), fullName);
     }
 
-    public Path getPath(String... path){
+    public Path getPath(String... path) {
         Path file = this.root;
 
         for (String pathParam : path) {

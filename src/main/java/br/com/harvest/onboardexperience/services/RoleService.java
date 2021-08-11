@@ -15,28 +15,28 @@ import lombok.NonNull;
 
 @Service
 public class RoleService {
-	
-	@Autowired
-	private RoleRepository repository;
-	
-	@Autowired
-	private RoleMapper mapper;
-	
-	public RoleDto findRoleById(@NonNull Long id) {
-		return mapper.toDto(repository.findById(id).orElseThrow(() -> 
-		new RoleNotFoundException(ExceptionMessageFactory.createNotFoundMessage("role", "ID", id.toString()))));
-	}
-	
-	public RoleDto findRoleByRole(RoleEnum roleEnum) {
-		return mapper.toDto(repository.findByRole(roleEnum).orElseThrow(() -> 
-		new RoleNotFoundException(ExceptionMessageFactory.createNotFoundMessage("role", "name", roleEnum.getName()))));
-	}
-	
-	@Transactional
-	public void deleteRelationshipFromUser(@NonNull Long idUser) {
-		if(repository.getCountOfRolesFromUser(idUser) > 0) {
-			repository.deleteRelationshipFromUser(idUser);	
-		}
-	}
+
+    @Autowired
+    private RoleRepository repository;
+
+    @Autowired
+    private RoleMapper mapper;
+
+    public RoleDto findRoleById(@NonNull Long id) {
+        return mapper.toDto(repository.findById(id).orElseThrow(() ->
+                new RoleNotFoundException(ExceptionMessageFactory.createNotFoundMessage("role", "ID", id.toString()))));
+    }
+
+    public RoleDto findRoleByRole(RoleEnum roleEnum) {
+        return mapper.toDto(repository.findByRole(roleEnum).orElseThrow(() ->
+                new RoleNotFoundException(ExceptionMessageFactory.createNotFoundMessage("role", "name", roleEnum.getName()))));
+    }
+
+    @Transactional
+    public void deleteRelationshipFromUser(@NonNull Long idUser) {
+        if (repository.getCountOfRolesFromUser(idUser) > 0) {
+            repository.deleteRelationshipFromUser(idUser);
+        }
+    }
 
 }

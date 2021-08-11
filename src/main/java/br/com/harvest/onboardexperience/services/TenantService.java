@@ -13,23 +13,23 @@ import br.com.harvest.onboardexperience.utils.JwtTokenUtils;
 
 @Service
 public class TenantService {
-	
-	@Autowired
-	private JwtTokenUtils jwtUtils;
-	
-	@Autowired
-	private ClientRepository clientRepository;
-	
-	public Client fetchClientByTenantFromToken(String token) {
-		String tenant = jwtUtils.getUserTenant(token);
-		return clientRepository.findByTenantContainingIgnoreCase(tenant).orElseThrow(() -> new ClientNotFoundException(
-				ExceptionMessageFactory.createNotFoundMessage("client", "tenant", tenant)));
-	}
-	
-	public ClientDto fetchClientDtoByTenantFromToken(String token) {
-		String tenant = jwtUtils.getUserTenant(token);
-		return ClientMapper.INSTANCE.toDto(clientRepository.findByTenantContainingIgnoreCase(tenant).orElseThrow(() -> new ClientNotFoundException(
-				ExceptionMessageFactory.createNotFoundMessage("client", "tenant", tenant))));
-	}
+
+    @Autowired
+    private JwtTokenUtils jwtUtils;
+
+    @Autowired
+    private ClientRepository clientRepository;
+
+    public Client fetchClientByTenantFromToken(String token) {
+        String tenant = jwtUtils.getUserTenant(token);
+        return clientRepository.findByTenantContainingIgnoreCase(tenant).orElseThrow(() -> new ClientNotFoundException(
+                ExceptionMessageFactory.createNotFoundMessage("client", "tenant", tenant)));
+    }
+
+    public ClientDto fetchClientDtoByTenantFromToken(String token) {
+        String tenant = jwtUtils.getUserTenant(token);
+        return ClientMapper.INSTANCE.toDto(clientRepository.findByTenantContainingIgnoreCase(tenant).orElseThrow(() -> new ClientNotFoundException(
+                ExceptionMessageFactory.createNotFoundMessage("client", "tenant", tenant))));
+    }
 
 }

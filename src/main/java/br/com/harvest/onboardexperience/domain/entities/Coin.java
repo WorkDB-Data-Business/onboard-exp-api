@@ -1,12 +1,6 @@
 package br.com.harvest.onboardexperience.domain.entities;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
+import javax.persistence.*;
 
 import org.hibernate.annotations.ResultCheckStyle;
 import org.hibernate.annotations.SQLDelete;
@@ -25,9 +19,10 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity(name = "tbcoin")
+@Entity
+@Table(name = "tbcoin", schema="public")
 @SQLDelete(sql = SQLQueryUtils.SOFT_DELETE_COIN, check = ResultCheckStyle.COUNT)
-@Where(clause = SQLQueryUtils.IS_ACTIVE_FILTER)
+@Where(clause = "is_active = true")
 public class Coin extends BaseEntityAudit {
 
 	private static final long serialVersionUID = -1137244643968971239L;

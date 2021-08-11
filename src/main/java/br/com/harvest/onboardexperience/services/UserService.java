@@ -60,137 +60,121 @@ public class UserService {
 
     @Autowired
     private JwtTokenUtils jwtUtils;
-    
-    
+
+    @Autowired
+    private ClientMapper clientMapper;
+
+
     public UserDto create(@NonNull UserForm dto, String token) {
-		UserDto userDto = convetFormToUserDto(dto, token);
-    	try {
-            String tenant = jwtUtils.getUserTenant(token);
+        UserDto userDto = convetFormToUserDto(dto, token);
+        String tenant = jwtUtils.getUserTenant(token);
 
-            validateUser(userDto, tenant);
+        validateUser(userDto, tenant);
 
-            User user = repository.save(mapper.toEntity(userDto));
+        User user = repository.save(mapper.toEntity(userDto));
 
-            log.info("The user " + userDto.getUsername() + " was saved successful.");
-            return mapper.toDto(user);
-        } catch (Exception e) {
-            log.error("An error has occurred when saving user " + userDto.getUsername(), e);
-            return null;
-        }
+        log.info("The user " + userDto.getUsername() + " was saved successful.");
+        return mapper.toDto(user);
+
     }
 
     private UserDto convetFormToUserDto(UserForm dto, String token) {
         var userDto = new UserDto();
         userDto.setFirstName(dto.getFirstName());
         userDto.setLastName(dto.getLastName());
-		userDto.setUsername(dto.getUsername());
+        userDto.setUsername(dto.getUsername());
         userDto.setPassword(dto.getCpf());
         userDto.setEmail(dto.getEmail());
         userDto.setCpf(dto.getCpf());
         userDto.setIsActive(dto.getIsActive());
         userDto.setIsBlocked(dto.getIsBlocked());
 
-		Set<RoleDto> rolesDto = new HashSet<>();
-		var companyRole = new CompanyRoleDto();
+        Set<RoleDto> rolesDto = new HashSet<>();
+        var companyRole = new CompanyRoleDto();
 
-		if(dto.getIsAdmin()) rolesDto.add(roleService.findRoleByRole(RoleEnum.ADMIN));
-		if(dto.getIsCol()) rolesDto.add(roleService.findRoleByRole(RoleEnum.COLABORATOR));
-		if(dto.getIsMaster()) rolesDto.add(roleService.findRoleByRole(RoleEnum.MASTER));
+        if (dto.getIsAdmin()) rolesDto.add(roleService.findRoleByRole(RoleEnum.ADMIN));
+        if (dto.getIsCol()) rolesDto.add(roleService.findRoleByRole(RoleEnum.COLABORATOR));
+        if (dto.getIsMaster()) rolesDto.add(roleService.findRoleByRole(RoleEnum.MASTER));
 
-		companyRole = companyRoleService.findByIdAndTenant(dto.getCompanyRoleId(), token);
+        companyRole = companyRoleService.findByIdAndTenant(dto.getCompanyRoleId(), token);
 
-		userDto.setRoles(rolesDto);
+        userDto.setRoles(rolesDto);
         userDto.setCompanyRole(companyRole);
 
         return userDto;
     }
-    
-    
+
+
     public UserDto update(@NonNull Long id, @NonNull UserForm dto, String token) {
-        try {
-            UserDto userDto = convetFormToUserDto(dto, token);
-            String tenant = jwtUtils.getUserTenant(token);
+        UserDto userDto = convetFormToUserDto(dto, token);
+        String tenant = jwtUtils.getUserTenant(token);
 
-            User user = repository.findByIdAndTenant(id, tenant).orElseThrow(
-                    () -> new UserNotFoundException(ExceptionMessageFactory.createNotFoundMessage("user", "ID", id.toString())));
+        User user = repository.findByIdAndClient_Tenant(id, tenant).orElseThrow(
+                () -> new UserNotFoundException(ExceptionMessageFactory.createNotFoundMessage("user", "ID", id.toString())));
+        userDto.setClient(clientMapper.toDto(user.getClient()));
 
-            //workaround (A.K.A gambiarra) to solve the bug of password not encrypting when not updated
-            // TODO: create method to update password only.
-            String[] fieldParameters = new String[6];
-            fieldParameters[0] = "id";
-            fieldParameters[1] = "client";
-            fieldParameters[2] = "createdBy";
-            fieldParameters[3] = "createdAt";
-            fieldParameters[4] = "password";
+        //workaround (A.K.A gambiarra) to solve the bug of password not encrypting when not updated
+        // TODO: create method to update password only.
+        String[] fieldParameters = new String[6];
+        fieldParameters[0] = "id";
+        fieldParameters[1] = "client";
+        fieldParameters[2] = "createdBy";
+        fieldParameters[3] = "createdAt";
+        fieldParameters[4] = "password";
 
-            validateUser(user, userDto, fieldParameters);
+        validateUser(user, userDto, fieldParameters);
 
-            // TODO: need to solve a bug that doesn't update the roles
-            BeanUtils.copyProperties(userDto, user, fieldParameters);
+        BeanUtils.copyProperties(mapper.toEntity(userDto), user, fieldParameters);
 
-            user = repository.save(user);
+        user = repository.save(user);
 
-            log.info("The user " + userDto.getUsername() + " was updated successful.");
+        log.info("The user " + userDto.getUsername() + " was updated successful.");
 
-            return mapper.toDto(user);
-        } catch (Exception e) {
-            log.error("An error has occurred when updating user with ID " + id, e);
-            return null;
-        }
+        return mapper.toDto(user);
     }
 
     @Transactional
     public void disableUser(@NonNull final Long id, @NonNull final String token) {
         String tenant = jwtUtils.getUserTenant(token);
-        try {
-            User user = repository.findByIdAndTenant(id, tenant).orElseThrow(
-                    () -> new UserNotFoundException(ExceptionMessageFactory.createNotFoundMessage("user", "ID", id.toString())));
-            user.setIsActive(!user.getIsActive());
-            repository.save(user);
 
-            String isEnabled = user.getIsActive().equals(true) ? "disabled" : "enabled";
-            log.info("The user with ID " + id + " was " + isEnabled + " successful.");
-        } catch (Exception e) {
-            log.error("An error has occurred when disabling or enabling user with ID " + id, e);
-        }
+        User user = repository.findByIdAndClient_Tenant(id, tenant).orElseThrow(
+                () -> new UserNotFoundException(ExceptionMessageFactory.createNotFoundMessage("user", "ID", id.toString())));
+        user.setIsActive(!user.getIsActive());
+        repository.save(user);
+
+        String isEnabled = user.getIsActive().equals(true) ? "disabled" : "enabled";
+        log.info("The user with ID " + id + " was " + isEnabled + " successful.");
+
     }
 
     @Transactional
     public void expireUser(@NonNull final Long id, @NonNull final String token) {
         String tenant = jwtUtils.getUserTenant(token);
-        try {
-            User user = repository.findByIdAndTenant(id, tenant).orElseThrow(
-                    () -> new UserNotFoundException(ExceptionMessageFactory.createNotFoundMessage("user", "ID", id.toString())));
-            user.setIsExpired(!user.getIsExpired());
-            repository.save(user);
+        User user = repository.findByIdAndClient_Tenant(id, tenant).orElseThrow(
+                () -> new UserNotFoundException(ExceptionMessageFactory.createNotFoundMessage("user", "ID", id.toString())));
+        user.setIsExpired(!user.getIsExpired());
+        repository.save(user);
 
-            String isExpired = user.getIsExpired().equals(true) ? "expired" : "expired reverted";
-            log.info("The user with ID " + id + " was " + isExpired + " successful.");
-        } catch (Exception e) {
-            log.error("An error has occurred when expiring or reverting user with ID " + id, e);
-        }
+        String isExpired = user.getIsExpired().equals(true) ? "expired" : "expired reverted";
+        log.info("The user with ID " + id + " was " + isExpired + " successful.");
     }
 
     @Transactional
     public void blockUser(@NonNull final Long id, @NonNull final String token) {
         String tenant = jwtUtils.getUserTenant(token);
-        try {
-            User user = repository.findByIdAndTenant(id, tenant).orElseThrow(
-                    () -> new UserNotFoundException(ExceptionMessageFactory.createNotFoundMessage("user", "ID", id.toString())));
-            user.setIsBlocked(!user.getIsBlocked());
-            repository.save(user);
-            String isBlocked = user.getIsBlocked().equals(true) ? "blocked" : "desblocked";
-            log.info("The user with ID " + id + " was " + isBlocked + " successful.");
-        } catch (Exception e) {
-            log.error("An error has occurred when blocking or desblocking user with ID " + id, e);
-        }
+
+        User user = repository.findByIdAndClient_Tenant(id, tenant).orElseThrow(
+                () -> new UserNotFoundException(ExceptionMessageFactory.createNotFoundMessage("user", "ID", id.toString())));
+        user.setIsBlocked(!user.getIsBlocked());
+        repository.save(user);
+        String isBlocked = user.getIsBlocked().equals(true) ? "blocked" : "desblocked";
+        log.info("The user with ID " + id + " was " + isBlocked + " successful.");
     }
 
 
-    
     public UserDto findByIdAndTenant(@NonNull final Long id, @NonNull final String token) {
         String tenant = jwtUtils.getUserTenant(token);
-        User user = repository.findByIdAndTenant(id, tenant).orElseThrow(
+        User user = repository.findByIdAndClient_Tenant(id, tenant).orElseThrow(
                 () -> new UserNotFoundException(ExceptionMessageFactory.createNotFoundMessage("user", "ID", id.toString())));
 
         return mapper.toDto(user);
@@ -204,25 +188,23 @@ public class UserService {
         return mapper.toDto(user);
     }
 
-    
+
     public Page<UserDto> findAllByTenant(final Pageable pageable, final String token) {
         String tenant = jwtUtils.getUserTenant(token);
-        List<UserDto> users = repository.findAllByTenant(tenant).stream().map(mapper::toDto).collect(Collectors.toList());
+        List<UserDto> users = repository.findAllByClient_Tenant(tenant).stream().map(mapper::toDto).collect(Collectors.toList());
         return new PageImpl<>(users, pageable, users.size());
     }
 
-    
+
     public void delete(@NonNull final Long id, @NonNull final String token) {
         String tenant = jwtUtils.getUserTenant(token);
-        try {
-            User user = repository.findByIdAndTenant(id, tenant).orElseThrow(
-                    () -> new UserNotFoundException(ExceptionMessageFactory.createNotFoundMessage("user", "ID", id.toString())));
-            roleService.deleteRelationshipFromUser(id);
-            repository.delete(user);
-            log.info("The user with ID " + id + " was deleted successful.");
-        } catch (Exception e) {
-            log.error("An error has occurred when deleting user with ID " + id, e);
-        }
+
+        User user = repository.findByIdAndClient_Tenant(id, tenant).orElseThrow(
+                () -> new UserNotFoundException(ExceptionMessageFactory.createNotFoundMessage("user", "ID", id.toString())));
+        roleService.deleteRelationshipFromUser(id);
+        repository.delete(user);
+        log.info("The user with ID " + id + " was deleted successful.");
+
     }
 
     public User findUserByEmail(String email) {
