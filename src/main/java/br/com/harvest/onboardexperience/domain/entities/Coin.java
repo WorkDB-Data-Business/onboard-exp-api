@@ -22,7 +22,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(name = "tbcoin", schema="public")
 @SQLDelete(sql = SQLQueryUtils.SOFT_DELETE_COIN, check = ResultCheckStyle.COUNT)
-@Where(clause = "is_active = true")
+@Where(clause = SQLQueryUtils.IS_ACTIVE_FILTER)
 public class Coin extends BaseEntityAudit {
 
 	private static final long serialVersionUID = -1137244643968971239L;
