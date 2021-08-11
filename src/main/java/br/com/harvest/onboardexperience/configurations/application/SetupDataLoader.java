@@ -161,7 +161,7 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
 	@Transactional
 	private void setupMasterUser() {
 
-		if(userRepository.findByUsernameAndTenant("harvest", "harvest").isPresent()) return;
+		if(userRepository.findByUsernameAndClient_Tenant("harvest", "harvest").isPresent()) return;
 
 		try {
 			Role masterRole = roleRepository.findByRole(RoleEnum.MASTER).orElseThrow(() -> new RoleNotFoundException("Permission with name " + RoleEnum.MASTER.getName() + " was not found"));

@@ -2,17 +2,7 @@ package br.com.harvest.onboardexperience.domain.entities;
 
 import java.util.Set;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
+import javax.persistence.*;
 
 import br.com.harvest.onboardexperience.domain.enumerators.RoleEnum;
 import lombok.AllArgsConstructor;
@@ -26,7 +16,8 @@ import lombok.NoArgsConstructor;
 @EqualsAndHashCode(callSuper = false)
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity(name = "tbrole")
+@Entity
+@Table(name = "tbrole", schema="public")
 public class Role extends BaseEntity {
 	
 	private static final long serialVersionUID = -8238875560346007870L;

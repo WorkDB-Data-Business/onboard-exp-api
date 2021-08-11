@@ -1,10 +1,6 @@
 package br.com.harvest.onboardexperience.domain.entities;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
 
 import org.hibernate.annotations.ResultCheckStyle;
 import org.hibernate.annotations.SQLDelete;
@@ -22,7 +18,8 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity(name = "tbclient")
+@Entity
+@Table(name = "tbclient", schema="public")
 @SQLDelete(sql = SQLQueryUtils.SOFT_DELETE_CLIENT, check = ResultCheckStyle.COUNT)
 @Where(clause = SQLQueryUtils.IS_ACTIVE_FILTER)
 public class Client extends BaseEntityAudit {

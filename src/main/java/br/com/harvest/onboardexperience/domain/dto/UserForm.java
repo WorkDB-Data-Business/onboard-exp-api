@@ -55,6 +55,4 @@ public class UserForm implements Serializable {
 
 	@Builder.Default
 	private Boolean isMaster = false;
-
-
 }

@@ -25,89 +25,72 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 public class CompanyRoleService {
 
-	@Autowired
-	private CompanyRoleRepository repository;
+    @Autowired
+    private CompanyRoleRepository repository;
 
-	@Autowired
-	private JwtTokenUtils jwtUtils;
+    @Autowired
+    private JwtTokenUtils jwtUtils;
 
-	@Autowired
-	private TenantService tenantService;
-
-
-	public CompanyRoleDto create(@NonNull CompanyRoleDto dto, @NonNull final String token) {
-		try {
-			dto.setClient(tenantService.fetchClientDtoByTenantFromToken(token));
-
-			CompanyRole companyRole = repository.save(CompanyRoleMapper.INSTANCE.toEntity(dto));
-			return CompanyRoleMapper.INSTANCE.toDto(companyRole);
-		} catch (Exception e) {
-			log.error("An error has occurred while saving company role with name " + dto.getName(), e);
-			return null;
-		}
-	}
+    @Autowired
+    private TenantService tenantService;
 
 
-	public CompanyRoleDto update(@NonNull final Long id, @NonNull CompanyRoleDto dto, @NonNull final String token) {
-		try {
-			String tenant = jwtUtils.getUserTenant(token);
+    public CompanyRoleDto create(@NonNull CompanyRoleDto dto, @NonNull final String token) {
+        dto.setClient(tenantService.fetchClientDtoByTenantFromToken(token));
 
-			CompanyRole companyRole = repository.findByIdAndTenant(id, tenant).orElseThrow(
-					() -> new CompanyRoleNotFoundException(ExceptionMessageFactory.createNotFoundMessage("company role", "ID", id.toString())));
+        CompanyRole companyRole = repository.save(CompanyRoleMapper.INSTANCE.toEntity(dto));
+        return CompanyRoleMapper.INSTANCE.toDto(companyRole);
 
-			BeanUtils.copyProperties(dto, companyRole, "id", "client", "createdBy", "createdAt");
-
-			companyRole = repository.save(companyRole);
-
-			return CompanyRoleMapper.INSTANCE.toDto(companyRole);
-		} catch (Exception e) {
-			log.error("An erro has occurred while updating company role with ID " + dto.getId(), e);
-			return null;
-		}
-	}
+    }
 
 
-	public CompanyRoleDto findByIdAndTenant(@NonNull final Long id, @NonNull final String token) {
-		String tenant = jwtUtils.getUserTenant(token);
+    public CompanyRoleDto update(@NonNull final Long id, @NonNull CompanyRoleDto dto, @NonNull final String token) {
+        String tenant = jwtUtils.getUserTenant(token);
 
-		CompanyRole companyRole = repository.findByIdAndTenant(id, tenant).orElseThrow(() -> new CompanyRoleNotFoundException(ExceptionMessageFactory.createNotFoundMessage("company role", "ID", id.toString())));
+        CompanyRole companyRole = repository.findByIdAndClient_Tenant(id, tenant).orElseThrow(
+                () -> new CompanyRoleNotFoundException(ExceptionMessageFactory.createNotFoundMessage("company role", "ID", id.toString())));
 
-		return CompanyRoleMapper.INSTANCE.toDto(companyRole);
-	}
+        BeanUtils.copyProperties(dto, companyRole, "id", "client", "createdBy", "createdAt");
 
-	public CompanyRoleDto findByIdOrNameAndTenant(String name, String tenant) {
+        companyRole = repository.save(companyRole);
 
-		CompanyRole companyRole = repository.findByNameContainingIgnoreCaseAndTenant(name, tenant)
-				.orElseThrow(() -> new CompanyRoleNotFoundException("Company Role with name " + name + " not found."));
-
-		return CompanyRoleMapper.INSTANCE.toDto(companyRole);
-	}
+        return CompanyRoleMapper.INSTANCE.toDto(companyRole);
+    }
 
 
-	public Page<CompanyRoleDto> findAllByTenant(Pageable pageable, @NonNull final String token) {
-		String tenant = jwtUtils.getUserTenant(token);
-		List<CompanyRoleDto> companyRoles = repository.findAllByTenant(tenant).stream().map(CompanyRoleMapper.INSTANCE::toDto).collect(Collectors.toList());
-		return new PageImpl<>(companyRoles, pageable, companyRoles.size());
-	}
+    public CompanyRoleDto findByIdAndTenant(@NonNull final Long id, @NonNull final String token) {
+        String tenant = jwtUtils.getUserTenant(token);
 
-	public void delete(@NonNull final Long id, @NonNull final String token) {
-		try {
-			String tenant = jwtUtils.getUserTenant(token);
-			CompanyRole companyRole = repository.findByIdAndTenant(id, tenant).orElseThrow(
-					() -> new CompanyRoleNotFoundException("The company role with ID " + id + " has not found"));
+        CompanyRole companyRole = repository.findByIdAndClient_Tenant(id, tenant).orElseThrow(() -> new CompanyRoleNotFoundException(ExceptionMessageFactory.createNotFoundMessage("company role", "ID", id.toString())));
 
-			repository.delete(companyRole);
-		} catch(Exception e) {
-			log.error("An error has occurred while deleting client with ID " + id, e);
-		}
-	}
+        return CompanyRoleMapper.INSTANCE.toDto(companyRole);
+    }
 
-	public void disableAllByClient(@NonNull final Client client) {
-		try {
-			repository.disableAllByClient(client.getId());
-		} catch (Exception e) {
-			log.error("An error has occurred while deleting all company roles of client with CNPJ " + client.getCnpj(), e);
-		}
-	}
+    public CompanyRoleDto findByIdOrNameAndTenant(String name, String tenant) {
+
+        CompanyRole companyRole = repository.findByNameContainingIgnoreCaseAndClient_Tenant(name, tenant)
+                .orElseThrow(() -> new CompanyRoleNotFoundException("Company Role with name " + name + " not found."));
+
+        return CompanyRoleMapper.INSTANCE.toDto(companyRole);
+    }
+
+
+    public Page<CompanyRoleDto> findAllByTenant(Pageable pageable, @NonNull final String token) {
+        String tenant = jwtUtils.getUserTenant(token);
+        List<CompanyRoleDto> companyRoles = repository.findAllByClient_Tenant(tenant).stream().map(CompanyRoleMapper.INSTANCE::toDto).collect(Collectors.toList());
+        return new PageImpl<>(companyRoles, pageable, companyRoles.size());
+    }
+
+    public void delete(@NonNull final Long id, @NonNull final String token) {
+        String tenant = jwtUtils.getUserTenant(token);
+        CompanyRole companyRole = repository.findByIdAndClient_Tenant(id, tenant).orElseThrow(
+                () -> new CompanyRoleNotFoundException("The company role with ID " + id + " has not found"));
+
+        repository.delete(companyRole);
+    }
+
+    public void disableAllByClient(@NonNull final Client client) {
+        repository.disableAllByClient(client.getId());
+    }
 
 }
