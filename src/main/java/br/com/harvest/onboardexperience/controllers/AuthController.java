@@ -72,7 +72,7 @@ public class AuthController {
 		final UserDetails userDetails = userDetailsService
 				.loadUserByUsername(authenticationRequest.getEmail());
 
-		final String token = jwtUtil.generateToken(createUserClaims(userDetails, timeZone, isFirstLogin), userDetails, authenticationRequest.getRememberMe());
+		final String token = jwtUtil.generateToken(createUserClaims(userDetails, timeZone, isFirstLogin, authenticationRequest.getRememberMe()), userDetails, authenticationRequest.getRememberMe());
 
 		return ResponseEntity.ok(new JwtResponse(token));
 	}
@@ -89,13 +89,14 @@ public class AuthController {
 		}
 	}
 	
-	private Map<String, Object> createUserClaims(UserDetails userDetails, TimeZone timeZone, Boolean isFirstLogin){
+	private Map<String, Object> createUserClaims(UserDetails userDetails, TimeZone timeZone, Boolean isFirstLogin, Boolean rememberMe){
 		User user = userService.findUserByEmail(userDetails.getUsername());
 		Map<String, Object> claims = new HashMap<>();
 		claims.put("user_id", user.getId());
 		claims.put("user_tenant", user.getClient().getTenant());
 		claims.put("user_time_zone", timeZone.getID());
 		claims.put("user_first_login", isFirstLogin);
+		claims.put("remember_me", rememberMe);
 		
 		return claims;
 	}
