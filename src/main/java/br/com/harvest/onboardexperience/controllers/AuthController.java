@@ -3,10 +3,12 @@ package br.com.harvest.onboardexperience.controllers;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TimeZone;
+import java.util.Map.Entry;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import io.jsonwebtoken.impl.DefaultClaims;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.MediaType;
@@ -70,7 +72,7 @@ public class AuthController {
 		final UserDetails userDetails = userDetailsService
 				.loadUserByUsername(authenticationRequest.getEmail());
 
-		final String token = jwtUtil.generateToken(createUserClaims(userDetails, timeZone, isFirstLogin), userDetails);
+		final String token = jwtUtil.generateToken(createUserClaims(userDetails, timeZone, isFirstLogin), userDetails, authenticationRequest.getRememberMe());
 
 		return ResponseEntity.ok(new JwtResponse(token));
 	}
@@ -96,6 +98,23 @@ public class AuthController {
 		claims.put("user_first_login", isFirstLogin);
 		
 		return claims;
+	}
+
+	@RequestMapping(value = "/refreshtoken", method = RequestMethod.GET)
+	public ResponseEntity<?> refreshtoken(HttpServletRequest request) throws Exception {
+		DefaultClaims claims = (io.jsonwebtoken.impl.DefaultClaims) request.getAttribute("claims");
+
+		Map<String, Object> expectedMap = getMapFromIoJsonwebtokenClaims(claims);
+		String token = jwtUtil.doGenerateRefreshToken(expectedMap, expectedMap.get("sub").toString());
+		return ResponseEntity.ok(new JwtResponse(token));
+	}
+
+	public Map<String, Object> getMapFromIoJsonwebtokenClaims(DefaultClaims claims) {
+		Map<String, Object> expectedMap = new HashMap<String, Object>();
+		for (Entry<String, Object> entry : claims.entrySet()) {
+			expectedMap.put(entry.getKey(), entry.getValue());
+		}
+		return expectedMap;
 	}
 
 }
