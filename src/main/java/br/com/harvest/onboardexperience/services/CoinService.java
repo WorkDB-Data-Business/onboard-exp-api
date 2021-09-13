@@ -3,6 +3,7 @@ package br.com.harvest.onboardexperience.services;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import br.com.harvest.onboardexperience.domain.enumerators.FileTypeEnum;
 import br.com.harvest.onboardexperience.domain.exceptions.BusinessException;
 import br.com.harvest.onboardexperience.mappers.ClientMapper;
 import org.springframework.beans.BeanUtils;
@@ -124,7 +125,7 @@ public class CoinService {
     private void saveImage(MultipartFile file, CoinDto dto) {
 		String filePath = "";
     	if(file != null){
-			filePath = fileStorageService.save(file, dto.getName(), dto.getClient().getCnpj());
+			filePath = fileStorageService.save(file, dto.getName(), new String[]{dto.getClient().getCnpj(), FileTypeEnum.COIN.getName()});
 		}else{
 			filePath = fileStorageService.rename(dto.getName(), dto.getImagePath());
 		}
