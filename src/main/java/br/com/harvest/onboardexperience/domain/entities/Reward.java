@@ -41,6 +41,9 @@ public class Reward extends BaseEntityAudit {
 	
 	@Column(name = "price")
 	private BigDecimal price;
+
+	@Column(name = "description")
+	private String description;
 	
 	@ManyToOne
 	@JoinColumn(name = "idclient")
