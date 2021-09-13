@@ -54,8 +54,16 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                 log.error("Unable to get JWT Token");
                 throw e;
             } catch (ExpiredJwtException e) {
-                log.error("JWT Token has expired");
-                throw e;
+                String isRefreshToken = request.getHeader("isRefreshToken");
+                String requestURL = request.getRequestURL().toString();
+                if (isRefreshToken != null && isRefreshToken.equals("true") && requestURL.contains("refreshtoken")) {
+                    allowForRefreshToken(e, request);
+                } else {
+                    request.setAttribute("exception", e);
+
+                    log.error("JWT Token has expired");
+                    throw e;
+                }
             }
 
         } else {
@@ -77,6 +85,15 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             }
         }
         chain.doFilter(request, response);
+    }
+
+    private void allowForRefreshToken(ExpiredJwtException ex, HttpServletRequest request) {
+
+        UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
+                null, null, null);
+        SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
+        request.setAttribute("claims", ex.getClaims());
+
     }
 
 }

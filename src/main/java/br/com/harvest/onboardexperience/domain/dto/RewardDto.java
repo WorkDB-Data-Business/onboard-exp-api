@@ -22,8 +22,8 @@ import lombok.NoArgsConstructor;
 public class RewardDto {
 	
 	private Long id;
-	
-	@JsonIgnore
+
+	@JsonProperty(access = Access.READ_ONLY)
 	private String imagePath;
 	
 	@NotBlank

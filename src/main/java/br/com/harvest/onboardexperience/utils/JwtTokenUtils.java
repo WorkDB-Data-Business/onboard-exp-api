@@ -21,7 +21,8 @@ public class JwtTokenUtils implements Serializable {
 
 	private static final long serialVersionUID = -7137341187394251979L;
 
-	public static final long JWT_TOKEN_VALIDITY = 5 * 60 * 60;
+	public static final long JWT_TOKEN_VALIDITY =  1000 * 1 * 60 * 60 ;
+	public static final long JWT_TOKEN_VALIDITY_REMEMBER =  1000 * 24 * 7 * 60 * 60;
 	
 	@Autowired
 	private EnvironmentVariable env;
@@ -75,16 +76,21 @@ public class JwtTokenUtils implements Serializable {
 		return expiration.before(new Date());
 	}
 
-	public String generateToken(Map<String, Object> claims, UserDetails userDetails) {
+	public String generateToken(Map<String, Object> claims, UserDetails userDetails, Boolean rememberMe) {
 		if(java.util.Objects.isNull(claims)) claims = new HashMap<>(); 
 		
-		return doGenerateToken(claims, userDetails.getUsername());
+		return doGenerateToken(claims, userDetails.getUsername(), rememberMe);
 	}
 
-	private String doGenerateToken(Map<String, Object> claims, String subject) {
-
+	private String doGenerateToken(Map<String, Object> claims, String subject, Boolean rememberMe) {
+		Date expiration;
+		if(rememberMe){
+			expiration = new Date(System.currentTimeMillis() + JWT_TOKEN_VALIDITY_REMEMBER);
+		}else{
+			expiration = new Date(System.currentTimeMillis() + JWT_TOKEN_VALIDITY);
+		}
 		return Jwts.builder().setClaims(claims).setSubject(subject).setIssuedAt(new Date(System.currentTimeMillis()))
-				.setExpiration(new Date(System.currentTimeMillis() + JWT_TOKEN_VALIDITY * 1000))
+				.setExpiration(expiration)
 				.signWith(SignatureAlgorithm.HS512, env.getJwtSecret()).compact();
 	}
 
@@ -100,4 +106,17 @@ public class JwtTokenUtils implements Serializable {
 		return token;
 	}
 
+	public String doGenerateRefreshToken(Map<String, Object> claims, String subject) {
+		var rememberMe = (Boolean)claims.get("remember_me");
+		Date expiration;
+		if(rememberMe){
+			expiration = new Date(System.currentTimeMillis() + JWT_TOKEN_VALIDITY_REMEMBER);
+		}else{
+			expiration = new Date(System.currentTimeMillis() + JWT_TOKEN_VALIDITY);
+		}
+
+		return Jwts.builder().setClaims(claims).setSubject(subject).setIssuedAt(new Date(System.currentTimeMillis()))
+				.setExpiration(expiration)
+				.signWith(SignatureAlgorithm.HS512, env.getJwtSecret()).compact();
+	}
 }

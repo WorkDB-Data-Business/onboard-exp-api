@@ -3,6 +3,7 @@ package br.com.harvest.onboardexperience.services;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import br.com.harvest.onboardexperience.domain.enumerators.FileTypeEnum;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -48,7 +49,7 @@ public class RewardService {
 
 			validate(dto, tenant);
 			
-			saveImage(file, false, dto);
+			saveImage(file, dto);
 
 			Reward reward = repository.save(RewardMapper.INSTANCE.toEntity(dto));
 
@@ -70,7 +71,7 @@ public class RewardService {
 					() -> new RewardNotFoundException(ExceptionMessageFactory.createNotFoundMessage("reward", "ID", id.toString())));
 
 			validate(reward, dto, tenant);
-			saveImage(file, true, dto);
+			saveImage(file, dto);
 
 			BeanUtils.copyProperties(dto, reward, "id", "client", "createdAt", "createdBy");
 
@@ -125,8 +126,8 @@ public class RewardService {
 			log.info("The Reward with ID " + id + " was " + isEnabled + " successful.");
 	}
 	
-	private void saveImage(MultipartFile file, Boolean overwrite, RewardDto dto) {
-		String filePath = fileStorageService.save(file, dto.getName(), dto.getClient().getCnpj());
+	private void saveImage(MultipartFile file, RewardDto dto) {
+		String filePath = fileStorageService.save(file, dto.getName(), new String[] {dto.getClient().getCnpj(), FileTypeEnum.REWARD.getName()});
 		dto.setImagePath(filePath);
 	}
 

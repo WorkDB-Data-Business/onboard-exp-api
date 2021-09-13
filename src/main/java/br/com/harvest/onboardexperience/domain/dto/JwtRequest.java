@@ -15,5 +15,6 @@ public class JwtRequest implements Serializable {
 	
 	private String email;
 	private String password;
+	private Boolean rememberMe;
 
 }
