@@ -40,7 +40,7 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 	}
 	
 	@ExceptionHandler(BusinessException.class)
-	public ResponseEntity<?> handleFactoryException(BusinessException e){
+	public ResponseEntity<?> handleBusinessException(BusinessException e){
 		logger.error(e);
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST).contentType(MediaType.APPLICATION_JSON).body(e);
 	}

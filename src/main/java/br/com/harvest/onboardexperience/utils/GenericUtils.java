@@ -35,23 +35,6 @@ public class GenericUtils {
 		return true;
 	}
 	
-	public static String getSubDomain(String serverName) {
-		Boolean haveDomain = serverName.contains(".");
-		return haveDomain ? serverName.substring(0, serverName.indexOf(".")) : null;
-	}
-	
-	public static String getSubDomainOrThrownException(HttpServletRequest request, HttpServletResponse response, HandlerExceptionResolver resolver) {
-		Boolean haveDomain = request.getServerName().contains(".");
-		String subdomain =  haveDomain ? request.getServerName().substring(0, request.getServerName().indexOf(".")) : null;
-		
-		if(Objects.isNull(subdomain)) {
-			resolver.resolveException(request, response, null, new SubdomainNotFoundException("It's necessary a subdomain in request.", 
-					new Throwable("Subdomain not found in URL requested")));
-			return null;
-		} 
-		return subdomain;
-	}
-	
 	public static String formatNameToUsername(String name) {
 		return name.toLowerCase().replace(" ", ".");
 	}

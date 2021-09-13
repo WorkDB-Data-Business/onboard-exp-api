@@ -80,8 +80,7 @@ public class ClientService {
     }
 
     public Page<ClientDto> findAll(Pageable pageable) {
-        List<ClientDto> clients = repository.findAll().stream().map(mapper::toDto).collect(Collectors.toList());
-        return new PageImpl<>(clients, pageable, clients.size());
+        return repository.findAll(pageable).map(mapper::toDto);
     }
 
     @Transactional

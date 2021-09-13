@@ -95,8 +95,7 @@ public class CoinService {
 
     public Page<CoinDto> findAllByTenant(Pageable pageable, @NonNull String token) {
         String tenant = jwtUtils.getUserTenant(token);
-        List<CoinDto> coins = repository.findAllByClient_Tenant(tenant).stream().map(CoinMapper.INSTANCE::toDto).collect(Collectors.toList());
-        return new PageImpl<>(coins, pageable, coins.size());
+        return repository.findAllByClient_Tenant(tenant).map(CoinMapper.INSTANCE::toDto);
     }
 
 

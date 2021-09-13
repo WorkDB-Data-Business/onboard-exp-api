@@ -19,13 +19,13 @@ public interface ClientRepository extends JpaRepository<Client, Long>{
 	
 	Optional<Client> findByCnpj(String cnpj);
 	
-	@Query(value = "SELECT * FROM tbclient WHERE is_active = false", nativeQuery = true)
+	@Query(value = "SELECT c FROM Client c WHERE c.isActive = false")
 	List<Client> findAllInactiveClients();
 	
-	@Query(value = "SELECT * FROM tbclient WHERE is_blocked = true", nativeQuery = true)
+	@Query(value = "SELECT c FROM Client c WHERE c.isBlocked = true")
 	List<Client> findAllBlockedClients();
 	
-	@Query(value = "SELECT * FROM tbclient WHERE is_expired = true", nativeQuery = true)
+	@Query(value = "SELECT c FROM Client c WHERE c.isExpired = true")
 	List<Client> findAllExpiredClients();
 	
 	@Modifying
