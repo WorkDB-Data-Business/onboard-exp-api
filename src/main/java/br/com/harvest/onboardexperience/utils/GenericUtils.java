@@ -34,7 +34,11 @@ public class GenericUtils {
 		
 		return true;
 	}
-	
+
+	public static Boolean stringNullOrEmpty(String val) {
+		return (val == null || val.trim().isEmpty() );
+	}
+
 	public static String formatNameToUsername(String name) {
 		return name.toLowerCase().replace(" ", ".");
 	}

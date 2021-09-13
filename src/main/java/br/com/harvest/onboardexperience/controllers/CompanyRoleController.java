@@ -3,6 +3,7 @@ package br.com.harvest.onboardexperience.controllers;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 
+import br.com.harvest.onboardexperience.domain.dto.RewardDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,7 +21,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 @Tag(name = "Company Role")
 @RestController
-@RequestMapping("/v1")
+@RequestMapping("/v1/company-roles")
 @CrossOrigin(origins = "*", maxAge = 36000)
 public class CompanyRoleController {
 	
@@ -29,28 +30,35 @@ public class CompanyRoleController {
 	
 	@Operation(description = "Retorna os cargos cadastrados.")
 	@PreAuthorize("hasAuthority('ADMIN')")
-	@GetMapping(path = "/company-roles", produces = MediaType.APPLICATION_JSON_VALUE)
+	@GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Page<CompanyRoleDto>> findAll(Pageable pageable, @RequestHeader("Authorization") String token) {
 		return ResponseEntity.ok(service.findAllByTenant(pageable, token));
+	}
+
+	@Operation(description = "Retorna os cargos com base no valor buscado.")
+	@PreAuthorize("hasAuthority('ADMIN')")
+	@GetMapping(path = "/find/{criteria}", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<Page<CompanyRoleDto>> findbyCriteria(@PathVariable String criteria, Pageable pageable, @RequestHeader("Authorization") String token) {
+		return ResponseEntity.ok(service.findByCriteria(criteria, pageable, token));
 	}
 	
 	@Operation(description = "Retorna o cargo cadastrado pelo ID.")
 	@PreAuthorize("hasAuthority('ADMIN')")
-	@GetMapping(path = "/company-roles/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+	@GetMapping(path = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<CompanyRoleDto> findById(@PathVariable  @Pattern(regexp = RegexUtils.ONLY_NUMBERS) Long id, @RequestHeader("Authorization") String token) {
 		return ResponseEntity.ok(service.findByIdAndTenant(id, token));
 	}
 	
 	@Operation(description = "Salva um cargo no banco de dados e o retorna.")
 	@PreAuthorize("hasAuthority('ADMIN')")
-	@PostMapping(path = "/company-roles", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+	@PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<CompanyRoleDto> create(@RequestBody @NotNull CompanyRoleDto dto,  @RequestHeader("Authorization") String token) {
 		return ResponseEntity.ok().body(service.create(dto, token));
 	}
 	
 	@Operation(description = "Realiza a alteração de um cargo no banco de dados e o retorna atualizado.")
 	@PreAuthorize("hasAuthority('ADMIN')")
-	@PutMapping(path = "/company-roles/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+	@PutMapping(path = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<CompanyRoleDto> update(@PathVariable  @Pattern(regexp = RegexUtils.ONLY_NUMBERS) Long id
 			, @RequestBody @NotNull CompanyRoleDto dto,  @RequestHeader("Authorization") String token) {
 		return ResponseEntity.ok().body(service.update(id, dto, token));
@@ -59,7 +67,7 @@ public class CompanyRoleController {
 	@Operation(description = "Realiza a exclusão de um cargo no banco de dados.")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	@PreAuthorize("hasAuthority('ADMIN')")
-	@DeleteMapping(path = "/company-roles/{id}")
+	@DeleteMapping(path = "/{id}")
 	public void delete(@PathVariable  @Pattern(regexp = RegexUtils.ONLY_NUMBERS) Long id, @RequestHeader("Authorization") String token) {
 		service.delete(id, token);
 	}

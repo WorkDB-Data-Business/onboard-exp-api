@@ -3,6 +3,7 @@ package br.com.harvest.onboardexperience.services;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import br.com.harvest.onboardexperience.utils.GenericUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -57,6 +58,14 @@ public class CompanyRoleService {
         return CompanyRoleMapper.INSTANCE.toDto(companyRole);
     }
 
+    public Page<CompanyRoleDto> findByCriteria(String criteria, Pageable pageable, String token) {
+        String tenant = jwtUtils.getUserTenant(token);
+        if(GenericUtils.stringNullOrEmpty(criteria)){
+            return findAllByTenant(pageable, token);
+        }
+        return repository.findByCriteria(criteria, tenant, pageable).map(CompanyRoleMapper.INSTANCE::toDto);
+    }
+
 
     public CompanyRoleDto findByIdAndTenant(@NonNull final Long id, @NonNull final String token) {
         String tenant = jwtUtils.getUserTenant(token);
@@ -75,10 +84,10 @@ public class CompanyRoleService {
     }
 
 
+
     public Page<CompanyRoleDto> findAllByTenant(Pageable pageable, @NonNull final String token) {
         String tenant = jwtUtils.getUserTenant(token);
-        List<CompanyRoleDto> companyRoles = repository.findAllByClient_Tenant(tenant).stream().map(CompanyRoleMapper.INSTANCE::toDto).collect(Collectors.toList());
-        return new PageImpl<>(companyRoles, pageable, companyRoles.size());
+        return repository.findAllByClient_Tenant(tenant, pageable).map(CompanyRoleMapper.INSTANCE::toDto);
     }
 
     public void delete(@NonNull final Long id, @NonNull final String token) {
@@ -92,5 +101,4 @@ public class CompanyRoleService {
     public void disableAllByClient(@NonNull final Client client) {
         repository.disableAllByClient(client.getId());
     }
-
 }

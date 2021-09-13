@@ -3,6 +3,8 @@ package br.com.harvest.onboardexperience.repositories;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -39,5 +41,10 @@ public interface ClientRepository extends JpaRepository<Client, Long>{
 	@Modifying
 	@Query(value = "UPDATE tbuser SET is_blocked = ?1 FROM tbclient WHERE tbuser.idclient = tbclient.idclient AND tbclient.idclient = ?2", nativeQuery = true)
 	void blockAllUsersFromAClient(Boolean isBlocked, Long idClient);
-	
+
+	@Query(value="SELECT c FROM Client c WHERE " +
+			"UPPER(c.name) LIKE '%'|| UPPER(:criteria) ||'%' OR " +
+			"UPPER(c.cnpj) LIKE '%'|| UPPER(:criteria) ||'%' OR " +
+			"UPPER(c.email) LIKE '%'|| UPPER(:criteria) ||'%'")
+	Page<Client> findByCriteria(String criteria, Pageable pageable);
 }

@@ -4,6 +4,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 
+import br.com.harvest.onboardexperience.domain.dto.ClientDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -22,7 +23,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 @Tag(name = "Coins")
 @RestController
-@RequestMapping("/v1")
+@RequestMapping("/v1/coins")
 @CrossOrigin(origins = "*", maxAge = 36000)
 public class CoinController {
 	
@@ -31,28 +32,35 @@ public class CoinController {
 	
 	@Operation(description = "Retorna as moedas cadastradas.")
 	@PreAuthorize("hasAuthority('ADMIN')")
-	@GetMapping(path = "/coins", produces = MediaType.APPLICATION_JSON_VALUE)
+	@GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Page<CoinDto>> findAll(Pageable pageable, @RequestHeader("Authorization") String token) {
 		return ResponseEntity.ok(service.findAllByTenant(pageable, token));
-	}	
+	}
+
+	@Operation(description = "Retorna as moedas com base no valor buscado.")
+	@PreAuthorize("hasAuthority('ADMIN')")
+	@GetMapping(path = "/find/{criteria}", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<Page<CoinDto>> findbyCriteria(@PathVariable String criteria, Pageable pageable, @RequestHeader("Authorization") String token) {
+		return ResponseEntity.ok(service.findByCriteria(criteria, pageable, token));
+	}
 	
 	@Operation(description = "Retorna a moeda cadastrada pelo ID.")
 	@PreAuthorize("hasAuthority('ADMIN')")
-	@GetMapping(path = "/coins/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+	@GetMapping(path = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<CoinDto> findById(@PathVariable  @Pattern(regexp = RegexUtils.ONLY_NUMBERS) Long id, @RequestHeader("Authorization") String token) {
 		return ResponseEntity.ok(service.findByIdAndTenant(id, token));
 	}
 	
 	@Operation(description = "Salva uma moeda no banco de dados e a retorna.")
 	@PreAuthorize("hasAuthority('ADMIN')")
-	@PostMapping(path = "/coins", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+	@PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<CoinDto> create(@Valid @ModelAttribute @NotNull CoinDto dto, @RequestParam("file") MultipartFile file, @RequestHeader("Authorization") String token) throws RuntimeException {
 		return ResponseEntity.ok().body(service.create(dto, file, token));
 	}
 	
 	@Operation(description = "Realiza a alteração de uma moeda no banco de dados e a retorna atualizada.")
 	@PreAuthorize("hasAuthority('ADMIN')")
-	@PutMapping(path = "/coins/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+	@PutMapping(path = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<CoinDto> update(@PathVariable  @Pattern(regexp = RegexUtils.ONLY_NUMBERS) Long id, @Valid @ModelAttribute @NotNull CoinDto dto, @RequestParam(value = "file", required = false) MultipartFile file, @RequestHeader("Authorization") String token) {
 		return ResponseEntity.ok().body(service.update(id, dto, file, token));
 	}
@@ -60,7 +68,7 @@ public class CoinController {
 	@Operation(description = "Realiza a exclusão de uma moeda no banco de dados.")
 	@PreAuthorize("hasAuthority('ADMIN')")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
-	@DeleteMapping(path = "/coins/{id}")
+	@DeleteMapping(path = "/{id}")
 	public void delete(@PathVariable  @Pattern(regexp = RegexUtils.ONLY_NUMBERS) Long id, @RequestHeader("Authorization") String token) {
 		service.delete(id, token);
 	}
@@ -68,9 +76,8 @@ public class CoinController {
 	@Operation(description = "Realiza a inativação de uma moeda no banco de dados.")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	@PreAuthorize("hasAuthority('ADMIN')")
-	@PatchMapping(path = "/coins/disable/{id}")
+	@PatchMapping(path = "/disable/{id}")
 	public void disable(@PathVariable  @Pattern(regexp = RegexUtils.ONLY_NUMBERS) Long id, @RequestHeader("Authorization") String token) {
 		service.disableCoin(id, token);
 	}
-	
 }

@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 import br.com.harvest.onboardexperience.domain.enumerators.FileTypeEnum;
 import br.com.harvest.onboardexperience.domain.exceptions.BusinessException;
 import br.com.harvest.onboardexperience.mappers.ClientMapper;
+import br.com.harvest.onboardexperience.utils.GenericUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -92,10 +93,18 @@ public class CoinService {
         return coin;
     }
 
+    public Page<CoinDto> findByCriteria(String criteria, Pageable pageable, String token) {
+        String tenant = jwtUtils.getUserTenant(token);
+        if(GenericUtils.stringNullOrEmpty(criteria)){
+            return findAllByTenant(pageable, token);
+        }
+        return repository.findByCriteria(criteria, tenant, pageable).map(CoinMapper.INSTANCE::toDto);
+    }
+
 
     public Page<CoinDto> findAllByTenant(Pageable pageable, @NonNull String token) {
         String tenant = jwtUtils.getUserTenant(token);
-        return repository.findAllByClient_Tenant(tenant).map(CoinMapper.INSTANCE::toDto);
+        return repository.findAllByClient_Tenant(tenant, pageable).map(CoinMapper.INSTANCE::toDto);
     }
 
 

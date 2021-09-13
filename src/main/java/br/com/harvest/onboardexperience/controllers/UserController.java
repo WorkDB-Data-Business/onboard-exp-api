@@ -22,7 +22,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 @Tag(name = "Users")
 @RestController
-@RequestMapping("/v1")
+@RequestMapping("/v1/users")
 @CrossOrigin(origins = "*", maxAge = 36000)
 public class UserController {
 	
@@ -31,34 +31,41 @@ public class UserController {
 	
 	@Operation(description = "Retorna os usuários cadastrados.")
 	@PreAuthorize("hasAuthority('ADMIN')")
-	@GetMapping(path = "/users", produces = MediaType.APPLICATION_JSON_VALUE)
+	@GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Page<UserDto>> findAll(Pageable pageable, @RequestHeader("Authorization") String token) {
 		return ResponseEntity.ok(service.findAllByTenant(pageable, token));
-	}	
-	
+	}
+
+	@Operation(description = "Retorna os usuários com base no valor buscado.")
+	@PreAuthorize("hasAuthority('ADMIN')")
+	@GetMapping(path = "/find/{criteria}", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<Page<UserDto>> findbyCriteria(@PathVariable String criteria, Pageable pageable, @RequestHeader("Authorization") String token) {
+		return ResponseEntity.ok(service.findByCriteria(criteria, pageable, token));
+	}
+
 	@Operation(description = "Retorna o usuário cadastrado pelo ID.")
 	@PreAuthorize("hasAuthority('ADMIN')")
-	@GetMapping(path = "/users/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<UserDto> findById(@PathVariable  @Pattern(regexp = RegexUtils.ONLY_NUMBERS) Long id, @RequestHeader("Authorization") String token) {
+	@GetMapping(path = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<UserDto> findById(@PathVariable @Pattern(regexp = RegexUtils.ONLY_NUMBERS) Long id, @RequestHeader("Authorization") String token) {
 		return ResponseEntity.ok(service.findByIdAndTenant(id, token));
 	}
 	
 	@Operation(description = "Retorna o usuário autenticado.")
-	@GetMapping(path = "/users/my-user", produces = MediaType.APPLICATION_JSON_VALUE)
+	@GetMapping(path = "/my-user", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<UserDto> findMyUser(@RequestHeader("Authorization") String token) {
 		return ResponseEntity.ok(service.findMyUser(token));
 	}
 	
 	@Operation(description = "Salva um usuário no banco de dados e o retorna.")
 	@PreAuthorize("hasAuthority('ADMIN')")
-	@PostMapping(path = "/users", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+	@PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<UserDto> create(@Valid @RequestBody @NotNull UserForm dto, @RequestHeader("Authorization") String token) throws RuntimeException {
 		return ResponseEntity.ok().body(service.create(dto, token));
 	}
 	
 	@Operation(description = "Realiza a alteração de um usuário no banco de dados e o retorna atualizado.")
 	@PreAuthorize("hasAuthority('ADMIN')")
-	@PutMapping(path = "/users/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+	@PutMapping(path = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<UserDto> update(@PathVariable  @Pattern(regexp = RegexUtils.ONLY_NUMBERS) Long id, @RequestBody @Valid @NotNull UserForm dto, @RequestHeader("Authorization") String token) {
 		return ResponseEntity.ok().body(service.update(id, dto, token));
 	}
@@ -66,7 +73,7 @@ public class UserController {
 	@Operation(description = "Realiza a exclusão de um usuário no banco de dados.")
 	@PreAuthorize("hasAuthority('ADMIN')")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
-	@DeleteMapping(path = "/users/{id}")
+	@DeleteMapping(path = "/{id}")
 	public void delete(@PathVariable  @Pattern(regexp = RegexUtils.ONLY_NUMBERS) Long id, @RequestHeader("Authorization") String token) {
 		service.delete(id, token);
 	}
@@ -74,7 +81,7 @@ public class UserController {
 	@Operation(description = "Realiza a inativação de um usuário no banco de dados.")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	@PreAuthorize("hasAuthority('ADMIN')")
-	@PatchMapping(path = "/users/disable/{id}")
+	@PatchMapping(path = "/disable/{id}")
 	public void disable(@PathVariable  @Pattern(regexp = RegexUtils.ONLY_NUMBERS) Long id, @RequestHeader("Authorization") String token) {
 		service.disableUser(id, token);
 	}
@@ -82,7 +89,7 @@ public class UserController {
 	@Operation(description = "Realiza a expiração de um usuário no banco de dados.")
 	@PreAuthorize("hasAuthority('ADMIN')")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
-	@PatchMapping(path = "/users/expire/{id}")
+	@PatchMapping(path = "/expire/{id}")
 	public void expire(@PathVariable  @Pattern(regexp = RegexUtils.ONLY_NUMBERS) Long id, @RequestHeader("Authorization") String token) {
 		service.expireUser(id, token);
 	}
@@ -90,7 +97,7 @@ public class UserController {
 	@Operation(description = "Realiza a  de um usuário no banco de dados.")
 	@PreAuthorize("hasAuthority('ADMIN')")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
-	@PatchMapping(path = "/users/block/{id}")
+	@PatchMapping(path = "/block/{id}")
 	public void block(@PathVariable  @Pattern(regexp = RegexUtils.ONLY_NUMBERS) Long id, @RequestHeader("Authorization") String token) {
 		service.blockUser(id, token);
 	}
