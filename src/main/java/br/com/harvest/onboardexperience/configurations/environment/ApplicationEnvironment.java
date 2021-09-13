@@ -10,7 +10,7 @@ import lombok.Setter;
 @Setter
 @Configuration
 @ConfigurationProperties(prefix = "application")
-class ApplicationEnvironment {
+public class ApplicationEnvironment {
 	
 	private String version;
 	private String description;

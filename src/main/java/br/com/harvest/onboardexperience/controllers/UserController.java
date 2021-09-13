@@ -5,6 +5,9 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 
 import br.com.harvest.onboardexperience.domain.dto.UserForm;
+import br.com.harvest.onboardexperience.infra.email.EmailMessage;
+import br.com.harvest.onboardexperience.infra.email.EmailSender;
+import br.com.harvest.onboardexperience.infra.email.EmailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,15 +23,21 @@ import br.com.harvest.onboardexperience.utils.RegexUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
+import java.util.Map;
+import java.util.Set;
+
 @Tag(name = "Users")
 @RestController
 @RequestMapping("/v1")
 @CrossOrigin(origins = "*", maxAge = 36000)
 public class UserController {
-	
+
 	@Autowired
 	private UserService service;
-	
+
+	@Autowired
+	private EmailSender emailSender;
+
 	@Operation(description = "Retorna os usuários cadastrados.")
 	@PreAuthorize("hasAuthority('ADMIN')")
 	@GetMapping(path = "/users", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -87,11 +96,12 @@ public class UserController {
 		service.expireUser(id, token);
 	}
 	
-	@Operation(description = "Realiza a  de um usuário no banco de dados.")
+	@Operation(description = "Realiza a de um usuário no banco de dados.")
 	@PreAuthorize("hasAuthority('ADMIN')")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	@PatchMapping(path = "/users/block/{id}")
 	public void block(@PathVariable  @Pattern(regexp = RegexUtils.ONLY_NUMBERS) Long id, @RequestHeader("Authorization") String token) {
 		service.blockUser(id, token);
 	}
+
 }

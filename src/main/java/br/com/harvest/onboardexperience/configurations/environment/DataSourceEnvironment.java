@@ -10,7 +10,7 @@ import lombok.Setter;
 @Setter
 @Configuration
 @ConfigurationProperties(prefix = "spring.datasource")
-class DataSourceEnvironment {
+public class DataSourceEnvironment {
 
 	private String url;
 	private String username;
