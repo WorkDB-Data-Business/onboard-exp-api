@@ -16,6 +16,12 @@ public class EnvironmentVariable {
 	 
 	@Autowired
 	private DataSourceEnvironment dataSourceEnvironment;
+
+	@Autowired
+	private ApiEnvironment apiEnvironment;
+
+	@Autowired
+	private EmailEnvironment emailEnvironment;
 	
 	@Value("${server.port}")
 	private Integer serverPort;
@@ -26,28 +32,20 @@ public class EnvironmentVariable {
 	@Value("${jwt.secret}")
 	private String jwtSecret;
 	
-	public String getApplicationVersion() {
-		return applicationEnvironment.getVersion();
+	public ApiEnvironment getApiEnvironment() {
+		return this.apiEnvironment;
 	}
 	
-	public String getApplicationDescription() {
-		return applicationEnvironment.getDescription();
+	public ApplicationEnvironment getApplicationEnvironment() {
+		return this.applicationEnvironment;
 	}
-	
-	public String getApiVersion() {
-		return applicationEnvironment.getApi().getVersion();
+
+	public DataSourceEnvironment getDataSourceEnvironment(){
+		return this.dataSourceEnvironment;
 	}
-	
-	public String getDataSourceUsername() {
-		return dataSourceEnvironment.getUsername();
-	}
-	
-	public String getDataSourcePassword() {
-		return dataSourceEnvironment.getPassword();
-	}
-	
-	public String getDataSourceUrl() {
-		return dataSourceEnvironment.getUrl();
+
+	public EmailEnvironment getEmailEnvironment(){
+		return this.emailEnvironment;
 	}
 
 }

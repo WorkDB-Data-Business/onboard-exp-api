@@ -19,8 +19,8 @@ public class OpenApiConfig {
 	  public OpenAPI springShopOpenAPI() {
 	      return new OpenAPI()
 	              .info(new Info().title("Onboard Experience API")
-	              .description(env.getApplicationDescription())
-	              .version(env.getApiVersion()));
+	              .description(env.getApplicationEnvironment().getDescription())
+	              .version(env.getApiEnvironment().getVersion()));
 	      		
 	  }
 
