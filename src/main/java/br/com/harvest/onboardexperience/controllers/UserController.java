@@ -96,7 +96,7 @@ public class UserController {
 		service.expireUser(id, token);
 	}
 	
-	@Operation(description = "Realiza a de um usuário no banco de dados.")
+	@Operation(description = "Realiza o bloqueio de um usuário no banco de dados.")
 	@PreAuthorize("hasAuthority('ADMIN')")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	@PatchMapping(path = "/users/block/{id}")
