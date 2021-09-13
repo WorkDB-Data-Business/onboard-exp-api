@@ -3,7 +3,9 @@ package br.com.harvest.onboardexperience.services;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import br.com.harvest.onboardexperience.domain.dto.UserDto;
 import br.com.harvest.onboardexperience.domain.enumerators.FileTypeEnum;
+import br.com.harvest.onboardexperience.utils.GenericUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -96,11 +98,17 @@ public class RewardService {
 		return RewardMapper.INSTANCE.toDto(reward);
 	}
 
-	
+	public Page<RewardDto> findByCriteria(String criteria, final Pageable pageable, final String token) {
+		String tenant = jwtUtils.getUserTenant(token);
+		if(GenericUtils.stringNullOrEmpty(criteria)){
+			return findAllByTenant(pageable, token);
+		}
+		return repository.findByCriteria(criteria, tenant, pageable).map(RewardMapper.INSTANCE::toDto);
+	}
+
 	public Page<RewardDto> findAllByTenant(Pageable pageable, @NonNull final String token) {
 		String tenant = jwtUtils.getUserTenant(token);
-		List<RewardDto> rewards = repository.findAllByClient_Tenant(tenant).stream().map(RewardMapper.INSTANCE::toDto).collect(Collectors.toList());
-		return new PageImpl<>(rewards, pageable, rewards.size());
+		return repository.findAllByClient_Tenant(tenant, pageable).map(RewardMapper.INSTANCE::toDto);
 	}
 
 	
@@ -165,4 +173,6 @@ public class RewardService {
 			checkIfRewardAlreadyExists(dto, tenant);
 		}
 	}
+
+
 }

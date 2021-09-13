@@ -188,11 +188,17 @@ public class UserService {
         return mapper.toDto(user);
     }
 
+    public Page<UserDto> findByCriteria(String criteria,final Pageable pageable, final String token) {
+        String tenant = jwtUtils.getUserTenant(token);
+        if(GenericUtils.stringNullOrEmpty(criteria)){
+            return findAllByTenant(pageable, token);
+        }
+        return repository.findByCriteria(criteria, tenant, pageable).map(mapper::toDto);
+    }
 
     public Page<UserDto> findAllByTenant(final Pageable pageable, final String token) {
         String tenant = jwtUtils.getUserTenant(token);
-        List<UserDto> users = repository.findAllByClient_Tenant(tenant).stream().map(mapper::toDto).collect(Collectors.toList());
-        return new PageImpl<>(users, pageable, users.size());
+        return repository.findAllByClient_Tenant(tenant, pageable).map(mapper::toDto);
     }
 
 

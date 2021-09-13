@@ -74,14 +74,20 @@ public class ClientService {
                 () -> new ClientNotFoundException(ExceptionMessageFactory.createNotFoundMessage("client", "ID", id.toString()))));
     }
 
+    public Page<ClientDto> findByCriteria(String criteria, Pageable pageable, String token) {
+        if(GenericUtils.stringNullOrEmpty(criteria)){
+            return findAll(pageable);
+        }
+        return repository.findByCriteria(criteria, pageable).map(mapper::toDto);
+    }
+
     public ClientDto findByTenant(@NonNull final String tenant) {
         return mapper.toDto(repository.findByTenantContainingIgnoreCase(tenant).orElseThrow(
                 () -> new ClientNotFoundException(ExceptionMessageFactory.createNotFoundMessage("client", "ID", tenant))));
     }
 
     public Page<ClientDto> findAll(Pageable pageable) {
-        List<ClientDto> clients = repository.findAll().stream().map(mapper::toDto).collect(Collectors.toList());
-        return new PageImpl<>(clients, pageable, clients.size());
+        return repository.findAll(pageable).map(mapper::toDto);
     }
 
     @Transactional
