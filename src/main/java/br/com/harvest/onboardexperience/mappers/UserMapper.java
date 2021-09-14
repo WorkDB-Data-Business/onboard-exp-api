@@ -3,7 +3,7 @@ package br.com.harvest.onboardexperience.mappers;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
 
-import br.com.harvest.onboardexperience.domain.dto.UserDto;
+import br.com.harvest.onboardexperience.domain.dtos.UserDto;
 import br.com.harvest.onboardexperience.domain.entities.User;
 
 @Mapper(componentModel="spring")

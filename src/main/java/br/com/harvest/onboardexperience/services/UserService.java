@@ -1,10 +1,8 @@
 package br.com.harvest.onboardexperience.services;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 
 import br.com.harvest.onboardexperience.domain.enumerators.RoleEnum;
@@ -12,17 +10,16 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import br.com.harvest.onboardexperience.configurations.application.PasswordConfiguration;
-import br.com.harvest.onboardexperience.domain.dto.ClientDto;
-import br.com.harvest.onboardexperience.domain.dto.CompanyRoleDto;
-import br.com.harvest.onboardexperience.domain.dto.RoleDto;
-import br.com.harvest.onboardexperience.domain.dto.UserDto;
-import br.com.harvest.onboardexperience.domain.dto.UserForm;
+import br.com.harvest.onboardexperience.domain.dtos.ClientDto;
+import br.com.harvest.onboardexperience.domain.dtos.CompanyRoleDto;
+import br.com.harvest.onboardexperience.domain.dtos.RoleDto;
+import br.com.harvest.onboardexperience.domain.dtos.UserDto;
+import br.com.harvest.onboardexperience.domain.dtos.UserForm;
 import br.com.harvest.onboardexperience.domain.entities.User;
 import br.com.harvest.onboardexperience.domain.exceptions.InvalidCpfException;
 import br.com.harvest.onboardexperience.domain.exceptions.UserAlreadyExistsException;

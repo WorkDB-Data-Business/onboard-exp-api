@@ -11,8 +11,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import br.com.harvest.onboardexperience.domain.dto.UserDto;
-import br.com.harvest.onboardexperience.services.FileStorageService;
+import br.com.harvest.onboardexperience.domain.dtos.UserDto;
+import br.com.harvest.onboardexperience.infra.storage.services.FileStorageService;
 import br.com.harvest.onboardexperience.services.UserService;
 import br.com.harvest.onboardexperience.utils.JwtTokenUtils;
 import io.swagger.v3.oas.annotations.tags.Tag;

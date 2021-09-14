@@ -19,8 +19,8 @@ import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import br.com.harvest.onboardexperience.builders.MessageBuilder;
-import br.com.harvest.onboardexperience.domain.dto.responses.Message;
-import br.com.harvest.onboardexperience.domain.dto.responses.MessageError;
+import br.com.harvest.onboardexperience.domain.dtos.responses.Message;
+import br.com.harvest.onboardexperience.domain.dtos.responses.MessageError;
 import br.com.harvest.onboardexperience.domain.exceptions.BusinessException;
 import br.com.harvest.onboardexperience.domain.exceptions.CompanyRoleNotFoundException;
 import br.com.harvest.onboardexperience.domain.exceptions.FactoryException;
@@ -61,15 +61,7 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST).contentType(MediaType.APPLICATION_JSON).body(e);
 	}
 	
-	@ExceptionHandler(SubdomainNotFoundException.class)
-	public ResponseEntity<?> handleSubdomainNotFoundException(SubdomainNotFoundException e){
-		logger.error(e);
-		var message = new MessageBuilder().addMessage(e.getMessage()).withError(e.getMessage(), e.getCause().getMessage()).build();
-								  
-		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).contentType(MediaType.APPLICATION_JSON).body(message);
-	}
-	
-	@ExceptionHandler({CompanyRoleNotFoundException.class})
+	@ExceptionHandler({CompanyRoleNotFoundException.class, })
 	public ResponseEntity<?> handleNotFoundException(SubdomainNotFoundException e){
 		logger.error(e);
 		var message = new MessageBuilder().addMessage(e.getMessage()).withError(e.getMessage(), e.getMessage()).build();

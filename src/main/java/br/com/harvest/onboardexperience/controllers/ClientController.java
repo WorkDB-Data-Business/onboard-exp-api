@@ -13,7 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import br.com.harvest.onboardexperience.domain.dto.ClientDto;
+import br.com.harvest.onboardexperience.domain.dtos.ClientDto;
 import br.com.harvest.onboardexperience.services.ClientService;
 import br.com.harvest.onboardexperience.utils.RegexUtils;
 import io.swagger.v3.oas.annotations.Operation;
@@ -52,7 +52,7 @@ public class ClientController {
 	@Operation(description = "Salva um cliente no banco de dados e o retorna.")
 	@PreAuthorize("hasAuthority('MASTER')")
 	@PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<ClientDto> create(@Valid @RequestBody @NotNull ClientDto dto) {
+	public ResponseEntity<ClientDto> create(@Valid @RequestBody @NotNull ClientDto dto) throws Exception {
 		return ResponseEntity.ok().body(service.create(dto));
 	}
 	

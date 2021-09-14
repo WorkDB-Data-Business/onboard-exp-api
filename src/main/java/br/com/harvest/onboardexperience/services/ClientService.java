@@ -1,18 +1,15 @@
 package br.com.harvest.onboardexperience.services;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import br.com.harvest.onboardexperience.domain.dto.ClientDto;
+import br.com.harvest.onboardexperience.domain.dtos.ClientDto;
 import br.com.harvest.onboardexperience.domain.entities.Client;
 import br.com.harvest.onboardexperience.domain.exceptions.ClientAlreadyExistsException;
 import br.com.harvest.onboardexperience.domain.exceptions.ClientNotFoundException;
@@ -24,6 +21,8 @@ import br.com.harvest.onboardexperience.usecases.GenerateUserUseCase;
 import br.com.harvest.onboardexperience.utils.GenericUtils;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+
+import javax.management.relation.RoleNotFoundException;
 
 @Slf4j
 @Service
@@ -41,13 +40,16 @@ public class ClientService {
     @Autowired
     private CompanyRoleService companyRoleService;
 
-    @Transactional(noRollbackFor = RuntimeException.class)
-    public ClientDto create(@NonNull ClientDto dto) {
+    @Transactional
+    public ClientDto create(@NonNull ClientDto dto) throws Exception {
         validate(dto);
 
         Client client = repository.save(mapper.toEntity(dto));
         log.info("The client with CNPJ " + dto.getCnpj() + " was saved successful.");
+
+
         generateUser.createAdminUserFromClient(client);
+
         return mapper.toDto(client);
     }
 

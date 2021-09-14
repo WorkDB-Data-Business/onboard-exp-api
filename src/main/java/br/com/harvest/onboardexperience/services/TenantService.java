@@ -3,7 +3,7 @@ package br.com.harvest.onboardexperience.services;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import br.com.harvest.onboardexperience.domain.dto.ClientDto;
+import br.com.harvest.onboardexperience.domain.dtos.ClientDto;
 import br.com.harvest.onboardexperience.domain.entities.Client;
 import br.com.harvest.onboardexperience.domain.exceptions.ClientNotFoundException;
 import br.com.harvest.onboardexperience.domain.factories.ExceptionMessageFactory;

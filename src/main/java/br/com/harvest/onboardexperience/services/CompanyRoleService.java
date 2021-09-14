@@ -1,17 +1,13 @@
 package br.com.harvest.onboardexperience.services;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 import br.com.harvest.onboardexperience.utils.GenericUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import br.com.harvest.onboardexperience.domain.dto.CompanyRoleDto;
+import br.com.harvest.onboardexperience.domain.dtos.CompanyRoleDto;
 import br.com.harvest.onboardexperience.domain.entities.Client;
 import br.com.harvest.onboardexperience.domain.entities.CompanyRole;
 import br.com.harvest.onboardexperience.domain.exceptions.CompanyRoleNotFoundException;
@@ -49,7 +45,8 @@ public class CompanyRoleService {
         String tenant = jwtUtils.getUserTenant(token);
 
         CompanyRole companyRole = repository.findByIdAndClient_Tenant(id, tenant).orElseThrow(
-                () -> new CompanyRoleNotFoundException(ExceptionMessageFactory.createNotFoundMessage("company role", "ID", id.toString())));
+                () -> new CompanyRoleNotFoundException(ExceptionMessageFactory.createNotFoundMessage(
+                        "company role", "ID", id.toString())));
 
         BeanUtils.copyProperties(dto, companyRole, "id", "client", "createdBy", "createdAt");
 
@@ -70,7 +67,9 @@ public class CompanyRoleService {
     public CompanyRoleDto findByIdAndTenant(@NonNull final Long id, @NonNull final String token) {
         String tenant = jwtUtils.getUserTenant(token);
 
-        CompanyRole companyRole = repository.findByIdAndClient_Tenant(id, tenant).orElseThrow(() -> new CompanyRoleNotFoundException(ExceptionMessageFactory.createNotFoundMessage("company role", "ID", id.toString())));
+        CompanyRole companyRole = repository.findByIdAndClient_Tenant(id, tenant).orElseThrow(
+                () -> new CompanyRoleNotFoundException(ExceptionMessageFactory.createNotFoundMessage(
+                        "company role", "ID", id.toString())));
 
         return CompanyRoleMapper.INSTANCE.toDto(companyRole);
     }
@@ -78,12 +77,11 @@ public class CompanyRoleService {
     public CompanyRoleDto findByIdOrNameAndTenant(String name, String tenant) {
 
         CompanyRole companyRole = repository.findByNameContainingIgnoreCaseAndClient_Tenant(name, tenant)
-                .orElseThrow(() -> new CompanyRoleNotFoundException("Company Role with name " + name + " not found."));
+                .orElseThrow(() -> new CompanyRoleNotFoundException(ExceptionMessageFactory.createNotFoundMessage(
+                        "company role", "name", name)));
 
         return CompanyRoleMapper.INSTANCE.toDto(companyRole);
     }
-
-
 
     public Page<CompanyRoleDto> findAllByTenant(Pageable pageable, @NonNull final String token) {
         String tenant = jwtUtils.getUserTenant(token);
@@ -93,8 +91,8 @@ public class CompanyRoleService {
     public void delete(@NonNull final Long id, @NonNull final String token) {
         String tenant = jwtUtils.getUserTenant(token);
         CompanyRole companyRole = repository.findByIdAndClient_Tenant(id, tenant).orElseThrow(
-                () -> new CompanyRoleNotFoundException("The company role with ID " + id + " has not found"));
-
+                () -> new CompanyRoleNotFoundException(ExceptionMessageFactory.createNotFoundMessage(
+                        "company role", "ID", id.toString())));
         repository.delete(companyRole);
     }
 

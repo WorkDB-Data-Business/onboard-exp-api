@@ -5,7 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import br.com.harvest.onboardexperience.domain.dto.RoleDto;
+import br.com.harvest.onboardexperience.domain.dtos.RoleDto;
 import br.com.harvest.onboardexperience.domain.enumerators.RoleEnum;
 import br.com.harvest.onboardexperience.domain.exceptions.RoleNotFoundException;
 import br.com.harvest.onboardexperience.domain.factories.ExceptionMessageFactory;
