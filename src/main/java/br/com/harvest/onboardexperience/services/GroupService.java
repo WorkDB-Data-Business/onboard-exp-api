@@ -2,7 +2,9 @@ package br.com.harvest.onboardexperience.services;
 
 import br.com.harvest.onboardexperience.domain.dtos.*;
 import br.com.harvest.onboardexperience.domain.dtos.forms.GroupForm;
+import br.com.harvest.onboardexperience.domain.entities.CompanyRole;
 import br.com.harvest.onboardexperience.domain.entities.Group;
+import br.com.harvest.onboardexperience.domain.entities.User;
 import br.com.harvest.onboardexperience.domain.exceptions.GroupNotFoundException;
 import br.com.harvest.onboardexperience.domain.factories.ExceptionMessageFactory;
 import br.com.harvest.onboardexperience.mappers.ClientMapper;
@@ -18,6 +20,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class GroupService {
@@ -62,14 +65,14 @@ public class GroupService {
         return GroupMapper.INSTANCE.toDto(group);
     }
 
-    public GroupDto findByIdAndTenant(@NonNull final Long id, @NonNull final String token) {
+    public GroupForm findByIdAndTenant(@NonNull final Long id, @NonNull final String token) {
         String tenant = jwtTokenUtils.getUserTenant(token);
 
         Group group = repository.findByIdAndClient_Tenant(id, tenant).orElseThrow(
                 () -> new GroupNotFoundException(ExceptionMessageFactory.createNotFoundMessage("group",
                         "ID", id.toString())));
 
-        return GroupMapper.INSTANCE.toDto(group);
+        return convertGroupToFormDto(group);
     }
 
     public Page<GroupSimpleDto> findAllByTenant(Pageable pageable, @NonNull final String token) {
@@ -117,6 +120,32 @@ public class GroupService {
                 .isActive(form.getIsActive())
                 .users(fetchUsers(form.getUsers(), token))
                 .build();
+    }
+
+    private GroupForm convertGroupToFormDto(@NonNull Group group){
+        GroupForm form = new GroupForm();
+        form.setIsActive(group.getIsActive());
+        form.setName(group.getName());
+        form.setId(group.getId());
+        form.setUsers(convertUsersToLong(group.getUsers()));
+        form.setCompanyRoles(convertCompanyRolesToLong(group.getCompanyRoles()));
+        return form;
+    }
+
+    private List<Long> convertUsersToLong(List<User> users){
+        List<Long> ids = new ArrayList<>();
+        if(ObjectUtils.isNotEmpty(users)){
+            ids = users.stream().mapToLong(user -> user.getId()).boxed().collect(Collectors.toList());
+        }
+        return ids;
+    }
+
+    private List<Long> convertCompanyRolesToLong(List<CompanyRole> companyRoles){
+        List<Long> ids = new ArrayList<>();
+        if(ObjectUtils.isNotEmpty(companyRoles)){
+            ids = companyRoles.stream().mapToLong(companyRole -> companyRole.getId()).boxed().collect(Collectors.toList());
+        }
+        return ids;
     }
 
 }

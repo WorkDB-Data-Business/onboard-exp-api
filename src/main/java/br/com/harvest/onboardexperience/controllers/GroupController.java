@@ -39,7 +39,7 @@ public class GroupController {
     @Operation(description = "Retorna o grupo cadastrado pelo ID.")
     @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping(path = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<GroupDto> findById(@PathVariable  @Pattern(regexp = RegexUtils.ONLY_NUMBERS) Long id, @RequestHeader("Authorization") String token) {
+    public ResponseEntity<GroupForm> findById(@PathVariable  @Pattern(regexp = RegexUtils.ONLY_NUMBERS) Long id, @RequestHeader("Authorization") String token) {
         return ResponseEntity.ok(service.findByIdAndTenant(id, token));
     }
 
