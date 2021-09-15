@@ -6,15 +6,13 @@ import java.io.Serializable;
 import javax.validation.constraints.NotNull;
 
 import br.com.harvest.onboardexperience.domain.enumerators.PermissionEnum;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(callSuper = false)
 public class PermissionDto implements Serializable {
 	
 	private static final long serialVersionUID = -4606418091317413664L;

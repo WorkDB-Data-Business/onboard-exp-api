@@ -1,6 +1,7 @@
 package br.com.harvest.onboardexperience.services;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -19,7 +20,7 @@ import br.com.harvest.onboardexperience.domain.dtos.ClientDto;
 import br.com.harvest.onboardexperience.domain.dtos.CompanyRoleDto;
 import br.com.harvest.onboardexperience.domain.dtos.RoleDto;
 import br.com.harvest.onboardexperience.domain.dtos.UserDto;
-import br.com.harvest.onboardexperience.domain.dtos.UserForm;
+import br.com.harvest.onboardexperience.domain.dtos.forms.UserForm;
 import br.com.harvest.onboardexperience.domain.entities.User;
 import br.com.harvest.onboardexperience.domain.exceptions.InvalidCpfException;
 import br.com.harvest.onboardexperience.domain.exceptions.UserAlreadyExistsException;
@@ -41,9 +42,6 @@ public class UserService {
     private UserRepository repository;
 
     @Autowired
-    private UserMapper mapper;
-
-    @Autowired
     private PasswordConfiguration passwordConfiguration;
 
     @Autowired
@@ -59,75 +57,67 @@ public class UserService {
     private JwtTokenUtils jwtUtils;
 
     @Autowired
-    private ClientMapper clientMapper;
+    private TenantService tenantService;
 
 
     public UserDto create(@NonNull UserForm dto, String token) {
         UserDto userDto = convetFormToUserDto(dto, token);
-        String tenant = jwtUtils.getUserTenant(token);
 
-        validateUser(userDto, tenant);
+        validateUser(userDto);
 
-        User user = repository.save(mapper.toEntity(userDto));
+        User user = repository.save(UserMapper.INSTANCE.toEntity(userDto));
 
         log.info("The user " + userDto.getUsername() + " was saved successful.");
-        return mapper.toDto(user);
+        return UserMapper.INSTANCE.toDto(user);
 
     }
 
-    private UserDto convetFormToUserDto(UserForm dto, String token) {
+    private UserDto convetFormToUserDto(UserForm form, String token) {
         var userDto = new UserDto();
-        userDto.setFirstName(dto.getFirstName());
-        userDto.setLastName(dto.getLastName());
-        userDto.setUsername(dto.getUsername());
-        userDto.setPassword(dto.getCpf());
-        userDto.setEmail(dto.getEmail());
-        userDto.setCpf(dto.getCpf());
-        userDto.setIsActive(dto.getIsActive());
-        userDto.setIsBlocked(dto.getIsBlocked());
 
-        Set<RoleDto> rolesDto = new HashSet<>();
-        var companyRole = new CompanyRoleDto();
+        userDto.setFirstName(form.getFirstName());
+        userDto.setLastName(form.getLastName());
+        userDto.setUsername(form.getUsername());
+        userDto.setPassword(form.getCpf());
+        userDto.setEmail(form.getEmail());
+        userDto.setCpf(form.getCpf());
+        userDto.setIsActive(form.getIsActive());
+        userDto.setIsBlocked(form.getIsBlocked());
+        userDto.setClient(tenantService.fetchClientDtoByTenantFromToken(token));
+        userDto.setCompanyRole(companyRoleService.findByIdAndTenant(form.getCompanyRoleId(), token));
+        userDto.setRoles(convertUserRoles(form));
 
-        if (dto.getIsAdmin()) rolesDto.add(roleService.findRoleByRole(RoleEnum.ADMIN));
-        if (dto.getIsCol()) rolesDto.add(roleService.findRoleByRole(RoleEnum.COLABORATOR));
-        if (dto.getIsMaster()) rolesDto.add(roleService.findRoleByRole(RoleEnum.MASTER));
-
-        companyRole = companyRoleService.findByIdAndTenant(dto.getCompanyRoleId(), token);
-
-        userDto.setRoles(rolesDto);
-        userDto.setCompanyRole(companyRole);
 
         return userDto;
+    }
+
+    private Set<RoleDto> convertUserRoles(@NonNull UserForm form){
+        Set<RoleDto> rolesDto = new HashSet<>();
+
+        if (form.getIsAdmin()) rolesDto.add(roleService.findRoleByRole(RoleEnum.ADMIN));
+        if (form.getIsCol()) rolesDto.add(roleService.findRoleByRole(RoleEnum.COLABORATOR));
+        if (form.getIsMaster()) rolesDto.add(roleService.findRoleByRole(RoleEnum.MASTER));
+
+        return rolesDto;
     }
 
 
     public UserDto update(@NonNull Long id, @NonNull UserForm dto, String token) {
         UserDto userDto = convetFormToUserDto(dto, token);
-        String tenant = jwtUtils.getUserTenant(token);
 
-        User user = repository.findByIdAndClient_Tenant(id, tenant).orElseThrow(
+        User user = repository.findByIdAndClient_Tenant(id, userDto.getClient().getTenant()).orElseThrow(
                 () -> new UserNotFoundException(ExceptionMessageFactory.createNotFoundMessage("user", "ID", id.toString())));
-        userDto.setClient(clientMapper.toDto(user.getClient()));
 
-        //workaround (A.K.A gambiarra) to solve the bug of password not encrypting when not updated
         // TODO: create method to update password only.
-        String[] fieldParameters = new String[6];
-        fieldParameters[0] = "id";
-        fieldParameters[1] = "client";
-        fieldParameters[2] = "createdBy";
-        fieldParameters[3] = "createdAt";
-        fieldParameters[4] = "password";
+        validateUser(user, userDto);
 
-        validateUser(user, userDto, fieldParameters);
-
-        BeanUtils.copyProperties(mapper.toEntity(userDto), user, fieldParameters);
+        BeanUtils.copyProperties(UserMapper.INSTANCE.toEntity(userDto), user,  "id", "client", "createdBy", "createdAt", "password");
 
         user = repository.save(user);
 
         log.info("The user " + userDto.getUsername() + " was updated successful.");
 
-        return mapper.toDto(user);
+        return UserMapper.INSTANCE.toDto(user);
     }
 
     @Transactional
@@ -174,7 +164,7 @@ public class UserService {
         User user = repository.findByIdAndClient_Tenant(id, tenant).orElseThrow(
                 () -> new UserNotFoundException(ExceptionMessageFactory.createNotFoundMessage("user", "ID", id.toString())));
 
-        return mapper.toDto(user);
+        return UserMapper.INSTANCE.toDto(user);
     }
 
     public UserDto findMyUser(@NonNull final String token) {
@@ -182,7 +172,7 @@ public class UserService {
         User user = repository.findById(idUser).orElseThrow(
                 () -> new UserNotFoundException(ExceptionMessageFactory.createNotFoundMessage("user", "ID", idUser.toString())));
 
-        return mapper.toDto(user);
+        return UserMapper.INSTANCE.toDto(user);
     }
 
     public Page<UserDto> findByCriteria(String criteria,final Pageable pageable, final String token) {
@@ -190,12 +180,12 @@ public class UserService {
         if(GenericUtils.stringNullOrEmpty(criteria)){
             return findAllByTenant(pageable, token);
         }
-        return repository.findByCriteria(criteria, tenant, pageable).map(mapper::toDto);
+        return repository.findByCriteria(criteria, tenant, pageable).map(UserMapper.INSTANCE::toDto);
     }
 
     public Page<UserDto> findAllByTenant(final Pageable pageable, final String token) {
         String tenant = jwtUtils.getUserTenant(token);
-        return repository.findAllByClient_Tenant(tenant, pageable).map(mapper::toDto);
+        return repository.findAllByClient_Tenant(tenant, pageable).map(UserMapper.INSTANCE::toDto);
     }
 
 
@@ -217,14 +207,6 @@ public class UserService {
 
     private void encryptPassword(@NonNull UserDto user) {
         user.setPassword(passwordConfiguration.encoder().encode(user.getPassword()));
-    }
-
-    private void encryptPassword(@NonNull User user, @NonNull UserDto userDto, String[] fieldParameters) {
-        if (checkIfPasswordChanged(user, userDto)) {
-            encryptPassword(userDto);
-        } else {
-            fieldParameters[4] = "password";
-        }
     }
 
     private void checkIfUserAlreadyExists(@NonNull UserDto dto) {
@@ -289,57 +271,7 @@ public class UserService {
         return true;
     }
 
-    private Boolean checkIfPasswordChanged(@NonNull final User user, @NonNull final UserDto dto) {
-
-        if (passwordConfiguration.encoder().matches(dto.getPassword(), user.getPassword())) {
-            return false;
-        }
-
-        return true;
-    }
-
-    private void fetchAndSetCompanyRole(@NonNull UserDto user, String tenant) {
-
-        CompanyRoleDto companyRole = companyRoleService.findByIdOrNameAndTenant(user.getCompanyRole().getName(), user.getClient().getTenant());
-
-        user.setCompanyRole(companyRole);
-    }
-
-    private void fetchAndSetCompanyRole(@NonNull User user, @NonNull UserDto userDto, String token) {
-        if (checkIfCompanyRoleChanged(user, userDto)) {
-            fetchAndSetCompanyRole(userDto, token);
-        }
-    }
-
-
-    private Boolean checkIfCompanyRoleChanged(@NonNull User user, @NonNull UserDto dto) {
-        return !user.getCompanyRole().getId().equals(dto.getCompanyRole().getId());
-    }
-
-    private Boolean checkIfRolesChanged(@NonNull User user, @NonNull UserDto userDto) {
-        return !user.getRoles().equals(userDto.getRoles());
-    }
-
-    private void fetchAndSetRoles(@NonNull UserDto user) {
-        Set<RoleDto> roles = new HashSet<>();
-        for (RoleDto roleDto : user.getRoles()) {
-            roles.add(roleService.findRoleByRole(roleDto.getRole()));
-        }
-        user.setRoles(roles);
-    }
-
-    private void fetchAndSetRoles(@NonNull User user, @NonNull UserDto userDto) {
-        if (checkIfRolesChanged(user, userDto)) {
-            fetchAndSetRoles(userDto);
-        }
-    }
-
-    private void fetchAndSetClient(@NonNull UserDto dto, String tenant) {
-        ClientDto client = clientService.findByTenant(tenant);
-        dto.setClient(client);
-    }
-
-    private void validateUser(@NonNull UserDto dto, String tenant) {
+    private void validateUser(@NonNull UserDto dto) {
 
         checkIfUserAlreadyExists(dto);
 
@@ -347,25 +279,14 @@ public class UserService {
 
         encryptPassword(dto);
 
-        fetchAndSetClient(dto, tenant);
-
-        fetchAndSetCompanyRole(dto, tenant);
-
-        fetchAndSetRoles(dto);
-
     }
 
-    private void validateUser(@NonNull User user, @NonNull UserDto dto, String[] fieldParameters) {
+    private void validateUser(@NonNull User user, @NonNull UserDto dto) {
 
         checkIfUserAlreadyExists(user, dto);
 
         validateCpf(user, dto);
 
-        //encryptPassword(user, dto, fieldParameters);
-
-        fetchAndSetCompanyRole(user, dto, user.getClient().getTenant());
-
-        fetchAndSetRoles(user, dto);
     }
 
 }

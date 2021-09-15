@@ -14,15 +14,13 @@ import com.fasterxml.jackson.annotation.JsonProperty.Access;
 
 import br.com.harvest.onboardexperience.utils.RegexUtils;
 import br.com.harvest.onboardexperience.utils.ValidationUtils;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(callSuper = false)
 public class UserDto implements Serializable {
 	
 	private static final long serialVersionUID = -9144485778635865671L;
@@ -71,7 +69,7 @@ public class UserDto implements Serializable {
 	@NotEmpty
 	private Set<RoleDto> roles;
 	
-	@JsonProperty(access = Access.READ_ONLY)
+	@JsonProperty(access = Access.WRITE_ONLY)
 	private ClientDto client;
 	
 	@Builder.Default

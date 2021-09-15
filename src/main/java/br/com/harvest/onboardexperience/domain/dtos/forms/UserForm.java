@@ -1,4 +1,4 @@
-package br.com.harvest.onboardexperience.domain.dtos;
+package br.com.harvest.onboardexperience.domain.dtos.forms;
 
 import br.com.harvest.onboardexperience.utils.RegexUtils;
 import br.com.harvest.onboardexperience.utils.ValidationUtils;
@@ -33,7 +33,8 @@ public class UserForm implements Serializable {
 	@NotBlank
 	@Pattern(regexp = RegexUtils.EMAIL_VALIDATION)
 	private String email;
-	
+
+	@NotBlank
 	@Size(min = ValidationUtils.CPF_SIZE, max = ValidationUtils.CPF_SIZE)
 	@Pattern(regexp = RegexUtils.ONLY_NUMBERS)
 	private String cpf;

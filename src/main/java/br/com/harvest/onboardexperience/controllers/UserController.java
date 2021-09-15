@@ -4,7 +4,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 
-import br.com.harvest.onboardexperience.domain.dtos.UserForm;
+import br.com.harvest.onboardexperience.domain.dtos.forms.UserForm;
 import br.com.harvest.onboardexperience.infra.email.interfaces.EmailSender;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -29,9 +29,6 @@ public class UserController {
 
 	@Autowired
 	private UserService service;
-
-	@Autowired
-	private EmailSender emailSender;
 
 	@Operation(description = "Retorna os usuários cadastrados.")
 	@PreAuthorize("hasAuthority('ADMIN')")

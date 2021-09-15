@@ -1,10 +1,11 @@
-package br.com.harvest.onboardexperience.domain.dtos;
+package br.com.harvest.onboardexperience.domain.dtos.forms;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.validation.constraints.NotBlank;
 import java.util.List;
 
 @Data
@@ -15,9 +16,11 @@ public class GroupForm {
 
     private Long id;
 
+    @NotBlank
     private String name;
 
-    private Boolean isActive;
+    @Builder.Default
+    private Boolean isActive = true;
 
     private List<Long> users;
 

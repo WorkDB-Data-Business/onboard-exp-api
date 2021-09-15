@@ -1,6 +1,10 @@
 package br.com.harvest.onboardexperience.services;
 
+import br.com.harvest.onboardexperience.domain.dtos.ClientDto;
+import br.com.harvest.onboardexperience.domain.dtos.forms.CompanyRoleForm;
+import br.com.harvest.onboardexperience.domain.exceptions.CompanyRoleAlreadyExistsException;
 import br.com.harvest.onboardexperience.utils.GenericUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -32,21 +36,26 @@ public class CompanyRoleService {
     private TenantService tenantService;
 
 
-    public CompanyRoleDto create(@NonNull CompanyRoleDto dto, @NonNull final String token) {
-        dto.setClient(tenantService.fetchClientDtoByTenantFromToken(token));
+    public CompanyRoleDto create(@NonNull CompanyRoleForm form, @NonNull final String token) {
+        CompanyRoleDto dto = convertFormToCompanyRoleDto(form, token);
+
+        validate(dto, jwtUtils.getUserTenant(token));
 
         CompanyRole companyRole = repository.save(CompanyRoleMapper.INSTANCE.toEntity(dto));
         return CompanyRoleMapper.INSTANCE.toDto(companyRole);
-
     }
 
 
-    public CompanyRoleDto update(@NonNull final Long id, @NonNull CompanyRoleDto dto, @NonNull final String token) {
+    public CompanyRoleDto update(@NonNull final Long id, @NonNull CompanyRoleForm form, @NonNull final String token) {
         String tenant = jwtUtils.getUserTenant(token);
 
         CompanyRole companyRole = repository.findByIdAndClient_Tenant(id, tenant).orElseThrow(
                 () -> new CompanyRoleNotFoundException(ExceptionMessageFactory.createNotFoundMessage(
                         "company role", "ID", id.toString())));
+
+        CompanyRoleDto dto = convertFormToCompanyRoleDto(form, token);
+
+        validate(companyRole, dto, tenant);
 
         BeanUtils.copyProperties(dto, companyRole, "id", "client", "createdBy", "createdAt");
 
@@ -74,11 +83,11 @@ public class CompanyRoleService {
         return CompanyRoleMapper.INSTANCE.toDto(companyRole);
     }
 
-    public CompanyRoleDto findByIdOrNameAndTenant(String name, String tenant) {
+    public CompanyRoleDto findByIdOrNameAndTenant(String name, Long id, String tenant) {
 
-        CompanyRole companyRole = repository.findByNameContainingIgnoreCaseAndClient_Tenant(name, tenant)
+        CompanyRole companyRole = repository.findByNameContainingIgnoreCaseOrIdAndClient_Tenant(name, id, tenant)
                 .orElseThrow(() -> new CompanyRoleNotFoundException(ExceptionMessageFactory.createNotFoundMessage(
-                        "company role", "name", name)));
+                        "company role", ObjectUtils.isEmpty(name) ? "ID" : "name", ObjectUtils.isEmpty(name) ? id.toString() : name)));
 
         return CompanyRoleMapper.INSTANCE.toDto(companyRole);
     }
@@ -94,6 +103,27 @@ public class CompanyRoleService {
                 () -> new CompanyRoleNotFoundException(ExceptionMessageFactory.createNotFoundMessage(
                         "company role", "ID", id.toString())));
         repository.delete(companyRole);
+    }
+
+    public void validate(@NonNull CompanyRoleDto dto, String tenant){
+        if(repository.findByNameContainingIgnoreCaseAndClient_Tenant(dto.getName(), tenant).isPresent()){
+            throw new CompanyRoleAlreadyExistsException(ExceptionMessageFactory.createAlreadyExistsMessage("company role",
+            "name", dto.getName()));
+        }
+    }
+
+    public void validate(@NonNull CompanyRole companyRole, CompanyRoleDto dto, String tenant){
+        if(companyRole.getName().equalsIgnoreCase(dto.getName())){
+            validate(dto, tenant);
+        }
+    }
+
+    private CompanyRoleDto convertFormToCompanyRoleDto(@NonNull CompanyRoleForm form, String token){
+        ClientDto client = tenantService.fetchClientDtoByTenantFromToken(token);
+        return CompanyRoleDto.builder()
+                .client(client)
+                .isActive(form.getIsActive())
+                .name(form.getName()).build();
     }
 
     public void disableAllByClient(@NonNull final Client client) {

@@ -4,6 +4,7 @@ import java.nio.file.FileAlreadyExistsException;
 import java.util.ArrayList;
 import java.util.List;
 
+import br.com.harvest.onboardexperience.domain.exceptions.*;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpHeaders;
@@ -21,12 +22,6 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 import br.com.harvest.onboardexperience.builders.MessageBuilder;
 import br.com.harvest.onboardexperience.domain.dtos.responses.Message;
 import br.com.harvest.onboardexperience.domain.dtos.responses.MessageError;
-import br.com.harvest.onboardexperience.domain.exceptions.BusinessException;
-import br.com.harvest.onboardexperience.domain.exceptions.CompanyRoleNotFoundException;
-import br.com.harvest.onboardexperience.domain.exceptions.FactoryException;
-import br.com.harvest.onboardexperience.domain.exceptions.SubdomainNotFoundException;
-import br.com.harvest.onboardexperience.domain.exceptions.TenantForbiddenException;
-import br.com.harvest.onboardexperience.domain.exceptions.UserAlreadyExistsException;
 
 
 @ControllerAdvice
@@ -61,7 +56,9 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST).contentType(MediaType.APPLICATION_JSON).body(e);
 	}
 	
-	@ExceptionHandler({CompanyRoleNotFoundException.class, })
+	@ExceptionHandler({CompanyRoleNotFoundException.class, UserNotFoundException.class, CoinNotFoundException.class,
+	ClientNotFoundException.class, RewardNotFoundException.class, PermissionNotFoundException.class,
+	GroupNotFoundException.class})
 	public ResponseEntity<?> handleNotFoundException(SubdomainNotFoundException e){
 		logger.error(e);
 		var message = new MessageBuilder().addMessage(e.getMessage()).withError(e.getMessage(), e.getMessage()).build();
@@ -77,7 +74,8 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 		return ResponseEntity.status(HttpStatus.FORBIDDEN).contentType(MediaType.APPLICATION_JSON).body(message);
 	}
 	
-	@ExceptionHandler(UserAlreadyExistsException.class)
+	@ExceptionHandler({UserAlreadyExistsException.class, RewardAlreadyExistsException.class, ClientAlreadyExistsException.class,
+	CoinAlreadyExistsException.class, CompanyRoleAlreadyExistsException.class})
 	public ResponseEntity<?> handleAlreadyExistsException(UserAlreadyExistsException e){
 		logger.error(e);
 		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).contentType(MediaType.APPLICATION_JSON).body(e);

@@ -1,7 +1,6 @@
 package br.com.harvest.onboardexperience.domain.dtos;
 
-import br.com.harvest.onboardexperience.domain.entities.CompanyRole;
-import br.com.harvest.onboardexperience.domain.enumerators.GroupType;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -21,6 +20,7 @@ public class GroupDto {
 
     private Boolean isActive;
 
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private ClientDto client;
 
     private List<UserDto> users;

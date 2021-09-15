@@ -1,22 +1,16 @@
 package br.com.harvest.onboardexperience.services;
 
-import br.com.harvest.onboardexperience.domain.dtos.GroupDto;
-import br.com.harvest.onboardexperience.domain.dtos.GroupForm;
-import br.com.harvest.onboardexperience.domain.dtos.GroupSimpleDto;
-import br.com.harvest.onboardexperience.domain.entities.Client;
-import br.com.harvest.onboardexperience.domain.entities.CompanyRole;
+import br.com.harvest.onboardexperience.domain.dtos.*;
+import br.com.harvest.onboardexperience.domain.dtos.forms.GroupForm;
 import br.com.harvest.onboardexperience.domain.entities.Group;
-import br.com.harvest.onboardexperience.domain.entities.User;
 import br.com.harvest.onboardexperience.domain.exceptions.GroupNotFoundException;
 import br.com.harvest.onboardexperience.domain.factories.ExceptionMessageFactory;
-import br.com.harvest.onboardexperience.mappers.CompanyRoleMapper;
+import br.com.harvest.onboardexperience.mappers.ClientMapper;
 import br.com.harvest.onboardexperience.mappers.GroupMapper;
-import br.com.harvest.onboardexperience.mappers.UserMapper;
 import br.com.harvest.onboardexperience.repositories.GroupRepository;
 import br.com.harvest.onboardexperience.utils.JwtTokenUtils;
 import lombok.NonNull;
 import org.apache.commons.lang3.ObjectUtils;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -44,15 +38,10 @@ public class GroupService {
     private CompanyRoleService companyRoleService;
 
     public GroupDto create(@NonNull GroupForm dto, @NonNull final String token) {
-        Client client = tenantService.fetchClientByTenantFromToken(token);
 
-        Group group = Group.builder().client(client)
-                .name(dto.getName())
-                .companyRoles(fetchCompanyRoles(dto.getCompanyRoles(), client.getTenant()))
-                .isActive(dto.getIsActive())
-                .users(fetchUsers(dto.getUsers(), client.getTenant())).build();
+        GroupDto groupDto = convertFormToGroupDto(dto, token);
 
-        group = repository.save(group);
+        Group group = repository.save(GroupMapper.INSTANCE.toEntity(groupDto));
         return GroupMapper.INSTANCE.toDto(group);
     }
 
@@ -63,13 +52,10 @@ public class GroupService {
                 () -> new GroupNotFoundException(ExceptionMessageFactory.createNotFoundMessage("group",
                         "ID", id.toString())));
 
-        Group updatedGroup = Group.builder()
-                             .companyRoles(fetchCompanyRoles(dto.getCompanyRoles(), tenant))
-                             .users(fetchUsers(dto.getUsers(), tenant))
-                             .name(dto.getName())
-                             .isActive(dto.getIsActive()).build();
 
-        BeanUtils.copyProperties(updatedGroup, group, "id", "client", "createdBy", "createdAt");
+        GroupDto updatedGroup = convertFormToGroupDto(dto, token);
+
+        GroupMapper.INSTANCE.updateEntity(updatedGroup, group);
 
         group = repository.save(group);
 
@@ -100,27 +86,37 @@ public class GroupService {
         repository.delete(group);
     }
 
-    private List<User> fetchUsers(List<Long> usersId, String tenant){
-        List<User> users = new ArrayList<>();
+    private List<UserDto> fetchUsers(List<Long> usersId, String token){
+        List<UserDto> users = new ArrayList<>();
         if(ObjectUtils.isNotEmpty(usersId)){
             for(Long userId : usersId){
-                User user = UserMapper.INSTANCE.toEntity(userService.findByIdAndTenant(userId, tenant));
+                UserDto user = userService.findByIdAndTenant(userId, token);
                 users.add(user);
             }
         }
         return users;
     }
 
-    private List<CompanyRole> fetchCompanyRoles(List<Long> companyRolesId, String tenant){
-        List<CompanyRole> companyRoles = new ArrayList<>();
+    private List<CompanyRoleDto> fetchCompanyRoles(List<Long> companyRolesId, String token){
+        List<CompanyRoleDto> companyRoles = new ArrayList<>();
         if(ObjectUtils.isNotEmpty(companyRolesId)){
             for(Long companyRoleId : companyRolesId){
-                CompanyRole companyRole = CompanyRoleMapper.INSTANCE.toEntity(companyRoleService
-                        .findByIdAndTenant(companyRoleId, tenant));
+                CompanyRoleDto companyRole = companyRoleService.findByIdAndTenant(companyRoleId, token);
                 companyRoles.add(companyRole);
             }
         }
         return companyRoles;
+    }
+
+    private GroupDto convertFormToGroupDto(@NonNull GroupForm form, String token){
+        ClientDto client = ClientMapper.INSTANCE.toDto(tenantService.fetchClientByTenantFromToken(token));
+
+        return GroupDto.builder().client(client)
+                .name(form.getName())
+                .companyRoles(fetchCompanyRoles(form.getCompanyRoles(), token))
+                .isActive(form.getIsActive())
+                .users(fetchUsers(form.getUsers(), token))
+                .build();
     }
 
 }

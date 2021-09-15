@@ -1,5 +1,6 @@
 package br.com.harvest.onboardexperience.services;
 
+import br.com.harvest.onboardexperience.domain.exceptions.UserAlreadyExistsException;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,8 +48,9 @@ public class ClientService {
         Client client = repository.save(mapper.toEntity(dto));
         log.info("The client with CNPJ " + dto.getCnpj() + " was saved successful.");
 
-
-        generateUser.createAdminUserFromClient(client);
+        if(!generateUser.createAdminUserFromClient(client)){
+            throw new UserAlreadyExistsException(ExceptionMessageFactory.createAlreadyExistsMessage("user", "email", client.getEmail()));
+        }
 
         return mapper.toDto(client);
     }

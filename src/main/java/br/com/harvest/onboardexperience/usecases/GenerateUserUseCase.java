@@ -40,31 +40,39 @@ public class GenerateUserUseCase {
     @Autowired
     private PasswordConfiguration passwordConfiguration;
 
-    public void createAdminUserFromClient(@NonNull final Client client) throws Exception {
+    public Boolean createAdminUserFromClient(@NonNull final Client client) {
+        try {
 
-        Role role = roleRepository.findByRole(RoleEnum.ADMIN).orElseThrow(() -> new RoleNotFoundException(ExceptionMessageFactory.createNotFoundMessage("role", "name", RoleEnum.ADMIN.getName())));
-        CompanyRole companyRole = createAdminCompanyRoleFromClient(client);
-        User user = User.builder().client(client)
-                .companyRole(companyRole)
-                .email(client.getEmail())
-                .isClient(true)
-                .username(GenericUtils.formatNameToUsername(client.getName()))
-                .firstName(client.getName())
-                .isActive(true)
-                .isFirstLogin(true)
-                .isBlocked(false)
-                .isExpired(false)
-                .lastName("User")
-                .isFirstLogin(true)
-                .password(passwordConfiguration.encoder().encode(client.getCnpj()))
-                .roles(Set.of(role))
-                .build();
+            Role role = roleRepository.findByRole(RoleEnum.ADMIN).orElseThrow(
+                    () -> new RoleNotFoundException(ExceptionMessageFactory.createNotFoundMessage("role",
+                            "name", RoleEnum.ADMIN.getName())));
+            CompanyRole companyRole = createAdminCompanyRoleFromClient(client);
+            User user = User.builder().client(client)
+                    .companyRole(companyRole)
+                    .email(client.getEmail())
+                    .isClient(true)
+                    .username(GenericUtils.formatNameToUsername(client.getName()))
+                    .firstName(client.getName())
+                    .isActive(true)
+                    .isFirstLogin(true)
+                    .isBlocked(false)
+                    .isExpired(false)
+                    .lastName("User")
+                    .isFirstLogin(true)
+                    .password(passwordConfiguration.encoder().encode(client.getCnpj()))
+                    .roles(Set.of(role))
+                    .build();
 
-        if (userRepository.findByEmailContainingIgnoreCase(user.getEmail()).isPresent()) {
-            throw new UserAlreadyExistsException(ExceptionMessageFactory.createAlreadyExistsMessage("user", "email", client.getEmail()));
+            if (userRepository.findByEmailContainingIgnoreCase(user.getEmail()).isPresent()) {
+                return false;
+            }
+            userRepository.save(user);
+            log.info("Admin user from client of ID " + client.getId() + " created successful.");
+            return true;
+        } catch (Exception e) {
+            log.error("An error has occurred while creating the admin user from client of ID " + client.getId());
+            return false;
         }
-        userRepository.save(user);
-        log.info("Admin user from client of ID " + client.getId() + " created successful.");
     }
 
     private CompanyRole createAdminCompanyRoleFromClient(@NonNull final Client client) {

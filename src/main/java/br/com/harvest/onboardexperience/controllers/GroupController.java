@@ -1,7 +1,7 @@
 package br.com.harvest.onboardexperience.controllers;
 
 import br.com.harvest.onboardexperience.domain.dtos.GroupDto;
-import br.com.harvest.onboardexperience.domain.dtos.GroupForm;
+import br.com.harvest.onboardexperience.domain.dtos.forms.GroupForm;
 import br.com.harvest.onboardexperience.domain.dtos.GroupSimpleDto;
 import br.com.harvest.onboardexperience.services.GroupService;
 import br.com.harvest.onboardexperience.utils.RegexUtils;
