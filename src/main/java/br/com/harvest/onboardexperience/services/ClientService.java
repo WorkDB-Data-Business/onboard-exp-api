@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import br.com.harvest.onboardexperience.domain.dtos.ClientDto;
@@ -18,12 +17,10 @@ import br.com.harvest.onboardexperience.domain.exceptions.InvalidCnpjException;
 import br.com.harvest.onboardexperience.domain.factories.ExceptionMessageFactory;
 import br.com.harvest.onboardexperience.mappers.ClientMapper;
 import br.com.harvest.onboardexperience.repositories.ClientRepository;
-import br.com.harvest.onboardexperience.usecases.GenerateUserUseCase;
+import br.com.harvest.onboardexperience.usecases.UserUseCase;
 import br.com.harvest.onboardexperience.utils.GenericUtils;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-
-import javax.management.relation.RoleNotFoundException;
 
 @Slf4j
 @Service
@@ -36,7 +33,7 @@ public class ClientService {
     private ClientMapper mapper;
 
     @Autowired
-    private GenerateUserUseCase generateUser;
+    private UserUseCase generateUser;
 
     @Autowired
     private CompanyRoleService companyRoleService;

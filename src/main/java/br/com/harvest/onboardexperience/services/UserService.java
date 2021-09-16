@@ -6,6 +6,7 @@ import java.util.Objects;
 import java.util.Set;
 
 
+import br.com.harvest.onboardexperience.domain.dtos.forms.UserWelcomeForm;
 import br.com.harvest.onboardexperience.domain.enumerators.RoleEnum;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.BeanUtils;

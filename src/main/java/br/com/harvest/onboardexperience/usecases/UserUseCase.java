@@ -4,7 +4,9 @@ import java.util.Set;
 
 import javax.management.relation.RoleNotFoundException;
 
-import br.com.harvest.onboardexperience.domain.exceptions.UserAlreadyExistsException;
+import br.com.harvest.onboardexperience.domain.dtos.forms.UserWelcomeForm;
+import br.com.harvest.onboardexperience.domain.exceptions.UserNotFoundException;
+import br.com.harvest.onboardexperience.utils.JwtTokenUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -21,12 +23,10 @@ import br.com.harvest.onboardexperience.repositories.UserRepository;
 import br.com.harvest.onboardexperience.utils.GenericUtils;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Component
-public class GenerateUserUseCase {
+public class UserUseCase {
 
     @Autowired
     private RoleRepository roleRepository;
@@ -39,6 +39,9 @@ public class GenerateUserUseCase {
 
     @Autowired
     private PasswordConfiguration passwordConfiguration;
+
+    @Autowired
+    private JwtTokenUtils jwtTokenUtils;
 
     public Boolean createAdminUserFromClient(@NonNull final Client client) {
         try {
@@ -88,6 +91,18 @@ public class GenerateUserUseCase {
             log.error("An error has occurred while creating company role admin from client of ID " + client.getId(), e);
             return null;
         }
+    }
+
+    public void welcomeUser(@NonNull final Long id, @NonNull UserWelcomeForm form, final String token){
+        String tenant = jwtTokenUtils.getUserTenant(token);
+
+        User user = userRepository.findByIdAndClient_Tenant(id, tenant).orElseThrow(
+                () -> new UserNotFoundException(ExceptionMessageFactory.createNotFoundMessage("user", "ID", id.toString())));
+
+        user.setIdAvatar(form.getIdAvatar());
+        user.setNickname(form.getNickname());
+
+        userRepository.save(user);
     }
 
 }
