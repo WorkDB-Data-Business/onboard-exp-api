@@ -7,12 +7,22 @@ import java.util.Map.Entry;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 
+import br.com.harvest.onboardexperience.domain.dtos.ClientDto;
+import br.com.harvest.onboardexperience.domain.dtos.forms.ChangePasswordForm;
+import br.com.harvest.onboardexperience.domain.dtos.forms.EmailForm;
+import br.com.harvest.onboardexperience.domain.entities.PasswordResetToken;
+import br.com.harvest.onboardexperience.usecases.UserUseCase;
 import io.jsonwebtoken.impl.DefaultClaims;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
@@ -33,6 +43,7 @@ import br.com.harvest.onboardexperience.usecases.LoginUseCase;
 import br.com.harvest.onboardexperience.utils.JwtTokenUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 @Tag(name = "Authentication")
 @RestController
@@ -58,6 +69,9 @@ public class AuthController {
 	
 	@Autowired
 	private LoginUseCase login;
+
+	@Autowired
+	private UserUseCase userUseCase;
 
 	@Operation(description = "Realiza a autenticação e retorna o token JWT.")
 	@RequestMapping(value = "/auth", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.POST)
@@ -110,6 +124,20 @@ public class AuthController {
 		return ResponseEntity.ok(new JwtResponse(token));
 	}
 
+	@Operation(description = "Envia o e-mail de 'esqueci minha senha'.")
+	@PostMapping(value = "/auth/forgot-password", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> sendEmailForgotPassword(@NotNull @Valid @RequestBody EmailForm form) throws Exception {
+		userUseCase.sendEmailToResetPassword(form);
+		return ResponseEntity.ok().body("Email enviado.");
+	}
+
+	@Operation(description = "Altera a senha pelo token.")
+	@PostMapping(value = "/auth/change-password/", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> changePassword(@RequestParam String token, @NotNull @Valid @RequestBody ChangePasswordForm form) throws Exception {
+		userUseCase.resetPassword(token, form);
+		return ResponseEntity.ok().body("Senha alterada.");
+	}
+
 	public Map<String, Object> getMapFromIoJsonwebtokenClaims(DefaultClaims claims) {
 		Map<String, Object> expectedMap = new HashMap<String, Object>();
 		for (Entry<String, Object> entry : claims.entrySet()) {
@@ -117,5 +145,4 @@ public class AuthController {
 		}
 		return expectedMap;
 	}
-
 }

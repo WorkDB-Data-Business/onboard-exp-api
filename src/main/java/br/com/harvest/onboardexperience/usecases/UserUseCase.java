@@ -1,21 +1,30 @@
 package br.com.harvest.onboardexperience.usecases;
 
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import javax.management.relation.RoleNotFoundException;
+import javax.servlet.http.HttpServletRequest;
 
 import br.com.harvest.onboardexperience.domain.dtos.forms.ChangePasswordForm;
+import br.com.harvest.onboardexperience.domain.dtos.forms.EmailForm;
 import br.com.harvest.onboardexperience.domain.dtos.forms.UserWelcomeForm;
+import br.com.harvest.onboardexperience.domain.entities.*;
+import br.com.harvest.onboardexperience.domain.exceptions.PasswordResetTokenExpiredException;
+import br.com.harvest.onboardexperience.domain.exceptions.PasswordResetTokenNotFoundException;
 import br.com.harvest.onboardexperience.domain.exceptions.UserNotFoundException;
+import br.com.harvest.onboardexperience.infra.email.dtos.EmailMessage;
+import br.com.harvest.onboardexperience.infra.email.interfaces.EmailSender;
+import br.com.harvest.onboardexperience.repositories.PasswordResetTokenRepository;
 import br.com.harvest.onboardexperience.utils.JwtTokenUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import br.com.harvest.onboardexperience.configurations.application.PasswordConfiguration;
-import br.com.harvest.onboardexperience.domain.entities.Client;
-import br.com.harvest.onboardexperience.domain.entities.CompanyRole;
-import br.com.harvest.onboardexperience.domain.entities.Role;
-import br.com.harvest.onboardexperience.domain.entities.User;
 import br.com.harvest.onboardexperience.domain.enumerators.RoleEnum;
 import br.com.harvest.onboardexperience.domain.factories.ExceptionMessageFactory;
 import br.com.harvest.onboardexperience.repositories.CompanyRoleRepository;
@@ -24,6 +33,7 @@ import br.com.harvest.onboardexperience.repositories.UserRepository;
 import br.com.harvest.onboardexperience.utils.GenericUtils;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 @Slf4j
 @Component
@@ -43,6 +53,12 @@ public class UserUseCase {
 
     @Autowired
     private JwtTokenUtils jwtTokenUtils;
+
+    @Autowired
+    private PasswordResetTokenRepository passwordResetTokenRepository;
+
+    @Autowired
+    private EmailSender emailSender;
 
     public Boolean createAdminUserFromClient(@NonNull final Client client) {
         try {
@@ -115,6 +131,99 @@ public class UserUseCase {
         user.setPassword(passwordConfiguration.encoder().encode(form.getPassword()));
 
         userRepository.save(user);
+    }
+
+    public void sendEmailToResetPassword(@NonNull EmailForm form) throws Exception {
+        User user = userRepository.findByEmailContainingIgnoreCase(form.getEmail()).orElseThrow(
+                () -> new UserNotFoundException(ExceptionMessageFactory.createNotFoundMessage("user", "email", form.getEmail())));
+
+        String token = UUID.randomUUID().toString();
+
+        createPasswordResetToken(user, token);
+
+        sendResetPasswordEmail(user, token);
+    }
+
+    public void resetPassword(@NonNull String token, ChangePasswordForm passwordForm){
+        validatePasswordResetToken(token);
+
+        User user = passwordResetTokenRepository.findByToken(token).orElseThrow(
+                () -> new PasswordResetTokenNotFoundException("The password reset token is invalid or was not found")
+        ).getUser();
+
+        user.setPassword(passwordConfiguration.encoder().encode(passwordForm.getPassword()));
+
+        userRepository.save(user);
+    }
+
+    public void expireAllPasswordResetTokenByUser(@NonNull User user){
+        List<PasswordResetToken> passwordResetTokens = passwordResetTokenRepository.findAllByUserAndIsExpired(user, false);
+
+        if(ObjectUtils.isNotEmpty(passwordResetTokens)) {
+            passwordResetTokens.stream().forEach(passwordResetToken -> expirePasswordResetToken(passwordResetToken));
+        }
+    }
+
+    public void validatePasswordResetToken(@NonNull String token){
+        final PasswordResetToken passwordResetToken = passwordResetTokenRepository.findByToken(token).orElseThrow(
+                () -> new PasswordResetTokenNotFoundException("The password reset token is invalid or was not found")
+        );
+
+        if(isTokenExpired(passwordResetToken)) {
+            expirePasswordResetToken(passwordResetToken);
+            throw new PasswordResetTokenExpiredException("The password reset token is already expired");
+        }
+        expirePasswordResetToken(passwordResetToken);
+    }
+
+    private void expirePasswordResetToken(PasswordResetToken passwordResetToken){
+        passwordResetToken.setIsExpired(true);
+        passwordResetTokenRepository.save(passwordResetToken);
+    }
+
+    private Boolean isTokenExpired(PasswordResetToken passwordResetToken) {
+        return passwordResetToken.getExpirationTime().isBefore(LocalDateTime.now()) || passwordResetToken.getIsExpired();
+    }
+
+    private EmailMessage createResetPasswordEmail(User user, String token){
+        return EmailMessage.builder()
+                .model("forgot_password.html")
+                .receivers(Set.of(user.getEmail()))
+                .subject("Recuperação de senha")
+                .variables(Map.of("name", user.getNickname(), "link", buildLinkForPasswordReset(token)))
+                .build();
+    }
+
+    private void sendResetPasswordEmail(User user, String token) throws Exception {
+        emailSender.send(createResetPasswordEmail(user, token));
+    }
+
+    private String buildLinkForPasswordReset(String token){
+        String serverUrl = ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString();
+        StringBuilder builder = new StringBuilder(serverUrl)
+                .append("/")
+                .append("v1")
+                .append("/")
+                .append("auth")
+                .append("/")
+                .append("change-password")
+                .append("/")
+                .append("?")
+                .append("token=")
+                .append(token);
+        return builder.toString();
+    }
+
+    private void createPasswordResetToken(User user, String token){
+        expireAllPasswordResetTokenByUser(user);
+
+        PasswordResetToken passwordResetToken = PasswordResetToken.builder()
+                .token(token)
+                .user(user)
+                .expirationTime(LocalDateTime.now().plusHours(1))
+                .isExpired(false)
+                .build();
+        passwordResetTokenRepository.save(passwordResetToken);
     }
 
 }

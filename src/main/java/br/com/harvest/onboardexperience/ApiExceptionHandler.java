@@ -58,7 +58,7 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 	
 	@ExceptionHandler({CompanyRoleNotFoundException.class, UserNotFoundException.class, CoinNotFoundException.class,
 	ClientNotFoundException.class, RewardNotFoundException.class, PermissionNotFoundException.class,
-	GroupNotFoundException.class})
+	GroupNotFoundException.class, PasswordResetTokenNotFoundException.class})
 	public ResponseEntity<?> handleNotFoundException(SubdomainNotFoundException e){
 		logger.error(e);
 		var message = new MessageBuilder().addMessage(e.getMessage()).withError(e.getMessage(), e.getMessage()).build();
@@ -74,8 +74,13 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 		return ResponseEntity.status(HttpStatus.FORBIDDEN).contentType(MediaType.APPLICATION_JSON).body(message);
 	}
 	
-	@ExceptionHandler({UserAlreadyExistsException.class, RewardAlreadyExistsException.class, ClientAlreadyExistsException.class,
-	CoinAlreadyExistsException.class, CompanyRoleAlreadyExistsException.class})
+	@ExceptionHandler(PasswordResetTokenExpiredException.class)
+	public ResponseEntity<?> handleAlreadyExpiredException(UserAlreadyExistsException e){
+		logger.error(e);
+		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).contentType(MediaType.APPLICATION_JSON).body(e);
+	}
+
+	@ExceptionHandler()
 	public ResponseEntity<?> handleAlreadyExistsException(UserAlreadyExistsException e){
 		logger.error(e);
 		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).contentType(MediaType.APPLICATION_JSON).body(e);
