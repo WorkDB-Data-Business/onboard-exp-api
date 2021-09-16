@@ -4,9 +4,9 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 
+import br.com.harvest.onboardexperience.domain.dtos.forms.ChangePasswordForm;
 import br.com.harvest.onboardexperience.domain.dtos.forms.UserForm;
 import br.com.harvest.onboardexperience.domain.dtos.forms.UserWelcomeForm;
-import br.com.harvest.onboardexperience.infra.email.interfaces.EmailSender;
 import br.com.harvest.onboardexperience.usecases.UserUseCase;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -114,6 +114,14 @@ public class UserController {
 	@PatchMapping(path = "/welcome/{id}")
 	public void welcome(@PathVariable  @Pattern(regexp = RegexUtils.ONLY_NUMBERS) Long id, @RequestBody @NotNull @Valid UserWelcomeForm form, @RequestHeader("Authorization") String token) {
 		useCase.welcomeUser(id, form, token);
+	}
+
+	@Operation(description = "Realiza a alteração da senha no primeiro acesso.")
+	@PreAuthorize("hasAuthority('ADMIN') and hasAuthority('COLABORATOR')")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	@PatchMapping(path = "/welcome/change-password/{id}")
+	public void changePasswordFirstAccess(@PathVariable  @Pattern(regexp = RegexUtils.ONLY_NUMBERS) Long id, @RequestBody @NotNull @Valid ChangePasswordForm form, @RequestHeader("Authorization") String token) {
+		useCase.changePassword(id, form, token);
 	}
 
 }

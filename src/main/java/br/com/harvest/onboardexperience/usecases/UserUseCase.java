@@ -4,6 +4,7 @@ import java.util.Set;
 
 import javax.management.relation.RoleNotFoundException;
 
+import br.com.harvest.onboardexperience.domain.dtos.forms.ChangePasswordForm;
 import br.com.harvest.onboardexperience.domain.dtos.forms.UserWelcomeForm;
 import br.com.harvest.onboardexperience.domain.exceptions.UserNotFoundException;
 import br.com.harvest.onboardexperience.utils.JwtTokenUtils;
@@ -101,6 +102,17 @@ public class UserUseCase {
 
         user.setIdAvatar(form.getIdAvatar());
         user.setNickname(form.getNickname());
+
+        userRepository.save(user);
+    }
+
+    public void changePassword(@NonNull final Long id, @NonNull ChangePasswordForm form, final String token){
+        String tenant = jwtTokenUtils.getUserTenant(token);
+
+        User user = userRepository.findByIdAndClient_Tenant(id, tenant).orElseThrow(
+                () -> new UserNotFoundException(ExceptionMessageFactory.createNotFoundMessage("user", "ID", id.toString())));
+
+        user.setPassword(passwordConfiguration.encoder().encode(form.getPassword()));
 
         userRepository.save(user);
     }

@@ -18,8 +18,6 @@ public class UserWelcomeForm implements Serializable {
 
     private static final long serialVersionUID = -3193462244390226870L;
 
-    private Long id;
-
     @Size(min = 3)
     @NotBlank
     private String nickname;
