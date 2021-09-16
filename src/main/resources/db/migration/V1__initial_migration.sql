@@ -124,10 +124,37 @@ CREATE TABLE IF NOT EXISTS public.tbreward(
 );
 
 CREATE TABLE IF NOT EXISTS public.tbuser_coin(
-	iduser bigint NOT NULL,
-	idcoin bigint NOT NULL,
+	iduser BIGINT NOT NULL,
+	idcoin BIGINT NOT NULL,
 	FOREIGN KEY (iduser) REFERENCES tbuser(iduser),
 	FOREIGN KEY (idcoin) REFERENCES tbcoin(idcoin),
 	
 	CONSTRAINT tbuser_coin_pk PRIMARY KEY (iduser, idcoin)
 );
+
+CREATE TABLE IF NOT EXISTS public.tbgroup(
+	idgroup BIGSERIAL NOT NULL,
+	name CHARACTER VARYING NOT NULL,
+	is_active BOOLEAN NOT NULL,
+	idclient BIGINT NOT NULL,
+	created_by CHARACTER VARYING,
+    updated_by CHARACTER VARYING,
+    created_at TIMESTAMP default now(),
+    updated_at TIMESTAMP,
+
+	FOREIGN KEY (idclient) REFERENCES tbclient(idclient),
+
+	CONSTRAINT tbgroup_pk PRIMARY KEY (idgroup)
+);
+
+CREATE TABLE IF NOT EXISTS public.tbgroup_user(
+	idgroup BIGINT NOT NULL,
+	iduser BIGINT NOT NULL,
+	CONSTRAINT tbgroup_user_pk PRIMARY KEY (idgroup, iduser)
+);
+
+CREATE TABLE IF NOT EXISTS public.tbgroup_company_role(
+    idgroup BIGINT NOT NULL,
+    idcompany_role BIGINT NOT NULL,
+    CONSTRAINT tbgroup_company_role_pk PRIMARY KEY (idgroup, idcompany_role)
+)

@@ -22,12 +22,12 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 
-import br.com.harvest.onboardexperience.domain.dto.JwtRequest;
-import br.com.harvest.onboardexperience.domain.dto.JwtResponse;
+import br.com.harvest.onboardexperience.infra.auth.dtos.JwtRequest;
+import br.com.harvest.onboardexperience.infra.auth.dtos.JwtResponse;
 import br.com.harvest.onboardexperience.domain.entities.User;
 import br.com.harvest.onboardexperience.domain.exceptions.UserBlockedException;
 import br.com.harvest.onboardexperience.domain.exceptions.UserDisabledException;
-import br.com.harvest.onboardexperience.services.JwtUserDetailsService;
+import br.com.harvest.onboardexperience.infra.auth.services.JwtUserDetailsService;
 import br.com.harvest.onboardexperience.services.UserService;
 import br.com.harvest.onboardexperience.usecases.LoginUseCase;
 import br.com.harvest.onboardexperience.utils.JwtTokenUtils;

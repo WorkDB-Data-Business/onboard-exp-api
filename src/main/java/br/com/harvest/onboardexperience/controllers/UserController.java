@@ -4,10 +4,8 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 
-import br.com.harvest.onboardexperience.domain.dto.UserForm;
-import br.com.harvest.onboardexperience.infra.email.EmailMessage;
-import br.com.harvest.onboardexperience.infra.email.EmailSender;
-import br.com.harvest.onboardexperience.infra.email.EmailService;
+import br.com.harvest.onboardexperience.domain.dtos.forms.UserForm;
+import br.com.harvest.onboardexperience.infra.email.interfaces.EmailSender;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -17,14 +15,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import br.com.harvest.onboardexperience.domain.dto.UserDto;
+import br.com.harvest.onboardexperience.domain.dtos.UserDto;
 import br.com.harvest.onboardexperience.services.UserService;
 import br.com.harvest.onboardexperience.utils.RegexUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-
-import java.util.Map;
-import java.util.Set;
 
 @Tag(name = "Users")
 @RestController
@@ -34,9 +29,6 @@ public class UserController {
 
 	@Autowired
 	private UserService service;
-
-	@Autowired
-	private EmailSender emailSender;
 
 	@Operation(description = "Retorna os usuários cadastrados.")
 	@PreAuthorize("hasAuthority('ADMIN')")

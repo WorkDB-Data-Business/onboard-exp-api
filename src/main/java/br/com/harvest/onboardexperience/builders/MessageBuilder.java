@@ -3,9 +3,9 @@ package br.com.harvest.onboardexperience.builders;
 import java.util.Arrays;
 import java.util.List;
 
-import br.com.harvest.onboardexperience.domain.dto.responses.Comment;
-import br.com.harvest.onboardexperience.domain.dto.responses.Message;
-import br.com.harvest.onboardexperience.domain.dto.responses.MessageError;
+import br.com.harvest.onboardexperience.domain.dtos.responses.Comment;
+import br.com.harvest.onboardexperience.domain.dtos.responses.Message;
+import br.com.harvest.onboardexperience.domain.dtos.responses.MessageError;
 import br.com.harvest.onboardexperience.utils.BuilderUtils;
 
 public class MessageBuilder {

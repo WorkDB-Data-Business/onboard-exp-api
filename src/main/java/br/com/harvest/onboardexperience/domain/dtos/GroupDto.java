@@ -1,0 +1,30 @@
+package br.com.harvest.onboardexperience.domain.dtos;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.util.List;
+
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class GroupDto {
+
+    private Long id;
+
+    private String name;
+
+    private Boolean isActive;
+
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    private ClientDto client;
+
+    private List<UserDto> users;
+
+    private List<CompanyRoleDto> companyRoles;
+
+}

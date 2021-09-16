@@ -25,6 +25,7 @@ public interface CompanyRoleRepository extends JpaRepository<CompanyRole, Long>{
 	Optional<CompanyRole> findByIdAndClient_Tenant(Long id, String tenant);
 	Optional<CompanyRole> findByNameContainingIgnoreCase(String name);
 	Optional<CompanyRole> findByNameContainingIgnoreCaseAndClient_Tenant(String name, String tenant);
+	Optional<CompanyRole> findByNameContainingIgnoreCaseOrIdAndClient_Tenant(String name, Long id, String tenant);
 
 	@Query(value="SELECT c FROM CompanyRole c WHERE " +
 			"c.client.tenant = :tenant AND " +

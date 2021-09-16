@@ -1,22 +1,18 @@
 package br.com.harvest.onboardexperience.services;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
-import br.com.harvest.onboardexperience.domain.dto.UserDto;
 import br.com.harvest.onboardexperience.domain.enumerators.FileTypeEnum;
+import br.com.harvest.onboardexperience.infra.storage.services.FileStorageService;
 import br.com.harvest.onboardexperience.utils.GenericUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import br.com.harvest.onboardexperience.domain.dto.ClientDto;
-import br.com.harvest.onboardexperience.domain.dto.RewardDto;
+import br.com.harvest.onboardexperience.domain.dtos.ClientDto;
+import br.com.harvest.onboardexperience.domain.dtos.RewardDto;
 import br.com.harvest.onboardexperience.domain.entities.Reward;
 import br.com.harvest.onboardexperience.domain.exceptions.RewardAlreadyExistsException;
 import br.com.harvest.onboardexperience.domain.exceptions.RewardNotFoundException;

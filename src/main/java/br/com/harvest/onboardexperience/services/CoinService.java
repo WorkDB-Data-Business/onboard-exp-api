@@ -1,23 +1,20 @@
 package br.com.harvest.onboardexperience.services;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 import br.com.harvest.onboardexperience.domain.enumerators.FileTypeEnum;
 import br.com.harvest.onboardexperience.domain.exceptions.BusinessException;
+import br.com.harvest.onboardexperience.infra.storage.services.FileStorageService;
 import br.com.harvest.onboardexperience.mappers.ClientMapper;
 import br.com.harvest.onboardexperience.utils.GenericUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import br.com.harvest.onboardexperience.domain.dto.ClientDto;
-import br.com.harvest.onboardexperience.domain.dto.CoinDto;
+import br.com.harvest.onboardexperience.domain.dtos.ClientDto;
+import br.com.harvest.onboardexperience.domain.dtos.CoinDto;
 import br.com.harvest.onboardexperience.domain.entities.Coin;
 import br.com.harvest.onboardexperience.domain.exceptions.CoinNotFoundException;
 import br.com.harvest.onboardexperience.domain.factories.ExceptionMessageFactory;

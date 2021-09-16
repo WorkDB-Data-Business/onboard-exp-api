@@ -20,8 +20,8 @@ import org.springframework.security.web.access.expression.DefaultWebSecurityExpr
 import org.springframework.security.web.access.expression.WebSecurityExpressionRoot;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import br.com.harvest.onboardexperience.services.JwtAuthenticationEntryPoint;
-import br.com.harvest.onboardexperience.services.JwtRequestFilter;
+import br.com.harvest.onboardexperience.infra.auth.services.JwtAuthenticationEntryPoint;
+import br.com.harvest.onboardexperience.infra.auth.services.JwtRequestFilter;
 
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)

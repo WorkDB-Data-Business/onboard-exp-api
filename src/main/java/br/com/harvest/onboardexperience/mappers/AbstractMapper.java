@@ -1,7 +1,6 @@
 package br.com.harvest.onboardexperience.mappers;
 
 import org.mapstruct.InheritInverseConfiguration;
-
 public interface AbstractMapper<E, D> {
 
 	E toEntity(D dto);
