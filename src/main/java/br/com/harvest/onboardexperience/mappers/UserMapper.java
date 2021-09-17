@@ -1,6 +1,5 @@
 package br.com.harvest.onboardexperience.mappers;
 
-
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;

@@ -33,6 +33,8 @@ CREATE TABLE IF NOT EXISTS public.tbuser(
 	iduser bigserial NOT NULL,
 	first_name CHARACTER VARYING NOT NULL,
 	last_name CHARACTER VARYING NOT NULL,
+	nickname CHARACTER VARYING,
+	idavatar NUMERIC,
 	password CHARACTER VARYING NOT NULL,
 	username CHARACTER VARYING NOT NULL,
 	email CHARACTER VARYING NOT NULL,
@@ -157,4 +159,13 @@ CREATE TABLE IF NOT EXISTS public.tbgroup_company_role(
     idgroup BIGINT NOT NULL,
     idcompany_role BIGINT NOT NULL,
     CONSTRAINT tbgroup_company_role_pk PRIMARY KEY (idgroup, idcompany_role)
-)
+);
+
+CREATE TABLE IF NOT EXISTS public.tbpassword_reset_token(
+    idpassword_reset_token BIGSERIAL NOT NULL,
+    iduser BIGINT NOT NULL,
+    token CHARACTER VARYING NOT NULL,
+    expiration_time TIMESTAMP NOT NULL,
+    is_expired BOOLEAN,
+    CONSTRAINT tbpassword_reset_token_pk PRIMARY KEY (idpassword_reset_token)
+);

@@ -40,6 +40,12 @@ public class User extends BaseEntityAudit {
 	
 	@Column(name = "last_name")
 	private String lastName;
+
+	@Column(name = "nickname")
+	private String nickname;
+
+	@Column(name = "idavatar")
+	private Integer idAvatar;
 	
 	@Column(name = "username")
 	private String username;
