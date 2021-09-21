@@ -49,14 +49,14 @@ public class Group extends BaseEntityAudit {
     @JoinColumn(name = "idclient")
     private Client client;
 
-    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "tbgroup_user",
             joinColumns = @JoinColumn(name = "idgroup"),
             inverseJoinColumns = @JoinColumn(name = "iduser"))
     private List<User> users;
 
-    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "tbgroup_company_role",
             joinColumns = @JoinColumn(name = "idgroup"),

@@ -24,6 +24,6 @@ public class GroupForm {
 
     private List<Long> users;
 
-    private List<Long> companyRoles;
+        private List<Long> companyRoles;
 
 }
