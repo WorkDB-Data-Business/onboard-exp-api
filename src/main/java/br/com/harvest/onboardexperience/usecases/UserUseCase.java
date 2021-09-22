@@ -204,7 +204,7 @@ public class UserUseCase {
         String serverURL = request.getHeader("origin");
         StringBuilder builder = new StringBuilder(serverURL)
                 .append("/")
-                .append("signIn")
+                .append("signin")
                 .append("?")
                 .append("token=")
                 .append(token);
