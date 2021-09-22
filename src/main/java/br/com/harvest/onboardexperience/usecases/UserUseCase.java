@@ -135,7 +135,7 @@ public class UserUseCase {
         userRepository.save(user);
     }
 
-    public void sendEmailToResetPassword(@NonNull EmailForm form) throws Exception {
+    public void sendEmailToResetPassword(@NonNull EmailForm form, HttpServletRequest request) throws Exception {
         User user = userRepository.findByEmailContainingIgnoreCase(form.getEmail()).orElseThrow(
                 () -> new UserNotFoundException(ExceptionMessageFactory.createNotFoundMessage("user", "email", form.getEmail())));
 
@@ -143,7 +143,7 @@ public class UserUseCase {
 
         createPasswordResetToken(user, token);
 
-        sendResetPasswordEmail(user, token);
+        sendResetPasswordEmail(user, token, request);
     }
 
     public void resetPassword(@NonNull String token, ChangePasswordForm passwordForm){
@@ -187,29 +187,24 @@ public class UserUseCase {
         return passwordResetToken.getExpirationTime().isBefore(LocalDateTime.now()) || passwordResetToken.getIsExpired();
     }
 
-    private EmailMessage createResetPasswordEmail(User user, String token){
+    private EmailMessage createResetPasswordEmail(User user, String token, HttpServletRequest request){
         return EmailMessage.builder()
                 .model("forgot_password.html")
                 .receivers(Set.of(user.getEmail()))
                 .subject("Recuperação de senha")
-                .variables(Map.of("name", user.getNickname(), "link", buildLinkForPasswordReset(token)))
+                .variables(Map.of("name", user.getNickname(), "link", buildLinkForPasswordReset(token, request)))
                 .build();
     }
 
-    private void sendResetPasswordEmail(User user, String token) throws Exception {
-        emailSender.send(createResetPasswordEmail(user, token));
+    private void sendResetPasswordEmail(User user, String token, HttpServletRequest request) throws Exception {
+        emailSender.send(createResetPasswordEmail(user, token, request));
     }
 
-    private String buildLinkForPasswordReset(String token){
-        String serverUrl = ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString();
-        StringBuilder builder = new StringBuilder(serverUrl)
+    private String buildLinkForPasswordReset(String token, HttpServletRequest request){
+        String serverURL = request.getHeader("origin");
+        StringBuilder builder = new StringBuilder(serverURL)
                 .append("/")
-                .append("v1")
-                .append("/")
-                .append("auth")
-                .append("/")
-                .append("change-password")
-                .append("/")
+                .append("signIn")
                 .append("?")
                 .append("token=")
                 .append(token);
