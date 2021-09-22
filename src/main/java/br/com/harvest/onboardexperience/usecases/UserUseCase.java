@@ -76,6 +76,7 @@ public class UserUseCase {
                     .isActive(true)
                     .isFirstLogin(true)
                     .isBlocked(false)
+                    .isChangePasswordRequired(true)
                     .isExpired(false)
                     .lastName("User")
                     .isFirstLogin(true)
@@ -129,6 +130,7 @@ public class UserUseCase {
                 () -> new UserNotFoundException(ExceptionMessageFactory.createNotFoundMessage("user", "ID", id.toString())));
 
         user.setPassword(passwordConfiguration.encoder().encode(form.getPassword()));
+        user.setIsChangePasswordRequired(false);
 
         userRepository.save(user);
     }

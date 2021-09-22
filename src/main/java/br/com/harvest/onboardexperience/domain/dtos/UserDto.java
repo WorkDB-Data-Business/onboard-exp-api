@@ -65,6 +65,9 @@ public class UserDto implements Serializable {
 	
 	@Builder.Default
 	private Boolean isFirstLogin = true;
+
+	@Builder.Default
+	private Boolean isChangePasswordRequired = true;
 	
 	@NotEmpty
 	private Set<RoleDto> roles;

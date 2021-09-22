@@ -45,6 +45,7 @@ CREATE TABLE IF NOT EXISTS public.tbuser(
 	is_blocked BOOLEAN NOT NULL,
 	is_client BOOLEAN NOT NULL,
 	is_first_login BOOLEAN NOT NULL,
+	is_change_password_required BOOLEAN NOT NULL,
 	idclient BIGINT NOT NULL,
 	created_by CHARACTER VARYING,
 	updated_by CHARACTER VARYING,

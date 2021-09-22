@@ -174,6 +174,7 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
 					.email("harvest@gmail.com")
 					.username("harvest")
 					.password(passwordConfiguration.encoder().encode("harvest"))
+					.isChangePasswordRequired(true)
 					.isActive(true)
 					.isFirstLogin(true)
 					.isExpired(false)
