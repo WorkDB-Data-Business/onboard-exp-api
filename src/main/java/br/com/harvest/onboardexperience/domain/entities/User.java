@@ -74,6 +74,9 @@ public class User extends BaseEntityAudit {
 	
 	@Column(name = "is_first_login")
 	private Boolean isFirstLogin;
+
+	@Column(name = "is_change_password_required")
+	private Boolean isChangePasswordRequired;
 	
 	@ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
 	@JoinTable(
