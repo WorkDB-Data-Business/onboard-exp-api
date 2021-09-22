@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -124,18 +125,18 @@ public class AuthController {
 		return ResponseEntity.ok(new JwtResponse(token));
 	}
 
+	@ResponseStatus(HttpStatus.OK)
 	@Operation(description = "Envia o e-mail de 'esqueci minha senha'.")
 	@PostMapping(value = "/auth/forgot-password", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> sendEmailForgotPassword(@NotNull @Valid @RequestBody EmailForm form) throws Exception {
-		userUseCase.sendEmailToResetPassword(form);
-		return ResponseEntity.ok().body("Email enviado.");
+	public void sendEmailForgotPassword(@NotNull @Valid @RequestBody EmailForm form, HttpServletRequest request) throws Exception {
+		userUseCase.sendEmailToResetPassword(form, request);
 	}
 
+	@ResponseStatus(HttpStatus.OK)
 	@Operation(description = "Altera a senha pelo token.")
 	@PostMapping(value = "/auth/change-password/", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> changePassword(@RequestParam String token, @NotNull @Valid @RequestBody ChangePasswordForm form) throws Exception {
+	public void changePassword(@RequestParam String token, @NotNull @Valid @RequestBody ChangePasswordForm form) throws Exception {
 		userUseCase.resetPassword(token, form);
-		return ResponseEntity.ok().body("Senha alterada.");
 	}
 
 	public Map<String, Object> getMapFromIoJsonwebtokenClaims(DefaultClaims claims) {
