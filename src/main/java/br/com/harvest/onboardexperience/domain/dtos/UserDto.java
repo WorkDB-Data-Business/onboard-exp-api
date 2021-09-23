@@ -38,6 +38,9 @@ public class UserDto implements Serializable {
 	@NotBlank
 	@Size(min = ValidationUtils.MIN_SIZE_USERNAME , max = ValidationUtils.MAX_SIZE_USERNAME)
 	private String username;
+
+	@Size(min = 3)
+	private String nickname;
 	
 //	@Pattern(regexp = RegexUtils.PASSWORD_VALIDATION) TODO: Commented line to facilitate testing, uncomment when it's necessary
 	@JsonProperty(access = Access.WRITE_ONLY)
