@@ -41,6 +41,9 @@ public class UserDto implements Serializable {
 
 	@Size(min = 3)
 	private String nickname;
+
+	@Builder.Default
+	private Integer idAvatar = 0;
 	
 //	@Pattern(regexp = RegexUtils.PASSWORD_VALIDATION) TODO: Commented line to facilitate testing, uncomment when it's necessary
 	@JsonProperty(access = Access.WRITE_ONLY)
