@@ -53,9 +53,7 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
 	
 	@Autowired
 	private ClientRepository clientRepository;
-	
-	@Autowired
-	private FileStorageService fileService;
+
 
 	@Override
 	@Transactional
@@ -72,8 +70,6 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
 		setupMasterCompanyRole();
 
 		setupMasterUser();
-		
-		fileService.init();
 
 		alreadySetup = true;
 	}

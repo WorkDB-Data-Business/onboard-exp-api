@@ -1,168 +1,106 @@
 package br.com.harvest.onboardexperience.infra.storage.services;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.nio.file.*;
-import java.util.stream.Stream;
 
-import br.com.harvest.onboardexperience.infra.storage.interfaces.IFileStorageService;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
+import br.com.harvest.onboardexperience.domain.entities.Client;
+import br.com.harvest.onboardexperience.domain.exceptions.GenericUploadException;
+import br.com.harvest.onboardexperience.infra.storage.dtos.UploadForm;
+import br.com.harvest.onboardexperience.infra.storage.entities.File;
+import br.com.harvest.onboardexperience.infra.storage.interfaces.StorageService;
+import br.com.harvest.onboardexperience.infra.storage.mappers.FileMapper;
+import br.com.harvest.onboardexperience.infra.storage.repositories.FileContentStore;
+import br.com.harvest.onboardexperience.infra.storage.repositories.FileRepository;
+import br.com.harvest.onboardexperience.mappers.ClientMapper;
+import br.com.harvest.onboardexperience.services.ClientService;
+import br.com.harvest.onboardexperience.services.TenantService;
+import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.util.FileSystemUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-import lombok.extern.slf4j.Slf4j;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 @Service
 @Slf4j
-public class FileStorageService implements IFileStorageService {
+public class FileStorageService implements StorageService {
 
-    private final Path root = Paths.get("resources");
+    @Autowired
+    private TenantService tenantService;
+
+    @Autowired
+    private FileContentStore fileContentStore;
+
+    @Autowired
+    private FileRepository fileRepository;
+
+    @Autowired
+    private ClientService clientService;
+
+    private final String FILE_FOLDER = "files";
+
+    public void save(@NonNull UploadForm form, String token) {
+
+        validate(form);
+
+        Client client = tenantService.fetchClientByTenantFromToken(token);
+
+        File file = File.builder()
+                .authorizedClients(fetchClients(form.getAuthorizedClients(), client))
+                .contentPath(createFilePath(form.getFile(), client))
+                .name(form.getFile().getOriginalFilename())
+                .mimeType(form.getFile().getContentType()).build();
+
+        try {
+            fileContentStore.setContent(file, form.getFile().getInputStream());
+        } catch (IOException e){
+            log.error("An error occurs while uploading the file", e);
+            throw new GenericUploadException(e.getMessage(), e.getCause());
+        }
+
+        fileRepository.save(file);
+
+    }
 
     @Override
-    public void init() {
-        try {
-            if (!Files.exists(root)) {
-                Files.createDirectory(root);
-                log.info("The root folder was created successful.");
+    public void validate(UploadForm form) {
+        if(Objects.isNull(form.getFile())){
+            throw new NullPointerException("The file cannot be null.");
+        }
+    }
+
+    @Override
+    public Page<?> findAll(@NonNull String token, Pageable pageable) {
+        Client client = tenantService.fetchClientByTenantFromToken(token);
+        return fileRepository.findAllByAuthorizedClients(client, pageable).map(FileMapper.INSTANCE::toFileSimpleDto);
+    }
+
+    private String createFilePath(MultipartFile file, Client client){
+        StringBuilder builder = new StringBuilder(FILE_FOLDER)
+                .append("/")
+                .append(client.getCnpj())
+                .append("/")
+                .append(file.getOriginalFilename());
+        return builder.toString();
+    }
+
+    private List<Client> fetchClients(List<Long> clientsId, Client author){
+        List<Client> clients = new ArrayList<>() {{ add(author); }};
+
+        if(ObjectUtils.isNotEmpty(clientsId)){
+            for(Long clientId : clientsId){
+                if(clientId.equals(author.getId())) continue;
+                Client client = ClientMapper.INSTANCE.toEntity(clientService.findById(clientId));
+                clients.add(client);
             }
-        } catch (IOException e) {
-            log.error("Could not initialize folder for upload!", e);
-            throw new RuntimeException("Could not initialize folder for upload!", e.getCause());
         }
 
-    }
-
-    @Override
-    public void save(MultipartFile file) {
-        try {
-            Files.copy(file.getInputStream(), this.root.resolve(file.getOriginalFilename()));
-            log.info("File " + file.getOriginalFilename() + " saved successful.");
-        } catch (Exception e) {
-            log.error("Could not store the file. Error: " + e.getMessage(), e.getCause());
-            throw new RuntimeException("Could not store the file. Error: " + e.getMessage(), e.getCause());
-        }
-    }
-
-
-    @Override
-    public String save(MultipartFile file, String name, String... path) {
-        Path filePath = getPath(path);
-        var nonSpaceName = name.replace(' ', '_');
-
-        String rawName = file.getOriginalFilename();
-        String extension = rawName.substring(rawName.indexOf('.'));
-
-
-        File dirPath = filePath.toFile();
-        filePath = filePath.resolve(nonSpaceName + extension);
-
-        try {
-
-            if (!dirPath.exists()) {
-                dirPath.mkdirs();
-            }
-
-            Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
-
-            log.info("File " + file.getOriginalFilename() + " saved successful.");
-            return filePath.toString();
-        } catch (Exception e) {
-            throw new RuntimeException("Could not store the file. Error:  " + e.getMessage(), e.getCause());
-        }
-    }
-
-    @Override
-    public Resource load(String filename) {
-        try {
-            Path file = Path.of(filename);
-            Resource resource = new UrlResource(file.toUri());
-
-            if (resource.exists() || resource.isReadable()) {
-                return resource;
-            } else {
-                throw new RuntimeException("Could not read the file!");
-            }
-        } catch (MalformedURLException e) {
-            throw new RuntimeException("Error: " + e.getMessage(), e.getCause());
-        }
-    }
-
-    @Override
-    public Resource load(String filename, String... path) {
-
-        Path file = getPath(path);
-
-        file = file.resolve(filename);
-
-        try {
-
-            Resource resource = new UrlResource(file.toUri());
-
-            if (resource != null) {
-                return resource;
-            } else {
-                throw new RuntimeException("Could not read the file!");
-            }
-        } catch (MalformedURLException e) {
-            throw new RuntimeException("Error: " + e.getMessage(), e.getCause());
-        }
-    }
-
-    @Override
-    public void deleteAll() {
-        try {
-            FileSystemUtils.deleteRecursively(root.toFile());
-            log.info("All folders was deleted successful.");
-        } catch (Exception e) {
-            log.error("Error while deleting the specified folder: " + root.getFileName(), e);
-            throw e;
-        }
-    }
-
-    @Override
-    public void deleteAll(String pathDir) {
-        File path = root.resolve(pathDir).toFile();
-        try {
-            FileSystemUtils.deleteRecursively(path);
-        } catch (Exception e) {
-            log.error("Error while deleting the specified folder: " + path.getName(), e);
-            throw e;
-        }
-    }
-
-    @Override
-    public Stream<Path> loadAll() {
-        try {
-            return Files.walk(this.root, 1).filter(path -> !path.equals(this.root)).map(this.root::relativize);
-        } catch (IOException e) {
-            throw new RuntimeException("Could not load the files!");
-        }
-    }
-
-    @Override
-    public String rename(String name, String path) {
-        Path file = Paths.get(path);
-        String extension = path.substring(path.indexOf('.'));
-        String fullName = name + extension;
-        try {
-            Files.move(file, file.resolveSibling(fullName));
-        } catch (IOException e) {
-            throw new RuntimeException("Error: " + e.getMessage(), e.getCause());
-        }
-        return path.replace(file.getFileName().toString(), fullName);
-    }
-
-    public Path getPath(String... path) {
-        Path file = this.root;
-
-        for (String pathParam : path) {
-            file = file.resolve(pathParam);
-        }
-
-        return file;
+        return clients;
     }
 
 }

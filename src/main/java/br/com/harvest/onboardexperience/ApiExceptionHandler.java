@@ -51,9 +51,13 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 	}
 
 	@ExceptionHandler(FileAlreadyExistsException.class)
-	public ResponseEntity<?> handleException(FileAlreadyExistsException e){
+	public ResponseStatusException handleFileAlreadyExistsException(FileAlreadyExistsException e){
 		logger.error(e);
-		return ResponseEntity.status(HttpStatus.BAD_REQUEST).contentType(MediaType.APPLICATION_JSON).body(e);
+		throw new ResponseStatusException(
+				HttpStatus.BAD_REQUEST,
+				e.getMessage(),
+				e.getCause()
+		);
 	}
 	
 	@ExceptionHandler({CompanyRoleNotFoundException.class, UserNotFoundException.class, CoinNotFoundException.class,

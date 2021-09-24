@@ -41,15 +41,15 @@ public class CoinService {
     @Autowired
     private ClientMapper clientMapper;
 
-    @Autowired
-    private FileStorageService fileStorageService;
+//    @Autowired
+//    private FileStorageService fileStorageService;
 
 
     public CoinDto create(@NonNull CoinDto dto, MultipartFile file, String token) {
         String tenant = jwtUtils.getUserTenant(token);
 
         validate(dto, tenant);
-        saveImage(file, dto);
+//        saveImage(file, dto);
 
         Coin coin = repository.save(CoinMapper.INSTANCE.toEntity(dto));
 
@@ -69,7 +69,7 @@ public class CoinService {
 
         validate(coin, dto, tenant);
 
-        saveImage(file, dto);
+//        saveImage(file, dto);
 
         BeanUtils.copyProperties(dto, coin, "id", "client", "createdAt", "createdBy", dto.getImagePath() == null ? "imagePath" : "");
 
@@ -127,16 +127,16 @@ public class CoinService {
             log.info("The coin with ID " + id + " was " + isEnabled + " successful.");
     }
 
-    private void saveImage(MultipartFile file, CoinDto dto) {
-		String filePath = "";
-    	if(file != null){
-			filePath = fileStorageService.save(file, dto.getName(), new String[]{dto.getClient().getCnpj(), FileTypeEnum.COIN.getName()});
-		}else{
-			filePath = fileStorageService.rename(dto.getName(), dto.getImagePath());
-		}
-
-        dto.setImagePath(filePath);
-    }
+//    private void saveImage(MultipartFile file, CoinDto dto) {
+//		String filePath = "";
+//    	if(file != null){
+//			filePath = fileStorageService.save(file, dto.getName(), new String[]{dto.getClient().getCnpj(), FileTypeEnum.COIN.getName()});
+//		}else{
+//			filePath = fileStorageService.rename(dto.getName(), dto.getImagePath());
+//		}
+//
+//        dto.setImagePath(filePath);
+//    }
 
     private Boolean checkIfIsSameCoin(@NonNull Coin coin, @NonNull CoinDto coinDto) {
         Boolean sameName = coin.getName().equalsIgnoreCase(coinDto.getName());
