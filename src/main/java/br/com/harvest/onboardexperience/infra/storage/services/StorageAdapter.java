@@ -44,15 +44,36 @@ public class StorageAdapter {
                 break;
             case FILE:
                 this.storageService = this.context.getBean(FileStorageService.class);
+                break;
+            default:
+                this.storageService = null;
         }
         return this;
     }
 
     public void save(){
+        validate();
         this.storageService.save(this.form, this.token);
     }
 
     public Page<?> findAll(@NonNull String token, Pageable pageable){
+        validate();
         return this.storageService.findAll(token, pageable);
+    }
+
+    public void update(@NonNull Long id){
+        validate();
+        this.storageService.update(id, this.form, this.token);
+    }
+
+    public void delete(@NonNull Long id, @NonNull String token){
+        validate();
+        this.storageService.delete(id, token);
+    }
+
+    private void validate(){
+        if(Objects.isNull(this.storageService)){
+            throw new NullPointerException("The storage service can't be null.");
+        }
     }
 }

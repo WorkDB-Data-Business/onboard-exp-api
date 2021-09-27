@@ -10,6 +10,8 @@ import lombok.*;
 @EqualsAndHashCode(callSuper = false)
 public class FileSimpleDto {
 
+    private Long id;
+
     private String name;
 
     private String contentId;

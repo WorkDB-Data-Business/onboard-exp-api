@@ -11,6 +11,8 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = false)
 public class FileDto {
 
+    private Long id;
+
     private String name;
 
     private List<ClientSimpleDto> authorizedClients;

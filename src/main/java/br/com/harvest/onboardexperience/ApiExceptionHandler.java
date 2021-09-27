@@ -34,7 +34,11 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).contentType(MediaType.APPLICATION_JSON).body(e);
 	}
 	
-	@ExceptionHandler(BusinessException.class)
+	@ExceptionHandler({
+			BusinessException.class, UserAlreadyExistsException.class, CoinAlreadyExistsException.class,
+			ClientAlreadyExistsException.class, CompanyRoleAlreadyExistsException.class,
+			RewardAlreadyExistsException.class, FileAlreadyExistsException.class
+	})
 	public ResponseEntity<?> handleBusinessException(BusinessException e){
 		logger.error(e);
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST).contentType(MediaType.APPLICATION_JSON).body(e);
@@ -45,16 +49,6 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 		logger.error(e);
 		throw new ResponseStatusException(
 				HttpStatus.INTERNAL_SERVER_ERROR,
-				e.getMessage(),
-				e.getCause()
-		);
-	}
-
-	@ExceptionHandler(FileAlreadyExistsException.class)
-	public ResponseStatusException handleFileAlreadyExistsException(FileAlreadyExistsException e){
-		logger.error(e);
-		throw new ResponseStatusException(
-				HttpStatus.BAD_REQUEST,
 				e.getMessage(),
 				e.getCause()
 		);
@@ -80,12 +74,6 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 	
 	@ExceptionHandler(PasswordResetTokenExpiredException.class)
 	public ResponseEntity<?> handleAlreadyExpiredException(UserAlreadyExistsException e){
-		logger.error(e);
-		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).contentType(MediaType.APPLICATION_JSON).body(e);
-	}
-
-	@ExceptionHandler()
-	public ResponseEntity<?> handleAlreadyExistsException(UserAlreadyExistsException e){
 		logger.error(e);
 		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).contentType(MediaType.APPLICATION_JSON).body(e);
 	}
