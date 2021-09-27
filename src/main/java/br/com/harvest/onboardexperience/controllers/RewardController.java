@@ -61,7 +61,7 @@ public class RewardController {
 	@PreAuthorize("hasAuthority('ADMIN')")
 	@PutMapping(path = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<RewardDto> update(@PathVariable  @Pattern(regexp = RegexUtils.ONLY_NUMBERS) Long id, @ModelAttribute @Valid @NotNull RewardDto dto, 
-			@RequestParam("file") MultipartFile file, @RequestHeader("Authorization") String token) {
+			@RequestParam(value= "file", required = false) MultipartFile file, @RequestHeader("Authorization") String token) {
 		return ResponseEntity.ok().body(service.update(id, dto, file, token));
 	}
 	
