@@ -16,6 +16,7 @@ public interface RewardRepository extends JpaRepository<Reward, Long>{
 	
 	Optional<Reward> findByIdAndClient_Tenant(Long id, String tenant);
 	Optional<Reward> findByNameContainingIgnoreCaseAndClient_Tenant(String name, String tenant);
+	Optional<Reward> findByNameAndClient_Tenant(String name, String tenant);
 	Page<Reward> findAllByClient_Tenant(String tenant, Pageable pageable);
 
 	@Query(value="SELECT r FROM Reward r WHERE " +

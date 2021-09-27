@@ -162,7 +162,7 @@ public class CoinService {
     }
 
     private void checkIfCoinAlreadyExists(@NonNull CoinDto dto, @NonNull final String tenant) {
-        if (repository.findByNameContainingIgnoreCaseAndClient_Tenant(dto.getName(), tenant).isPresent()) {
+        if (repository.findByNameAndClient_Tenant(dto.getName(), tenant).isPresent()) {
             throw new BusinessException(ExceptionMessageFactory.createAlreadyExistsMessage("coin", "name", dto.getName()));
         }
     }
