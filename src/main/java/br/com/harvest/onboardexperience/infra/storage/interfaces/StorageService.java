@@ -8,8 +8,10 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public interface StorageService {
 
@@ -19,6 +21,7 @@ public interface StorageService {
 	void update(@NonNull Long id, @NonNull UploadForm form, @NonNull String token);
 	void delete(@NonNull Long id, @NonNull String token);
 	Optional<?> find(@NonNull Long id, @NonNull String token);
+	void updateAuthorizedClients(@NonNull Long id, @NonNull String token, @NonNull  List<Long> authorizedClients);
 
 
 	static Client getAuthor(List<Client> authorizedClients){
@@ -35,4 +38,11 @@ public interface StorageService {
 		}
 	}
 
+	static List<Long> getIDFromClients(List<Client> clients){
+		List<Long> ids = new ArrayList<>();
+		if(ObjectUtils.isNotEmpty(clients)){
+			ids = clients.stream().mapToLong(client -> client.getId()).boxed().collect(Collectors.toList());
+		}
+		return ids;
+	}
 }

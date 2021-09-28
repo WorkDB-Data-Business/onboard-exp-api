@@ -18,6 +18,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -80,7 +81,24 @@ public class LinkStorageService implements StorageService {
 
     @Override
     public Optional<LinkDto> find(@NonNull Long id, @NonNull String token) {
-        return Optional.of(LinkMapper.INSTANCE.toDto(getLinkByIdAndAuthorizedClient(id, token, true)));
+
+        Link link = getLinkByIdAndAuthorizedClient(id, token, true);
+
+        LinkDto dto = LinkMapper.INSTANCE.toDto(link);
+
+        dto.setAuthorizedClientsId(StorageService.getIDFromClients(link.getAuthorizedClients()));
+
+        return Optional.of(dto);
+    }
+
+    @Override
+    public void updateAuthorizedClients(@NonNull Long id, @NonNull String token, @NonNull List<Long> authorizedClients) {
+        Link link = getLinkByIdAndAuthorizedClient(id, token, true);
+
+        link.setAuthorizedClients(fetchService.fetchClients(authorizedClients,
+                tenantService.fetchClientByTenantFromToken(token)));
+
+        repository.save(link);
     }
 
     private Link getLinkByIdAndAuthorizedClient(@NonNull Long id, @NonNull String token, @NonNull Boolean validateAuthor){

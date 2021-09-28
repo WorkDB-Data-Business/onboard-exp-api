@@ -27,7 +27,6 @@ import br.com.harvest.onboardexperience.repositories.CompanyRoleRepository;
 import br.com.harvest.onboardexperience.repositories.PermissionRepository;
 import br.com.harvest.onboardexperience.repositories.RoleRepository;
 import br.com.harvest.onboardexperience.repositories.UserRepository;
-import br.com.harvest.onboardexperience.infra.storage.services.FileStorageService;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j

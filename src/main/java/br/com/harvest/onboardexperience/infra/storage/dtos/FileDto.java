@@ -1,7 +1,7 @@
 package br.com.harvest.onboardexperience.infra.storage.dtos;
 
-import br.com.harvest.onboardexperience.domain.dtos.ClientSimpleDto;
 import lombok.*;
+
 import java.util.List;
 
 @Data
@@ -15,11 +15,11 @@ public class FileDto {
 
     private String name;
 
-    private List<ClientSimpleDto> authorizedClients;
+    private List<Long> authorizedClientsId;
 
-    private String contentId;
+    private String fileEncoded;
 
-    private long contentLength;
+    private Long contentLength;
 
     private String mimeType;
 

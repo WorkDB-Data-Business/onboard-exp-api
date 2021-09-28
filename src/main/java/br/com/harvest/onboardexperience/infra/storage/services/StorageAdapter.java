@@ -14,6 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 @Component
 public class StorageAdapter {
@@ -32,7 +33,7 @@ public class StorageAdapter {
         this.form = new UploadForm(file, link, authorizedClients);
         this.token = token;
 
-        Storage storage = Objects.nonNull(form.getLink()) ? Storage.LINK : Storage.FILE;
+        Storage storage = Objects.nonNull(form.getLink()) ? Storage.LINK : Storage.HARVEST_FILE;
 
         return setStorage(storage);
     }
@@ -42,8 +43,8 @@ public class StorageAdapter {
             case LINK:
                 this.storageService = this.context.getBean(LinkStorageService.class);
                 break;
-            case FILE:
-                this.storageService = this.context.getBean(FileStorageService.class);
+            case HARVEST_FILE:
+                this.storageService = this.context.getBean(HarvestLibraryStorageService.class);
                 break;
             default:
                 this.storageService = null;
@@ -69,6 +70,16 @@ public class StorageAdapter {
     public void delete(@NonNull Long id, @NonNull String token){
         validate();
         this.storageService.delete(id, token);
+    }
+
+    public void updateAuthorizedClients(@NonNull Long id, @NonNull String token, @NonNull  List<Long> authorizedClients){
+        validate();
+        this.storageService.updateAuthorizedClients(id, token, authorizedClients);
+    }
+
+    public Optional<?> find(@NonNull Long id, @NonNull String token){
+        validate();
+        return  this.storageService.find(id, token);
     }
 
     private void validate(){

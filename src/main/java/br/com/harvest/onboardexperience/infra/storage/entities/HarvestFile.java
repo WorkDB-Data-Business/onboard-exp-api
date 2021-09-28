@@ -16,7 +16,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = false)
-public class File extends BaseEntityAudit {
+public class HarvestFile extends BaseEntityAudit {
 
     @Id
     @Column(name = "idfile")
@@ -40,7 +40,7 @@ public class File extends BaseEntityAudit {
     private String contentId;
 
     @ContentLength
-    private long contentLength;
+    private Long contentLength;
 
     @MimeType
     private String mimeType;

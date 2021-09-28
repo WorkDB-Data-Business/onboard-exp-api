@@ -1,6 +1,5 @@
 package br.com.harvest.onboardexperience.infra.storage.dtos;
 
-import br.com.harvest.onboardexperience.domain.dtos.ClientSimpleDto;
 import br.com.harvest.onboardexperience.infra.storage.enumerators.ContentType;
 import lombok.*;
 
@@ -17,7 +16,7 @@ public class LinkDto {
 
     private String description;
 
-    private List<ClientSimpleDto> authorizedClients;
+    private List<Long> authorizedClientsId;
 
     private String link;
 

@@ -1,7 +1,6 @@
 package br.com.harvest.onboardexperience.services;
 
-import br.com.harvest.onboardexperience.domain.enumerators.FileTypeEnum;
-import br.com.harvest.onboardexperience.infra.storage.services.FileStorageService;
+import br.com.harvest.onboardexperience.infra.storage.services.HarvestLibraryStorageService;
 import br.com.harvest.onboardexperience.utils.GenericUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,7 +37,7 @@ public class RewardService {
 	private ClientService clientService;
 	
 	@Autowired
-	private FileStorageService fileStorageService;
+	private HarvestLibraryStorageService fileStorageService;
 
 	
 	public RewardDto create(@NonNull RewardDto dto, MultipartFile file , @NonNull final String token) {

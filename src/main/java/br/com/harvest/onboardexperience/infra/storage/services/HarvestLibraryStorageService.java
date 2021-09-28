@@ -4,8 +4,10 @@ package br.com.harvest.onboardexperience.infra.storage.services;
 import br.com.harvest.onboardexperience.domain.entities.Client;
 import br.com.harvest.onboardexperience.domain.exceptions.GenericUploadException;
 import br.com.harvest.onboardexperience.domain.exceptions.LinkNotFoundException;
+import br.com.harvest.onboardexperience.infra.storage.dtos.FileDto;
+import br.com.harvest.onboardexperience.infra.storage.dtos.FileSimpleDto;
 import br.com.harvest.onboardexperience.infra.storage.dtos.UploadForm;
-import br.com.harvest.onboardexperience.infra.storage.entities.File;
+import br.com.harvest.onboardexperience.infra.storage.entities.HarvestFile;
 import br.com.harvest.onboardexperience.infra.storage.interfaces.StorageService;
 import br.com.harvest.onboardexperience.infra.storage.mappers.FileMapper;
 import br.com.harvest.onboardexperience.infra.storage.repositories.FileContentStore;
@@ -15,6 +17,8 @@ import br.com.harvest.onboardexperience.services.FetchService;
 import br.com.harvest.onboardexperience.services.TenantService;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.IOUtils;
+import org.apache.tomcat.util.codec.binary.Base64;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -23,12 +27,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
 @Service
 @Slf4j
-public class FileStorageService implements StorageService {
+public class HarvestLibraryStorageService implements StorageService {
 
     @Autowired
     private TenantService tenantService;
@@ -51,12 +57,11 @@ public class FileStorageService implements StorageService {
 
         validate(form);
 
-        File file = convertFormToFile(form, token);
+        HarvestFile harvestFile = convertFormToFile(form, token);
 
-        uploadFile(file, form);
+        uploadFile(harvestFile, form);
 
-        fileRepository.save(file);
-
+        fileRepository.save(harvestFile);
     }
 
     @Override
@@ -67,7 +72,7 @@ public class FileStorageService implements StorageService {
     }
 
     @Override
-    public Page<?> findAll(@NonNull String token, Pageable pageable) {
+    public Page<FileSimpleDto> findAll(@NonNull String token, Pageable pageable) {
         Client client = tenantService.fetchClientByTenantFromToken(token);
         return fileRepository.findAllByAuthorizedClients(client, pageable).map(FileMapper.INSTANCE::toFileSimpleDto);
     }
@@ -75,52 +80,75 @@ public class FileStorageService implements StorageService {
     @Override
     public void update(@NonNull Long id, @NonNull UploadForm form, @NonNull String token) {
 
-        File file = getFileByIdAndAuthorizedClient(id, token, true);
+        HarvestFile harvestFile = getFileByIdAndAuthorizedClient(id, token, true);
 
-        File updatedFile = convertFormToFile(form, token);
+        HarvestFile updatedHarvestFile = convertFormToFile(form, token);
 
-        BeanUtils.copyProperties(updatedFile, file, "id", "createdAt", "createdBy");
+        BeanUtils.copyProperties(updatedHarvestFile, harvestFile, "id", "createdAt", "createdBy");
 
-        uploadFile(file, form);
+        uploadFile(harvestFile, form);
 
-        fileRepository.save(file);
+        fileRepository.save(harvestFile);
     }
 
     @Override
     public void delete(@NonNull Long id, @NonNull String token) {
-        File file = getFileByIdAndAuthorizedClient(id, token, true);
+        HarvestFile harvestFile = getFileByIdAndAuthorizedClient(id, token, true);
 
-        fileContentStore.unsetContent(file);
+        fileContentStore.unsetContent(harvestFile);
 
-        fileRepository.delete(file);
+        fileRepository.delete(harvestFile);
     }
 
     @Override
-    public Optional<?> find(@NonNull Long id, @NonNull String token) {
-        File file = getFileByIdAndAuthorizedClient(id, token, true);
+    public Optional<FileDto> find(@NonNull Long id, @NonNull String token) {
+        HarvestFile harvestFile = getFileByIdAndAuthorizedClient(id, token, false);
 
-        //TODO: continuar implementação.
-        return Optional.empty();
+        FileDto dto = FileMapper.INSTANCE.toDto(harvestFile);
+
+        dto.setFileEncoded(encodeFileToBase64(fileContentStore.getContent(harvestFile)));
+        dto.setAuthorizedClientsId(StorageService.getIDFromClients(harvestFile.getAuthorizedClients()));
+
+        return Optional.of(dto);
     }
 
-    private File getFileByIdAndAuthorizedClient(@NonNull Long id, @NonNull String token, @NonNull Boolean validateAuthor) {
+    @Override
+    public void updateAuthorizedClients(@NonNull Long id, @NonNull String token, @NonNull List<Long> authorizedClients) {
+        HarvestFile file = getFileByIdAndAuthorizedClient(id, token, true);
+
+        file.setAuthorizedClients(fetchService.fetchClients(authorizedClients,
+                tenantService.fetchClientByTenantFromToken(token)));
+
+        fileRepository.save(file);
+    }
+
+    private String encodeFileToBase64(InputStream inputStream){
+        try {
+            return Base64.encodeBase64String(IOUtils.toByteArray(inputStream));
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    private HarvestFile getFileByIdAndAuthorizedClient(@NonNull Long id, @NonNull String token, @NonNull Boolean validateAuthor) {
 
         Client client = tenantService.fetchClientByTenantFromToken(token);
 
-        File file = fileRepository.findByIdAndAuthorizedClients(id, client).orElseThrow(
+        HarvestFile harvestFile = fileRepository.findByIdAndAuthorizedClients(id, client).orElseThrow(
                 () -> new LinkNotFoundException("File not found.", "The requested file doesn't exist or you don't have access to get it.")
         );
 
         if(validateAuthor){
-            StorageService.validateAuthor(client, file.getAuthorizedClients());
+            StorageService.validateAuthor(client, harvestFile.getAuthorizedClients());
         }
 
-        return file;
+        return harvestFile;
     }
 
-    private void uploadFile(@NonNull File file, @NonNull UploadForm form) {
+    private void uploadFile(@NonNull HarvestFile harvestFile, @NonNull UploadForm form) {
         try {
-            fileContentStore.setContent(file, form.getFile().getInputStream());
+            fileContentStore.setContent(harvestFile, form.getFile().getInputStream());
         } catch (IOException e) {
             log.error("An error occurs while uploading the file", e);
             throw new GenericUploadException(e.getMessage(), e.getCause());
@@ -136,9 +164,9 @@ public class FileStorageService implements StorageService {
         return builder.toString();
     }
 
-    private File convertFormToFile(@NonNull UploadForm form, @NonNull String token) {
+    private HarvestFile convertFormToFile(@NonNull UploadForm form, @NonNull String token) {
         Client client = tenantService.fetchClientByTenantFromToken(token);
-        return File.builder()
+        return HarvestFile.builder()
                 .authorizedClients(fetchService.fetchClients(form.getAuthorizedClients(), client))
                 .contentPath(createFilePath(form.getFile(), client))
                 .name(form.getFile().getOriginalFilename())

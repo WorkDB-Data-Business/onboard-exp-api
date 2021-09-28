@@ -16,7 +16,7 @@ public class FileSimpleDto {
 
     private String contentId;
 
-    private long contentLength;
+    private Long contentLength;
 
     private String mimeType;
 

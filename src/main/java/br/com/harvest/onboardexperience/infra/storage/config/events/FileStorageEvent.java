@@ -1,6 +1,6 @@
 package br.com.harvest.onboardexperience.infra.storage.config.events;
 
-import br.com.harvest.onboardexperience.infra.storage.entities.File;
+import br.com.harvest.onboardexperience.infra.storage.entities.HarvestFile;
 import br.com.harvest.onboardexperience.infra.storage.repositories.FileRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.content.commons.annotations.HandleBeforeSetContent;
@@ -16,9 +16,9 @@ public class FileStorageEvent {
     private FileRepository fileRepository;
 
     @HandleBeforeSetContent
-    public void handleBeforeSetContent(File file) throws FileAlreadyExistsException {
-        if(fileRepository.findByContentPath(file.getContentPath()).isPresent()){
-            throw new FileAlreadyExistsException(file.getName() + " already exists.");
+    public void handleBeforeSetContent(HarvestFile harvestFile) throws FileAlreadyExistsException {
+        if(fileRepository.findByContentPath(harvestFile.getContentPath()).isPresent()){
+            throw new FileAlreadyExistsException(harvestFile.getName() + " already exists.");
         }
     }
 

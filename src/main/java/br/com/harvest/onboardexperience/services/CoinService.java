@@ -1,8 +1,6 @@
 package br.com.harvest.onboardexperience.services;
 
-import br.com.harvest.onboardexperience.domain.enumerators.FileTypeEnum;
 import br.com.harvest.onboardexperience.domain.exceptions.BusinessException;
-import br.com.harvest.onboardexperience.infra.storage.services.FileStorageService;
 import br.com.harvest.onboardexperience.mappers.ClientMapper;
 import br.com.harvest.onboardexperience.utils.GenericUtils;
 import org.springframework.beans.BeanUtils;
