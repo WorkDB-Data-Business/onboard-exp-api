@@ -1,6 +1,8 @@
 package br.com.harvest.onboardexperience.services;
 
+import br.com.harvest.onboardexperience.domain.enumerators.FileTypeEnum;
 import br.com.harvest.onboardexperience.domain.exceptions.BusinessException;
+import br.com.harvest.onboardexperience.infra.storage.services.ImageStorageService;
 import br.com.harvest.onboardexperience.mappers.ClientMapper;
 import br.com.harvest.onboardexperience.utils.GenericUtils;
 import org.springframework.beans.BeanUtils;
@@ -35,19 +37,17 @@ public class CoinService {
     @Autowired
     private ClientService clientService;
 
-
     @Autowired
     private ClientMapper clientMapper;
 
-//    @Autowired
-//    private FileStorageService fileStorageService;
-
+    @Autowired
+    private ImageStorageService imageStorageService;
 
     public CoinDto create(@NonNull CoinDto dto, MultipartFile file, String token) {
         String tenant = jwtUtils.getUserTenant(token);
 
         validate(dto, tenant);
-//        saveImage(file, dto);
+        saveImage(file, dto);
 
         Coin coin = repository.save(CoinMapper.INSTANCE.toEntity(dto));
 
@@ -56,18 +56,17 @@ public class CoinService {
     }
 
 
-    public CoinDto update(@NonNull Long id, @NonNull CoinDto dto, MultipartFile file, @NonNull String token) {
+    public CoinDto update(@NonNull Long id, @NonNull CoinDto dto, @NonNull MultipartFile file, @NonNull String token) {
         String tenant = jwtUtils.getUserTenant(token);
 
         Coin coin = repository.findByIdAndClient_Tenant(id, tenant).orElseThrow(
                 () -> new CoinNotFoundException(ExceptionMessageFactory.createNotFoundMessage("coin", "ID", id.toString())));
 
         dto.setClient(clientMapper.toDto(coin.getClient()));
-        dto.setImagePath(coin.getImagePath());
 
         validate(coin, dto, tenant);
 
-//        saveImage(file, dto);
+        saveImage(file, dto);
 
         BeanUtils.copyProperties(dto, coin, "id", "client", "createdAt", "createdBy", dto.getImagePath() == null ? "imagePath" : "");
 
@@ -125,16 +124,9 @@ public class CoinService {
             log.info("The coin with ID " + id + " was " + isEnabled + " successful.");
     }
 
-//    private void saveImage(MultipartFile file, CoinDto dto) {
-//		String filePath = "";
-//    	if(file != null){
-//			filePath = fileStorageService.save(file, dto.getName(), new String[]{dto.getClient().getCnpj(), FileTypeEnum.COIN.getName()});
-//		}else{
-//			filePath = fileStorageService.rename(dto.getName(), dto.getImagePath());
-//		}
-//
-//        dto.setImagePath(filePath);
-//    }
+    private void saveImage(MultipartFile file, CoinDto dto) {
+        dto.setImagePath(imageStorageService.uploadImage(file, dto.getClient().getCnpj(), FileTypeEnum.COIN));
+    }
 
     private Boolean checkIfIsSameCoin(@NonNull Coin coin, @NonNull CoinDto coinDto) {
         Boolean sameName = coin.getName().equalsIgnoreCase(coinDto.getName());
