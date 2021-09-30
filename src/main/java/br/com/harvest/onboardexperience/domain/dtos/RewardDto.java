@@ -2,10 +2,7 @@ package br.com.harvest.onboardexperience.domain.dtos;
 
 import java.math.BigDecimal;
 
-import javax.validation.constraints.DecimalMin;
-import javax.validation.constraints.Digits;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.*;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonProperty.Access;
@@ -29,9 +26,10 @@ public class RewardDto {
 	private String name;
 
 	@NotBlank
-	@Min(ValidationUtils.MIN_SIZE_DESCRIPTION)
+	@Size(min = ValidationUtils.MIN_SIZE_DESCRIPTION)
 	private String description;
-	
+
+	@NotNull
 	@DecimalMin(value = ValidationUtils.MIN_PRICE, inclusive = false)
 	@Digits(fraction = ValidationUtils.MAX_PRICE_FRACTION, integer = ValidationUtils.MAX_PRICE)
 	private BigDecimal price;

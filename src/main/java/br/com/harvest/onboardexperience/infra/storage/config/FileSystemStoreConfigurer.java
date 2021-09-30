@@ -8,5 +8,6 @@ public class FileSystemStoreConfigurer implements FilesystemStoreConfigurer {
     @Override
     public void configureFilesystemStoreConverters(ConverterRegistry converterRegistry) {
         converterRegistry.addConverter(new FileConverter());
+        converterRegistry.addConverter(new ImageConverter());
     }
 }

@@ -7,6 +7,7 @@ import br.com.harvest.onboardexperience.infra.storage.repositories.ImageContentS
 import br.com.harvest.onboardexperience.infra.storage.repositories.ImageRepository;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FilenameUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -25,10 +26,12 @@ public class ImageStorageService {
 
     private final String FILE_FOLDER = "files";
 
-    public String uploadImage(@NonNull MultipartFile file, @NonNull String folder, @NonNull FileTypeEnum imageDomain){
+    public String uploadImage(@NonNull MultipartFile file, @NonNull String folder, String fileNameParam, @NonNull FileTypeEnum imageDomain){
+        String fileName = fileNameParam + "." + FilenameUtils.getExtension(file.getOriginalFilename());
+
         Image image = Image.builder()
-                .contentPath(createFilePath(file, folder, imageDomain))
-                .name(file.getOriginalFilename())
+                .contentPath(createFilePath(file, folder, fileName, imageDomain))
+                .name(fileName)
                 .mimeType(file.getContentType())
                 .build();
 
@@ -47,14 +50,14 @@ public class ImageStorageService {
         }
     }
 
-    private String createFilePath(@NonNull MultipartFile file, @NonNull String folder, @NonNull FileTypeEnum imageDomain) {
+    private String createFilePath(@NonNull MultipartFile file, @NonNull String folder, String fileName, @NonNull FileTypeEnum imageDomain) {
         StringBuilder builder = new StringBuilder(FILE_FOLDER)
                 .append("/")
                 .append(folder)
                 .append("/")
                 .append(imageDomain.getName())
                 .append("/")
-                .append(file.getOriginalFilename());
+                .append(fileName);
         return builder.toString();
     }
 

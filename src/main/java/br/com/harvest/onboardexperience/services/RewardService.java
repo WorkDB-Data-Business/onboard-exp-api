@@ -1,6 +1,7 @@
 package br.com.harvest.onboardexperience.services;
 
-import br.com.harvest.onboardexperience.infra.storage.services.HarvestLibraryStorageService;
+import br.com.harvest.onboardexperience.domain.enumerators.FileTypeEnum;
+import br.com.harvest.onboardexperience.infra.storage.services.ImageStorageService;
 import br.com.harvest.onboardexperience.utils.GenericUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,7 +38,7 @@ public class RewardService {
 	private ClientService clientService;
 	
 	@Autowired
-	private HarvestLibraryStorageService fileStorageService;
+	private ImageStorageService imageStorageService;
 
 	
 	public RewardDto create(@NonNull RewardDto dto, MultipartFile file , @NonNull final String token) {
@@ -46,7 +47,7 @@ public class RewardService {
 
 			validate(dto, tenant);
 			
-//			saveImage(file, dto);
+			saveImage(file, dto);
 
 			Reward reward = repository.save(RewardMapper.INSTANCE.toEntity(dto));
 
@@ -68,7 +69,8 @@ public class RewardService {
 					() -> new RewardNotFoundException(ExceptionMessageFactory.createNotFoundMessage("reward", "ID", id.toString())));
 
 			validate(reward, dto, tenant);
-//			saveImage(file, dto);
+
+			saveImage(file, dto);
 
 			BeanUtils.copyProperties(dto, reward, "id", "client", "createdAt", "createdBy");
 
@@ -132,6 +134,10 @@ public class RewardService {
 	private void validate(@NonNull RewardDto reward, @NonNull final String tenant) {
 		checkIfRewardAlreadyExists(reward, tenant);
 		fetchAndSetClient(reward, tenant);
+	}
+
+	private void saveImage(MultipartFile file, RewardDto dto) {
+		dto.setImagePath(imageStorageService.uploadImage(file, dto.getClient().getCnpj(), dto.getName(), FileTypeEnum.REWARD));
 	}
 
 	private void validate(@NonNull Reward reward, @NonNull RewardDto dto, @NonNull final String tenant) {

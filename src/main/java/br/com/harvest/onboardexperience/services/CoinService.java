@@ -125,7 +125,7 @@ public class CoinService {
     }
 
     private void saveImage(MultipartFile file, CoinDto dto) {
-        dto.setImagePath(imageStorageService.uploadImage(file, dto.getClient().getCnpj(), FileTypeEnum.COIN));
+        dto.setImagePath(imageStorageService.uploadImage(file, dto.getClient().getCnpj(), dto.getName(), FileTypeEnum.COIN));
     }
 
     private Boolean checkIfIsSameCoin(@NonNull Coin coin, @NonNull CoinDto coinDto) {

@@ -106,7 +106,7 @@ public class HarvestLibraryStorageService implements StorageService {
 
         FileDto dto = FileMapper.INSTANCE.toDto(harvestFile);
 
-        dto.setFileEncoded(encodeFileToBase64(fileContentStore.getContent(harvestFile)));
+        dto.setFileEncoded(StorageService.encodeFileToBase64(fileContentStore.getContent(harvestFile)));
         dto.setAuthorizedClientsId(StorageService.getIDFromClients(harvestFile.getAuthorizedClients()));
 
         return Optional.of(dto);
@@ -122,14 +122,7 @@ public class HarvestLibraryStorageService implements StorageService {
         fileRepository.save(file);
     }
 
-    private String encodeFileToBase64(InputStream inputStream){
-        try {
-            return Base64.encodeBase64String(IOUtils.toByteArray(inputStream));
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
+
 
     private HarvestFile getFileByIdAndAuthorizedClient(@NonNull Long id, @NonNull String token, @NonNull Boolean validateAuthor) {
 

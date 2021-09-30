@@ -25,7 +25,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
-@Tag(name = "Group")
+@Tag(name = "Harvest Library")
 @RestController
 @RequestMapping("/v1/harvest-library")
 @CrossOrigin(origins = "*", maxAge = 36000)

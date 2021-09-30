@@ -4,10 +4,14 @@ import br.com.harvest.onboardexperience.domain.entities.Client;
 import br.com.harvest.onboardexperience.domain.exceptions.GenericUploadException;
 import br.com.harvest.onboardexperience.infra.storage.dtos.UploadForm;
 import lombok.NonNull;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.tomcat.util.codec.binary.Base64;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -44,5 +48,14 @@ public interface StorageService {
 			ids = clients.stream().mapToLong(client -> client.getId()).boxed().collect(Collectors.toList());
 		}
 		return ids;
+	}
+
+	static String encodeFileToBase64(InputStream inputStream){
+		try {
+			return Base64.encodeBase64String(IOUtils.toByteArray(inputStream));
+		} catch (IOException e) {
+			e.printStackTrace();
+			return null;
+		}
 	}
 }
