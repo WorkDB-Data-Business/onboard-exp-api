@@ -1,5 +1,6 @@
 package br.com.harvest.onboardexperience.services;
 
+import br.com.harvest.onboardexperience.mappers.ClientMapper;
 import br.com.harvest.onboardexperience.domain.enumerators.FileTypeEnum;
 import br.com.harvest.onboardexperience.infra.storage.services.ImageStorageService;
 import br.com.harvest.onboardexperience.utils.GenericUtils;
@@ -40,6 +41,9 @@ public class RewardService {
 	@Autowired
 	private ImageStorageService imageStorageService;
 
+	@Autowired
+	private ClientMapper clientMapper;
+
 	
 	public RewardDto create(@NonNull RewardDto dto, MultipartFile file , @NonNull final String token) {
 		try {
@@ -61,28 +65,24 @@ public class RewardService {
 
 	
 	public RewardDto update(@NonNull Long id, @NonNull RewardDto dto, MultipartFile file, @NonNull final String token) {
-		try {
+		String tenant = jwtUtils.getUserTenant(token);
 
-			String tenant = jwtUtils.getUserTenant(token);
+		Reward reward = repository.findByIdAndClient_Tenant(id, tenant).orElseThrow(
+				() -> new RewardNotFoundException(ExceptionMessageFactory.createNotFoundMessage("reward", "ID", id.toString())));
 
-			Reward reward = repository.findByIdAndClient_Tenant(id, tenant).orElseThrow(
-					() -> new RewardNotFoundException(ExceptionMessageFactory.createNotFoundMessage("reward", "ID", id.toString())));
+		dto.setClient(clientMapper.toDto(reward.getClient()));
+		dto.setImagePath(reward.getImagePath());
 
-			validate(reward, dto, tenant);
+		validate(reward, dto, tenant);
+		saveImage(file, dto);
 
-			saveImage(file, dto);
+		BeanUtils.copyProperties(dto, reward, "id", "client", "createdAt", "createdBy");
 
-			BeanUtils.copyProperties(dto, reward, "id", "client", "createdAt", "createdBy");
+		reward = repository.save(reward);
 
-			reward = repository.save(reward);
+		log.info("The reward " + dto.getName() + " was updated successful.");
 
-			log.info("The reward " + dto.getName() + " was updated successful.");
-
-			return RewardMapper.INSTANCE.toDto(reward);
-		} catch (Exception e) {
-			log.error("An error has occurred when updating reward with ID " + id, e);
-			return null;
-		}
+		return RewardMapper.INSTANCE.toDto(reward);
 	}
 
 	
@@ -159,7 +159,7 @@ public class RewardService {
 	}
 
 	private void checkIfRewardAlreadyExists(@NonNull RewardDto dto, @NonNull final String tenant) {
-		if(repository.findByNameContainingIgnoreCaseAndClient_Tenant(dto.getName(), tenant).isPresent()) {
+		if(repository.findByNameAndClient_Tenant(dto.getName(), tenant).isPresent()) {
 			throw new RewardAlreadyExistsException(ExceptionMessageFactory.createAlreadyExistsMessage("reward", "name", dto.getName()));
 		}
 	}

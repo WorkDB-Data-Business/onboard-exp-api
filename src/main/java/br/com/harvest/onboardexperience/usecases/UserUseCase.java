@@ -136,8 +136,11 @@ public class UserUseCase {
     }
 
     public void sendEmailToResetPassword(@NonNull EmailForm form, HttpServletRequest request) throws Exception {
-        User user = userRepository.findByEmailContainingIgnoreCase(form.getEmail()).orElseThrow(
-                () -> new UserNotFoundException(ExceptionMessageFactory.createNotFoundMessage("user", "email", form.getEmail())));
+        User user = userRepository.findByEmailContainingIgnoreCase(form.getEmail()).orElse(null);
+
+        if(user == null){
+            return;
+        }
 
         String token = UUID.randomUUID().toString();
 

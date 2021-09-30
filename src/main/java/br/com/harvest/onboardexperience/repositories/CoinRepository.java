@@ -15,6 +15,7 @@ public interface CoinRepository extends JpaRepository<Coin, Long>{
 	
 	Optional<Coin> findByIdAndClient_Tenant(Long id, String tenant);
 	Optional<Coin> findByNameContainingIgnoreCaseAndClient_Tenant(String name, String tenant);
+	Optional<Coin> findByNameAndClient_Tenant(String name, String tenant);
 	Page<Coin> findAllByClient_Tenant(String tenant, Pageable pageable);
 
 	@Query(value="SELECT c FROM Coin c WHERE " +
