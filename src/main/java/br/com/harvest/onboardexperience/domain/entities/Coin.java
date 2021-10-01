@@ -2,6 +2,7 @@ package br.com.harvest.onboardexperience.domain.entities;
 
 import javax.persistence.*;
 
+import br.com.harvest.onboardexperience.infra.storage.entities.Image;
 import org.hibernate.annotations.ResultCheckStyle;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Where;
@@ -31,10 +32,10 @@ public class Coin extends BaseEntityAudit {
 	@Column(name = "idcoin")
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
-	
+
 	@Column(name = "image_path")
 	private String imagePath;
-	
+
 	@Column(name = "name")
 	private String name;
 	

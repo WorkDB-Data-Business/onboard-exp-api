@@ -40,6 +40,9 @@ public class GroupService {
     @Autowired
     private CompanyRoleService companyRoleService;
 
+    @Autowired
+    private FetchService fetchService;
+
     public GroupDto create(@NonNull GroupForm dto, @NonNull final String token) {
 
         GroupDto groupDto = convertFormToGroupDto(dto, token);
@@ -89,36 +92,16 @@ public class GroupService {
         repository.delete(group);
     }
 
-    private List<UserDto> fetchUsers(List<Long> usersId, String token){
-        List<UserDto> users = new ArrayList<>();
-        if(ObjectUtils.isNotEmpty(usersId)){
-            for(Long userId : usersId){
-                UserDto user = userService.findByIdAndTenant(userId, token);
-                users.add(user);
-            }
-        }
-        return users;
-    }
 
-    private List<CompanyRoleDto> fetchCompanyRoles(List<Long> companyRolesId, String token){
-        List<CompanyRoleDto> companyRoles = new ArrayList<>();
-        if(ObjectUtils.isNotEmpty(companyRolesId)){
-            for(Long companyRoleId : companyRolesId){
-                CompanyRoleDto companyRole = companyRoleService.findByIdAndTenant(companyRoleId, token);
-                companyRoles.add(companyRole);
-            }
-        }
-        return companyRoles;
-    }
 
     private GroupDto convertFormToGroupDto(@NonNull GroupForm form, String token){
         ClientDto client = ClientMapper.INSTANCE.toDto(tenantService.fetchClientByTenantFromToken(token));
 
         return GroupDto.builder().client(client)
                 .name(form.getName())
-                .companyRoles(fetchCompanyRoles(form.getCompanyRoles(), token))
+                .companyRoles(fetchService.fetchCompanyRoles(form.getCompanyRoles(), token))
                 .isActive(form.getIsActive())
-                .users(fetchUsers(form.getUsers(), token))
+                .users(fetchService.fetchUsers(form.getUsers(), token))
                 .build();
     }
 

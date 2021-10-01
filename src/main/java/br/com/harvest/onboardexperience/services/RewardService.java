@@ -2,7 +2,7 @@ package br.com.harvest.onboardexperience.services;
 
 import br.com.harvest.onboardexperience.mappers.ClientMapper;
 import br.com.harvest.onboardexperience.domain.enumerators.FileTypeEnum;
-import br.com.harvest.onboardexperience.infra.storage.services.FileStorageService;
+import br.com.harvest.onboardexperience.infra.storage.services.ImageStorageService;
 import br.com.harvest.onboardexperience.utils.GenericUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,7 +39,7 @@ public class RewardService {
 	private ClientService clientService;
 	
 	@Autowired
-	private FileStorageService fileStorageService;
+	private ImageStorageService imageStorageService;
 
 	@Autowired
 	private ClientMapper clientMapper;
@@ -131,20 +131,13 @@ public class RewardService {
 			log.info("The Reward with ID " + id + " was " + isEnabled + " successful.");
 	}
 
-	private void saveImage(MultipartFile file, RewardDto dto) {
-		String filePath = "";
-		if(file != null){
-			filePath = fileStorageService.save(file, dto.getName(), new String[]{dto.getClient().getCnpj(), FileTypeEnum.REWARD.getName()});
-		}else{
-			filePath = fileStorageService.rename(dto.getName(), dto.getImagePath());
-		}
-
-		dto.setImagePath(filePath);
-	}
-
 	private void validate(@NonNull RewardDto reward, @NonNull final String tenant) {
 		checkIfRewardAlreadyExists(reward, tenant);
 		fetchAndSetClient(reward, tenant);
+	}
+
+	private void saveImage(MultipartFile file, RewardDto dto) {
+		dto.setImagePath(imageStorageService.uploadImage(file, dto.getClient().getCnpj(), dto.getName(), FileTypeEnum.REWARD));
 	}
 
 	private void validate(@NonNull Reward reward, @NonNull RewardDto dto, @NonNull final String tenant) {

@@ -170,3 +170,46 @@ CREATE TABLE IF NOT EXISTS public.tbpassword_reset_token(
     is_expired BOOLEAN,
     CONSTRAINT tbpassword_reset_token_pk PRIMARY KEY (idpassword_reset_token)
 );
+
+CREATE TABLE IF NOT EXISTS public.tbfile(
+    idfile BIGSERIAL NOT NULL,
+    name CHARACTER VARYING,
+    file_path CHARACTER VARYING,
+    content_id CHARACTER VARYING,
+    content_length BIGINT,
+    mime_type CHARACTER VARYING,
+    created_by CHARACTER VARYING,
+    updated_by CHARACTER VARYING,
+    created_at TIMESTAMP default now(),
+    updated_at TIMESTAMP,
+
+    CONSTRAINT tbfile_pk PRIMARY KEY (idfile)
+);
+
+CREATE TABLE IF NOT EXISTS public.tblink(
+    idlink BIGSERIAL NOT NULL,
+    description CHARACTER VARYING,
+    link CHARACTER VARYING,
+    content_type CHARACTER VARYING,
+    is_active BOOLEAN NOT NULL,
+    created_by CHARACTER VARYING,
+    updated_by CHARACTER VARYING,
+    created_at TIMESTAMP default now(),
+    updated_at TIMESTAMP,
+
+    CONSTRAINT tblink_pk PRIMARY KEY (idlink)
+);
+
+CREATE TABLE IF NOT EXISTS public.tbharvest_library_file(
+    idfile BIGINT,
+    idclient BIGINT,
+
+    CONSTRAINT tbharvest_library_file_pk PRIMARY KEY (idfile, idclient)
+);
+
+CREATE TABLE IF NOT EXISTS public.tbharvest_library_link(
+    idlink BIGINT,
+    idclient BIGINT,
+
+    CONSTRAINT tbharvest_library_link_pk PRIMARY KEY (idlink, idclient)
+);

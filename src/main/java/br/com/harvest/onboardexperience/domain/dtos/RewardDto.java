@@ -28,7 +28,8 @@ public class RewardDto {
 	@NotBlank
 	@Size(min = ValidationUtils.MIN_SIZE_DESCRIPTION)
 	private String description;
-	
+
+	@NotNull
 	@DecimalMin(value = ValidationUtils.MIN_PRICE, inclusive = false)
 	@Digits(fraction = ValidationUtils.MAX_PRICE_FRACTION, integer = ValidationUtils.MAX_PRICE)
 	private BigDecimal price;

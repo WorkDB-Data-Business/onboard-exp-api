@@ -2,7 +2,7 @@ package br.com.harvest.onboardexperience.services;
 
 import br.com.harvest.onboardexperience.domain.enumerators.FileTypeEnum;
 import br.com.harvest.onboardexperience.domain.exceptions.BusinessException;
-import br.com.harvest.onboardexperience.infra.storage.services.FileStorageService;
+import br.com.harvest.onboardexperience.infra.storage.services.ImageStorageService;
 import br.com.harvest.onboardexperience.mappers.ClientMapper;
 import br.com.harvest.onboardexperience.utils.GenericUtils;
 import org.springframework.beans.BeanUtils;
@@ -37,13 +37,11 @@ public class CoinService {
     @Autowired
     private ClientService clientService;
 
-
     @Autowired
     private ClientMapper clientMapper;
 
     @Autowired
-    private FileStorageService fileStorageService;
-
+    private ImageStorageService imageStorageService;
 
     public CoinDto create(@NonNull CoinDto dto, MultipartFile file, String token) {
         String tenant = jwtUtils.getUserTenant(token);
@@ -58,14 +56,13 @@ public class CoinService {
     }
 
 
-    public CoinDto update(@NonNull Long id, @NonNull CoinDto dto, MultipartFile file, @NonNull String token) {
+    public CoinDto update(@NonNull Long id, @NonNull CoinDto dto, @NonNull MultipartFile file, @NonNull String token) {
         String tenant = jwtUtils.getUserTenant(token);
 
         Coin coin = repository.findByIdAndClient_Tenant(id, tenant).orElseThrow(
                 () -> new CoinNotFoundException(ExceptionMessageFactory.createNotFoundMessage("coin", "ID", id.toString())));
 
         dto.setClient(clientMapper.toDto(coin.getClient()));
-        dto.setImagePath(coin.getImagePath());
 
         validate(coin, dto, tenant);
 
@@ -128,14 +125,7 @@ public class CoinService {
     }
 
     private void saveImage(MultipartFile file, CoinDto dto) {
-		String filePath = "";
-    	if(file != null){
-			filePath = fileStorageService.save(file, dto.getName(), new String[]{dto.getClient().getCnpj(), FileTypeEnum.COIN.getName()});
-		}else{
-			filePath = fileStorageService.rename(dto.getName(), dto.getImagePath());
-		}
-
-        dto.setImagePath(filePath);
+        dto.setImagePath(imageStorageService.uploadImage(file, dto.getClient().getCnpj(), dto.getName(), FileTypeEnum.COIN));
     }
 
     private Boolean checkIfIsSameCoin(@NonNull Coin coin, @NonNull CoinDto coinDto) {
