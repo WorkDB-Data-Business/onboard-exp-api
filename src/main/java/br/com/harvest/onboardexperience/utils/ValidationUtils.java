@@ -25,5 +25,7 @@ public class ValidationUtils {
 	public static final String MIN_PRICE = "0.00";
 
 	public static final int MIN_SIZE_DESCRIPTION = 30;
+
+	public static final int MIN_COIN = 1;
 	
 }

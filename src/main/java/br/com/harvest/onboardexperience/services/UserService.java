@@ -176,6 +176,11 @@ public class UserService {
         return UserMapper.INSTANCE.toDto(user);
     }
 
+    public User findUserById(@NonNull Long id){
+        return repository.findById(id).orElseThrow(
+                () -> new UserNotFoundException(ExceptionMessageFactory.createNotFoundMessage("user", "ID", id.toString())));
+    }
+
     public Page<UserDto> findByCriteria(String criteria,final Pageable pageable, final String token) {
         String tenant = jwtUtils.getUserTenant(token);
         if(GenericUtils.stringNullOrEmpty(criteria)){

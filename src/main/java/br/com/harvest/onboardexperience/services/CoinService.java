@@ -95,6 +95,10 @@ public class CoinService {
         return repository.findByCriteria(criteria, tenant, pageable).map(CoinMapper.INSTANCE::toDto);
     }
 
+    public Coin findCoinById(@NonNull Long id){
+        return repository.findById(id).orElseThrow(
+                () -> new CoinNotFoundException(ExceptionMessageFactory.createNotFoundMessage("coin", "ID", id.toString())));
+    }
 
     public Page<CoinDto> findAllByTenant(Pageable pageable, @NonNull String token) {
         String tenant = jwtUtils.getUserTenant(token);
