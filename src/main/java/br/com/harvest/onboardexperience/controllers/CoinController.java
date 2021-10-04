@@ -4,6 +4,9 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 
+import br.com.harvest.onboardexperience.domain.dtos.UserCoinDto;
+import br.com.harvest.onboardexperience.usecases.UserCoinUseCase;
+import br.com.harvest.onboardexperience.usecases.forms.UserCoinForm;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,6 +23,8 @@ import br.com.harvest.onboardexperience.utils.RegexUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
+import java.util.List;
+
 @Tag(name = "Coins")
 @RestController
 @RequestMapping("/v1/coins")
@@ -28,6 +33,9 @@ public class CoinController {
 	
 	@Autowired
 	private CoinService service;
+
+	@Autowired
+	private UserCoinUseCase useCase;
 	
 	@Operation(description = "Retorna as moedas cadastradas.")
 	@PreAuthorize("hasAuthority('ADMIN')")
@@ -78,5 +86,25 @@ public class CoinController {
 	@PatchMapping(path = "/disable/{id}")
 	public void disable(@PathVariable  @Pattern(regexp = RegexUtils.ONLY_NUMBERS) Long id, @RequestHeader("Authorization") String token) {
 		service.disableCoin(id, token);
+	}
+
+	@Operation(description = "Realiza a adição de moedas para um usuário.")
+	@ResponseStatus(HttpStatus.OK)
+	@PostMapping(path = "/add-to-user")
+	public void addToUser(@Valid @RequestBody UserCoinForm form) {
+		useCase.addCoinToUser(form);
+	}
+
+	@Operation(description = "Realiza a subtração de moedas para um usuário.")
+	@ResponseStatus(HttpStatus.OK)
+	@PostMapping(path = "/subtract-from-user")
+	public void subtractFromUser(@Valid @RequestBody UserCoinForm form) {
+		useCase.subtractCoinFromUser(form);
+	}
+
+	@Operation(description = "Retorna a quantidade de todas as moedas que o usuário possui.")
+	@GetMapping(path = "/coins-from-user", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<List<UserCoinDto>> getAllCoinsFromUser(@RequestHeader("Authorization") String token) {
+		return ResponseEntity.ok(useCase.getAllCoinAmountFromUser(token));
 	}
 }

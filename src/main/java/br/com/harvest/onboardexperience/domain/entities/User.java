@@ -91,20 +91,8 @@ public class User extends BaseEntityAudit {
 	
 	@Column(name = "is_client")
 	private Boolean isClient;
-	
-	@ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
-	@JoinTable(
-	  name = "tbuser_coin", 
-	  joinColumns = @JoinColumn(name = "iduser"), 
-	  inverseJoinColumns = @JoinColumn(name = "idcoin"))
-	private List<Coin> coins;
-	
-	public Integer getAmountOfCoins() {
-		if(ObjectUtils.isEmpty(this.coins)) {
-			return 0;
-		}
-		
-		return this.coins.size();
-	}
+
+	@OneToMany(mappedBy = "user")
+	private Set<UserCoin> coins;
 	
 }

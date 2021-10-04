@@ -3,7 +3,10 @@ package br.com.harvest.onboardexperience.services;
 import br.com.harvest.onboardexperience.domain.dtos.CompanyRoleDto;
 import br.com.harvest.onboardexperience.domain.dtos.UserDto;
 import br.com.harvest.onboardexperience.domain.entities.Client;
+import br.com.harvest.onboardexperience.domain.entities.Coin;
+import br.com.harvest.onboardexperience.domain.entities.User;
 import br.com.harvest.onboardexperience.mappers.ClientMapper;
+import lombok.NonNull;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -25,6 +28,9 @@ public class FetchService {
 
     @Autowired
     private TenantService tenantService;
+
+    @Autowired
+    private CoinService coinService;
 
     public List<CompanyRoleDto> fetchCompanyRoles(List<Long> companyRolesId, String token){
         List<CompanyRoleDto> companyRoles = new ArrayList<>();
@@ -80,5 +86,13 @@ public class FetchService {
         }
 
         return clients;
+    }
+
+    public User fetchUser(@NonNull Long id){
+        return userService.findUserById(id);
+    }
+
+    public Coin fetchCoin(@NonNull Long id){
+        return coinService.findCoinById(id);
     }
 }

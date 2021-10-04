@@ -73,7 +73,13 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 	}
 	
 	@ExceptionHandler(PasswordResetTokenExpiredException.class)
-	public ResponseEntity<?> handleAlreadyExpiredException(UserAlreadyExistsException e){
+	public ResponseEntity<?> handleAlreadyExpiredException(PasswordResetTokenExpiredException e){
+		logger.error(e);
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST).contentType(MediaType.APPLICATION_JSON).body(e);
+	}
+
+	@ExceptionHandler(InsufficientCoinException.class)
+	public ResponseEntity<?> handleInsufficientCoinException(InsufficientCoinException e){
 		logger.error(e);
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST).contentType(MediaType.APPLICATION_JSON).body(e);
 	}

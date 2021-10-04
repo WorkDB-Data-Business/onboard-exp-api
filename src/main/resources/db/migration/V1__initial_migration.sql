@@ -129,6 +129,7 @@ CREATE TABLE IF NOT EXISTS public.tbreward(
 CREATE TABLE IF NOT EXISTS public.tbuser_coin(
 	iduser BIGINT NOT NULL,
 	idcoin BIGINT NOT NULL,
+	amount BIGINT NOT NULL,
 	FOREIGN KEY (iduser) REFERENCES tbuser(iduser),
 	FOREIGN KEY (idcoin) REFERENCES tbcoin(idcoin),
 	
