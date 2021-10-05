@@ -4,6 +4,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 
+import br.com.harvest.onboardexperience.domain.dtos.forms.RewardForm;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -53,16 +54,18 @@ public class RewardController {
 	@Operation(description = "Salva uma recompensa no banco de dados e a retorna.")
 	@PreAuthorize("hasAuthority('ADMIN')")
 	@PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<RewardDto> create(@Valid @ModelAttribute @NotNull RewardDto dto, @RequestParam("file") MultipartFile file, @RequestHeader("Authorization") String token) throws RuntimeException {
-		return ResponseEntity.ok().body(service.create(dto, file, token));
+	public ResponseEntity<RewardDto> create(@Valid @ModelAttribute @NotNull RewardForm form, @RequestParam("file") MultipartFile file, @RequestHeader("Authorization") String token) throws RuntimeException {
+		return ResponseEntity.ok().body(service.create(form, file, token));
 	}
 	
 	@Operation(description = "Realiza a alteração de uma recompensa no banco de dados e a retorna atualizada.")
 	@PreAuthorize("hasAuthority('ADMIN')")
 	@PutMapping(path = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<RewardDto> update(@PathVariable  @Pattern(regexp = RegexUtils.ONLY_NUMBERS) Long id, @ModelAttribute @Valid @NotNull RewardDto dto, 
-			@RequestParam(value= "file", required = false) MultipartFile file, @RequestHeader("Authorization") String token) {
-		return ResponseEntity.ok().body(service.update(id, dto, file, token));
+	public ResponseEntity<RewardDto> update(@PathVariable  @Pattern(regexp = RegexUtils.ONLY_NUMBERS) Long id,
+											@ModelAttribute @Valid @NotNull RewardForm form,
+											@RequestParam(value= "file", required = false) MultipartFile file,
+											@RequestHeader("Authorization") String token) {
+		return ResponseEntity.ok().body(service.update(id, form, file, token));
 	}
 	
 	@Operation(description = "Realiza a exclusão de uma recompensa no banco de dados.")

@@ -4,8 +4,11 @@ import br.com.harvest.onboardexperience.domain.dtos.CompanyRoleDto;
 import br.com.harvest.onboardexperience.domain.dtos.UserDto;
 import br.com.harvest.onboardexperience.domain.entities.Client;
 import br.com.harvest.onboardexperience.domain.entities.Coin;
+import br.com.harvest.onboardexperience.domain.entities.Reward;
 import br.com.harvest.onboardexperience.domain.entities.User;
 import br.com.harvest.onboardexperience.mappers.ClientMapper;
+import br.com.harvest.onboardexperience.mappers.CoinMapper;
+import br.com.harvest.onboardexperience.mappers.UserMapper;
 import lombok.NonNull;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +34,9 @@ public class FetchService {
 
     @Autowired
     private CoinService coinService;
+
+    @Autowired
+    private RewardService rewardService;
 
     public List<CompanyRoleDto> fetchCompanyRoles(List<Long> companyRolesId, String token){
         List<CompanyRoleDto> companyRoles = new ArrayList<>();
@@ -88,11 +94,15 @@ public class FetchService {
         return clients;
     }
 
-    public User fetchUser(@NonNull Long id){
-        return userService.findUserById(id);
+    public User fetchUser(@NonNull Long id, @NonNull String token){
+        return UserMapper.INSTANCE.toEntity(userService.findByIdAndTenant(id, token));
     }
 
-    public Coin fetchCoin(@NonNull Long id){
-        return coinService.findCoinById(id);
+    public Coin fetchCoin(@NonNull Long id, @NonNull String token){
+        return CoinMapper.INSTANCE.toEntity(coinService.findByIdAndTenant(id, token));
+    }
+
+    public Reward fetchReward(@NonNull Long id){
+        return rewardService.findById(id);
     }
 }

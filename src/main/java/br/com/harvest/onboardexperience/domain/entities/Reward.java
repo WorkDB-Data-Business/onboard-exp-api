@@ -16,7 +16,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 @Data
-@EqualsAndHashCode(callSuper = false)
+@EqualsAndHashCode
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -52,5 +52,8 @@ public class Reward extends BaseEntityAudit {
 	@Column(name = "is_active")
 	private Boolean isActive;
 
+	@ManyToOne
+	@JoinColumn(name = "idcoin")
+	private Coin coin;
 
 }

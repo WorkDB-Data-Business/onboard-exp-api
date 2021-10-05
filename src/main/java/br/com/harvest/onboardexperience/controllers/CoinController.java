@@ -91,15 +91,15 @@ public class CoinController {
 	@Operation(description = "Realiza a adição de moedas para um usuário.")
 	@ResponseStatus(HttpStatus.OK)
 	@PostMapping(path = "/add-to-user")
-	public void addToUser(@Valid @RequestBody UserCoinForm form) {
-		useCase.addCoinToUser(form);
+	public void addToUser(@Valid @RequestBody UserCoinForm form, @RequestHeader("Authorization") String token) {
+		useCase.addCoinToUser(form, token);
 	}
 
 	@Operation(description = "Realiza a subtração de moedas para um usuário.")
 	@ResponseStatus(HttpStatus.OK)
 	@PostMapping(path = "/subtract-from-user")
-	public void subtractFromUser(@Valid @RequestBody UserCoinForm form) {
-		useCase.subtractCoinFromUser(form);
+	public void subtractFromUser(@Valid @RequestBody UserCoinForm form, @RequestHeader("Authorization") String token) {
+		useCase.subtractCoinFromUser(form, token);
 	}
 
 	@Operation(description = "Retorna a quantidade de todas as moedas que o usuário possui.")

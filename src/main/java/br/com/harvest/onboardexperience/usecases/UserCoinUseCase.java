@@ -13,6 +13,7 @@ import br.com.harvest.onboardexperience.services.FetchService;
 import br.com.harvest.onboardexperience.usecases.forms.UserCoinForm;
 import br.com.harvest.onboardexperience.utils.JwtTokenUtils;
 import lombok.NonNull;
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -32,26 +33,27 @@ public class UserCoinUseCase {
     @Autowired
     private JwtTokenUtils tokenUtils;
 
-    public void addCoinToUser(@NonNull UserCoinForm form){
-        executeOperationAndSave(form, CoinOperation.ADD);
+    public void addCoinToUser(@NonNull UserCoinForm form, @NonNull String token){
+        executeOperationAndSave(form, CoinOperation.ADD, token);
     }
 
-    public void subtractCoinFromUser(@NonNull UserCoinForm form){
-        executeOperationAndSave(form, CoinOperation.SUBTRACT);
+    public void subtractCoinFromUser(@NonNull UserCoinForm form, @NonNull String token){
+        executeOperationAndSave(form, CoinOperation.SUBTRACT, token);
     }
 
     public List<UserCoinDto> getAllCoinAmountFromUser(@NonNull String token){
-        User user = fetchService.fetchUser(tokenUtils.getUserId(token));
+        User user = fetchService.fetchUser(tokenUtils.getUserId(token), token);
         return repository.findByUser(user).stream().map(UserCoinUseCase::convertToUserCoinDto).collect(Collectors.toList());
     }
 
-    private void executeOperationAndSave(@NonNull UserCoinForm form, @NonNull CoinOperation coinOperation){
-        User user = fetchService.fetchUser(form.getUserId());
-        Coin coin = fetchService.fetchCoin(form.getCoinId());
+    private void executeOperationAndSave(@NonNull UserCoinForm form, @NonNull CoinOperation coinOperation,
+    @NonNull String token){
+        User user = fetchService.fetchUser(form.getUserId(), token);
+        Coin coin = fetchService.fetchCoin(form.getCoinId(), token);
 
         Optional<UserCoin> userCoinOptional = getSelectedCoin(user, coin);
 
-        UserCoin userCoin = executeOperation(form, userCoinOptional, coinOperation);
+        UserCoin userCoin = executeOperation(form, userCoinOptional, coinOperation, token);
 
         repository.save(userCoin);
     }
@@ -65,7 +67,7 @@ public class UserCoinUseCase {
     }
 
     private UserCoin executeOperation(@NonNull UserCoinForm form, Optional<UserCoin> userCoinOptional,
-                         @NonNull CoinOperation coinOperation){
+                         @NonNull CoinOperation coinOperation, @NonNull String token){
         switch (coinOperation) {
             case ADD: {
                 if(checkIfUserHaveSelectedCoin(userCoinOptional)){
@@ -73,7 +75,7 @@ public class UserCoinUseCase {
                     userCoin.setAmount(userCoin.getAmount().add(form.getAmount()));
                     return userCoin;
                 }
-                return convertFormToUserCoin(form);
+                return convertFormToUserCoin(form, token);
             }
             case SUBTRACT: {
                 if(checkIfUserHaveSelectedCoin(userCoinOptional)){
@@ -88,8 +90,8 @@ public class UserCoinUseCase {
         return null;
     }
 
-    private UserCoin convertFormToUserCoin(@NonNull UserCoinForm form){
-        return convertFormToUserCoin(fetchService.fetchUser(form.getUserId()), fetchService.fetchCoin(form.getCoinId()), form.getAmount());
+    private UserCoin convertFormToUserCoin(@NonNull UserCoinForm form, @NonNull String token){
+        return convertFormToUserCoin(fetchService.fetchUser(form.getUserId(), token), fetchService.fetchCoin(form.getCoinId(), token), form.getAmount());
     }
 
     private UserCoinKey generateUserCoinKey(@NonNull User user, @NonNull Coin coin){
@@ -109,8 +111,11 @@ public class UserCoinUseCase {
     }
     
     private Optional<UserCoin> getSelectedCoin(@NonNull User user, @NonNull Coin coin){
-        return user.getCoins().stream().filter(userCoin -> userCoin.getCoin().getId()
-                .equals(coin.getId())).findAny();
+        if(ObjectUtils.isNotEmpty(user.getCoins())){
+            return user.getCoins().stream().filter(userCoin -> userCoin.getCoin().getId()
+                    .equals(coin.getId())).findAny();
+        }
+        return Optional.empty();
     }
 
     private Boolean checkIfUserHaveSelectedCoin(Optional<UserCoin> coin){

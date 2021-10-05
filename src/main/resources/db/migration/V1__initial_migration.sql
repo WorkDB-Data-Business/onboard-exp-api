@@ -115,6 +115,7 @@ CREATE TABLE IF NOT EXISTS public.tbreward(
 	name CHARACTER VARYING NOT NULL,
 	description CHARACTER VARYING NOT NULL,
 	idclient BIGINT NOT NULL,
+	idcoin BIGINT NOT NULL,
 	is_active BOOLEAN NOT NULL,
 	created_by CHARACTER VARYING,
 	updated_by CHARACTER VARYING,
@@ -124,6 +125,16 @@ CREATE TABLE IF NOT EXISTS public.tbreward(
 	FOREIGN KEY (idclient) REFERENCES tbclient(idclient),
 	
 	CONSTRAINT tbreward_pk PRIMARY KEY (idreward)
+);
+
+CREATE TABLE IF NOT EXISTS public.tbreward_purchase(
+	idreward_purchase BIGSERIAL NOT NULL,
+	idreward BIGINT NOT NULL,
+	iduser BIGINT NOT NULL,
+	purchased_at TIMESTAMP DEFAULT now(),
+	have_consumed BOOLEAN DEFAULT FALSE,
+
+	CONSTRAINT tbreward_purchase_pk PRIMARY KEY (idreward_purchase)
 );
 
 CREATE TABLE IF NOT EXISTS public.tbuser_coin(
