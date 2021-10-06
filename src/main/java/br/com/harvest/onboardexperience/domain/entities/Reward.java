@@ -1,6 +1,6 @@
 package br.com.harvest.onboardexperience.domain.entities;
 
-import java.math.BigDecimal;
+import java.math.BigInteger;
 
 import javax.persistence.*;
 
@@ -16,7 +16,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 @Data
-@EqualsAndHashCode(callSuper = false)
+@EqualsAndHashCode
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -40,7 +40,7 @@ public class Reward extends BaseEntityAudit {
 	private String name;
 	
 	@Column(name = "price")
-	private BigDecimal price;
+	private BigInteger price;
 
 	@Column(name = "description")
 	private String description;
@@ -52,5 +52,8 @@ public class Reward extends BaseEntityAudit {
 	@Column(name = "is_active")
 	private Boolean isActive;
 
+	@ManyToOne
+	@JoinColumn(name = "idcoin")
+	private Coin coin;
 
 }

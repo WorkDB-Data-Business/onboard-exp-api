@@ -1,8 +1,11 @@
 package br.com.harvest.onboardexperience.services;
 
+import br.com.harvest.onboardexperience.domain.dtos.forms.RewardForm;
+import br.com.harvest.onboardexperience.domain.entities.Client;
 import br.com.harvest.onboardexperience.mappers.ClientMapper;
 import br.com.harvest.onboardexperience.domain.enumerators.FileTypeEnum;
 import br.com.harvest.onboardexperience.infra.storage.services.ImageStorageService;
+import br.com.harvest.onboardexperience.mappers.CoinMapper;
 import br.com.harvest.onboardexperience.utils.GenericUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,12 +47,21 @@ public class RewardService {
 	@Autowired
 	private ClientMapper clientMapper;
 
-	
-	public RewardDto create(@NonNull RewardDto dto, MultipartFile file , @NonNull final String token) {
-		try {
-			String tenant = jwtUtils.getUserTenant(token);
+	@Autowired
+	private TenantService tenantService;
 
-			validate(dto, tenant);
+	@Autowired
+	private FetchService fetchService;
+
+	
+	public RewardDto create(@NonNull RewardForm form, MultipartFile file , @NonNull final String token) {
+		Client client = tenantService.fetchClientByTenantFromToken(token);
+
+		RewardDto dto = convertFormToRewardDto(form, token);
+
+		try {
+
+			validate(dto, client);
 			
 			saveImage(file, dto);
 
@@ -64,16 +76,15 @@ public class RewardService {
 	}
 
 	
-	public RewardDto update(@NonNull Long id, @NonNull RewardDto dto, MultipartFile file, @NonNull final String token) {
-		String tenant = jwtUtils.getUserTenant(token);
+	public RewardDto update(@NonNull Long id, @NonNull RewardForm form, MultipartFile file, @NonNull final String token) {
+		Client client = tenantService.fetchClientByTenantFromToken(token);
 
-		Reward reward = repository.findByIdAndClient_Tenant(id, tenant).orElseThrow(
+		Reward reward = repository.findByIdAndClient(id, client).orElseThrow(
 				() -> new RewardNotFoundException(ExceptionMessageFactory.createNotFoundMessage("reward", "ID", id.toString())));
 
-		dto.setClient(clientMapper.toDto(reward.getClient()));
-		dto.setImagePath(reward.getImagePath());
+		RewardDto dto = convertFormToRewardDto(form, token);
 
-		validate(reward, dto, tenant);
+		validate(reward, dto, client);
 		saveImage(file, dto);
 
 		BeanUtils.copyProperties(dto, reward, "id", "client", "createdAt", "createdBy");
@@ -86,7 +97,7 @@ public class RewardService {
 	}
 
 	
-	public RewardDto findByIdAndTenant(@NonNull Long id, @NonNull final String token) {
+	public RewardDto findRewardDtoByIdAndTenant(@NonNull Long id, @NonNull final String token) {
 		String tenant = jwtUtils.getUserTenant(token);
 
 		Reward reward = repository.findByIdAndClient_Tenant(id, tenant).orElseThrow(
@@ -131,17 +142,16 @@ public class RewardService {
 			log.info("The Reward with ID " + id + " was " + isEnabled + " successful.");
 	}
 
-	private void validate(@NonNull RewardDto reward, @NonNull final String tenant) {
-		checkIfRewardAlreadyExists(reward, tenant);
-		fetchAndSetClient(reward, tenant);
+	private void validate(@NonNull RewardDto reward, @NonNull final Client client) {
+		checkIfRewardAlreadyExists(reward, client);
 	}
 
 	private void saveImage(MultipartFile file, RewardDto dto) {
 		dto.setImagePath(imageStorageService.uploadImage(file, dto.getClient().getCnpj(), dto.getName(), FileTypeEnum.REWARD));
 	}
 
-	private void validate(@NonNull Reward reward, @NonNull RewardDto dto, @NonNull final String tenant) {
-		checkIfRewardAlreadyExists(reward, dto, tenant);
+	private void validate(@NonNull Reward reward, @NonNull RewardDto dto, @NonNull final Client client) {
+		checkIfRewardAlreadyExists(reward, dto, client);
 	}
 
 	private Boolean checkIfIsSameReward(@NonNull Reward reward, @NonNull RewardDto rewardsDto) {
@@ -153,22 +163,34 @@ public class RewardService {
 		return false;
 	}
 
-	private void fetchAndSetClient(@NonNull RewardDto dto, String tenant) {
-		ClientDto client = clientService.findByTenant(tenant);
-		dto.setClient(client);
-	}
-
-	private void checkIfRewardAlreadyExists(@NonNull RewardDto dto, @NonNull final String tenant) {
-		if(repository.findByNameAndClient_Tenant(dto.getName(), tenant).isPresent()) {
+	private void checkIfRewardAlreadyExists(@NonNull RewardDto dto, @NonNull final Client client) {
+		if(repository.findByNameAndClient(dto.getName(), client).isPresent()) {
 			throw new RewardAlreadyExistsException(ExceptionMessageFactory.createAlreadyExistsMessage("reward", "name", dto.getName()));
 		}
 	}
 
-	private void checkIfRewardAlreadyExists(@NonNull Reward Reward, @NonNull RewardDto dto, @NonNull final String tenant) {
+	private void checkIfRewardAlreadyExists(@NonNull Reward Reward, @NonNull RewardDto dto, @NonNull final Client client) {
 		if(!checkIfIsSameReward(Reward, dto)) {
-			checkIfRewardAlreadyExists(dto, tenant);
+			checkIfRewardAlreadyExists(dto, client);
 		}
 	}
 
+	private RewardDto convertFormToRewardDto(@NonNull RewardForm form, @NonNull String token){
+
+		return RewardDto.builder()
+				.client(tenantService.fetchClientDtoByTenantFromToken(token))
+				.description(form.getDescription())
+				.isActive(form.getIsActive())
+				.name(form.getName())
+				.price(form.getPrice())
+				.coin(CoinMapper.INSTANCE.toDto(fetchService.fetchCoin(form.getCoinId(), token)))
+				.build();
+	}
+
+	public Reward findRewardByIdAndTenant(@NonNull Long id, @NonNull String token){
+		String tenant = jwtUtils.getUserTenant(token);
+		return repository.findByIdAndClient_Tenant(id, tenant).orElseThrow(
+				() -> new RewardNotFoundException(ExceptionMessageFactory.createNotFoundMessage("reward", "ID", id.toString())));
+	}
 
 }

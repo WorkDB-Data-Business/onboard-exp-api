@@ -1,11 +1,11 @@
 package br.com.harvest.onboardexperience.domain.entities;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
 import javax.persistence.*;
 
-import org.apache.commons.lang3.ObjectUtils;
 import org.hibernate.annotations.ResultCheckStyle;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Where;
@@ -94,5 +94,8 @@ public class User extends BaseEntityAudit {
 
 	@OneToMany(mappedBy = "user")
 	private Set<UserCoin> coins;
+
+	@OneToMany(mappedBy = "user")
+	private List<RewardPurchase> rewards = new ArrayList<>();
 	
 }

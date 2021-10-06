@@ -160,12 +160,18 @@ public class UserService {
     }
 
 
-    public UserDto findByIdAndTenant(@NonNull final Long id, @NonNull final String token) {
+    public UserDto findUserDtoByIdAndTenant(@NonNull final Long id, @NonNull final String token) {
         String tenant = jwtUtils.getUserTenant(token);
         User user = repository.findByIdAndClient_Tenant(id, tenant).orElseThrow(
                 () -> new UserNotFoundException(ExceptionMessageFactory.createNotFoundMessage("user", "ID", id.toString())));
 
         return UserMapper.INSTANCE.toDto(user);
+    }
+
+    public User findUserByIdAndTenant(@NonNull final Long id, @NonNull final String token) {
+        String tenant = jwtUtils.getUserTenant(token);
+        return repository.findByIdAndClient_Tenant(id, tenant).orElseThrow(
+                () -> new UserNotFoundException(ExceptionMessageFactory.createNotFoundMessage("user", "ID", id.toString())));
     }
 
     public UserDto findMyUser(@NonNull final String token) {
@@ -174,11 +180,6 @@ public class UserService {
                 () -> new UserNotFoundException(ExceptionMessageFactory.createNotFoundMessage("user", "ID", idUser.toString())));
 
         return UserMapper.INSTANCE.toDto(user);
-    }
-
-    public User findUserById(@NonNull Long id){
-        return repository.findById(id).orElseThrow(
-                () -> new UserNotFoundException(ExceptionMessageFactory.createNotFoundMessage("user", "ID", id.toString())));
     }
 
     public Page<UserDto> findByCriteria(String criteria,final Pageable pageable, final String token) {

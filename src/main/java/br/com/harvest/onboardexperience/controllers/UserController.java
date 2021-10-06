@@ -53,7 +53,7 @@ public class UserController {
 	@PreAuthorize("hasAuthority('ADMIN')")
 	@GetMapping(path = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<UserDto> findById(@PathVariable @Pattern(regexp = RegexUtils.ONLY_NUMBERS) Long id, @RequestHeader("Authorization") String token) {
-		return ResponseEntity.ok(service.findByIdAndTenant(id, token));
+		return ResponseEntity.ok(service.findUserDtoByIdAndTenant(id, token));
 	}
 	
 	@Operation(description = "Retorna o usuário autenticado.")

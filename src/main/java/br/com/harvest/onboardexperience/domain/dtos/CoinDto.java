@@ -2,6 +2,7 @@ package br.com.harvest.onboardexperience.domain.dtos;
 
 import javax.validation.constraints.NotEmpty;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonProperty.Access;
 
@@ -22,7 +23,7 @@ public class CoinDto {
 	@NotEmpty
 	private String name;
 
-	@JsonProperty(access = Access.READ_ONLY)
+	@JsonIgnore
 	private ClientDto client;
 
 	@Builder.Default
