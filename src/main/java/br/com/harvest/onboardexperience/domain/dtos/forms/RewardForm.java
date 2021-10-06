@@ -5,6 +5,7 @@ import lombok.*;
 
 import javax.validation.constraints.*;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 
 @Data
 @Builder
@@ -23,9 +24,8 @@ public class RewardForm {
     private String description;
 
     @NotNull
-    @DecimalMin(value = ValidationUtils.MIN_PRICE, inclusive = false)
-    @Digits(fraction = ValidationUtils.MAX_PRICE_FRACTION, integer = ValidationUtils.MAX_PRICE)
-    private BigDecimal price;
+    @Min(ValidationUtils.MIN_PRICE)
+    private BigInteger price;
 
     @Builder.Default
     private Boolean isActive = true;

@@ -1,6 +1,6 @@
 package br.com.harvest.onboardexperience.domain.entities;
 
-import java.math.BigDecimal;
+import java.math.BigInteger;
 
 import javax.persistence.*;
 
@@ -40,7 +40,7 @@ public class Reward extends BaseEntityAudit {
 	private String name;
 	
 	@Column(name = "price")
-	private BigDecimal price;
+	private BigInteger price;
 
 	@Column(name = "description")
 	private String description;

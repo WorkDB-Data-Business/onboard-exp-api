@@ -3,6 +3,7 @@ package br.com.harvest.onboardexperience.domain.entities;
 
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -13,6 +14,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity(name = "tbreward_purchase")
+@EntityListeners(AuditingEntityListener.class)
 public class RewardPurchase extends BaseEntity {
 
     private static final long serialVersionUID = 4238287226031163965L;

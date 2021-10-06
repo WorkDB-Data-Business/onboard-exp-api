@@ -111,7 +111,7 @@ CREATE TABLE IF NOT EXISTS public.tbcoin(
 CREATE TABLE IF NOT EXISTS public.tbreward(
 	idreward BIGSERIAL NOT NULL,
 	image_path CHARACTER VARYING NOT NULL,
-	price DECIMAL NOT NULL,
+	price BIGINT NOT NULL,
 	name CHARACTER VARYING NOT NULL,
 	description CHARACTER VARYING NOT NULL,
 	idclient BIGINT NOT NULL,
@@ -127,6 +127,16 @@ CREATE TABLE IF NOT EXISTS public.tbreward(
 	CONSTRAINT tbreward_pk PRIMARY KEY (idreward)
 );
 
+CREATE TABLE IF NOT EXISTS public.tbuser_coin(
+	iduser BIGINT NOT NULL,
+	idcoin BIGINT NOT NULL,
+	amount BIGINT NOT NULL,
+	FOREIGN KEY (iduser) REFERENCES tbuser(iduser),
+	FOREIGN KEY (idcoin) REFERENCES tbcoin(idcoin),
+	
+	CONSTRAINT tbuser_coin_pk PRIMARY KEY (iduser, idcoin)
+);
+
 CREATE TABLE IF NOT EXISTS public.tbreward_purchase(
 	idreward_purchase BIGSERIAL NOT NULL,
 	idreward BIGINT NOT NULL,
@@ -137,15 +147,6 @@ CREATE TABLE IF NOT EXISTS public.tbreward_purchase(
 	CONSTRAINT tbreward_purchase_pk PRIMARY KEY (idreward_purchase)
 );
 
-CREATE TABLE IF NOT EXISTS public.tbuser_coin(
-	iduser BIGINT NOT NULL,
-	idcoin BIGINT NOT NULL,
-	amount BIGINT NOT NULL,
-	FOREIGN KEY (iduser) REFERENCES tbuser(iduser),
-	FOREIGN KEY (idcoin) REFERENCES tbcoin(idcoin),
-	
-	CONSTRAINT tbuser_coin_pk PRIMARY KEY (iduser, idcoin)
-);
 
 CREATE TABLE IF NOT EXISTS public.tbgroup(
 	idgroup BIGSERIAL NOT NULL,

@@ -64,14 +64,6 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST).contentType(MediaType.APPLICATION_JSON).body(message);
 	}
 	
-	@ExceptionHandler(TenantForbiddenException.class)
-	public ResponseEntity<?> handleTenantForbiddenException(TenantForbiddenException e){
-		logger.error(e);
-		var message = new MessageBuilder().addMessage(e.getMessage()).withError(e.getMessage(), e.getCause().getMessage()).build();
-								  
-		return ResponseEntity.status(HttpStatus.FORBIDDEN).contentType(MediaType.APPLICATION_JSON).body(message);
-	}
-	
 	@ExceptionHandler(PasswordResetTokenExpiredException.class)
 	public ResponseEntity<?> handleAlreadyExpiredException(PasswordResetTokenExpiredException e){
 		logger.error(e);

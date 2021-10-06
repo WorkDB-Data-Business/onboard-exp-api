@@ -97,7 +97,7 @@ public class RewardService {
 	}
 
 	
-	public RewardDto findByIdAndTenant(@NonNull Long id, @NonNull final String token) {
+	public RewardDto findRewardDtoByIdAndTenant(@NonNull Long id, @NonNull final String token) {
 		String tenant = jwtUtils.getUserTenant(token);
 
 		Reward reward = repository.findByIdAndClient_Tenant(id, tenant).orElseThrow(
@@ -187,8 +187,9 @@ public class RewardService {
 				.build();
 	}
 
-	public Reward findById(@NonNull Long id){
-		return repository.findById(id).orElseThrow(
+	public Reward findRewardByIdAndTenant(@NonNull Long id, @NonNull String token){
+		String tenant = jwtUtils.getUserTenant(token);
+		return repository.findByIdAndClient_Tenant(id, tenant).orElseThrow(
 				() -> new RewardNotFoundException(ExceptionMessageFactory.createNotFoundMessage("reward", "ID", id.toString())));
 	}
 

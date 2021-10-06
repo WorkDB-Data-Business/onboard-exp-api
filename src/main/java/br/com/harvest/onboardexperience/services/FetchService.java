@@ -8,7 +8,6 @@ import br.com.harvest.onboardexperience.domain.entities.Reward;
 import br.com.harvest.onboardexperience.domain.entities.User;
 import br.com.harvest.onboardexperience.mappers.ClientMapper;
 import br.com.harvest.onboardexperience.mappers.CoinMapper;
-import br.com.harvest.onboardexperience.mappers.UserMapper;
 import lombok.NonNull;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,7 +52,7 @@ public class FetchService {
         List<UserDto> users = new ArrayList<>();
         if(ObjectUtils.isNotEmpty(usersId)){
             for(Long userId : usersId){
-                UserDto user = userService.findByIdAndTenant(userId, token);
+                UserDto user = userService.findUserDtoByIdAndTenant(userId, token);
                 users.add(user);
             }
         }
@@ -95,14 +94,14 @@ public class FetchService {
     }
 
     public User fetchUser(@NonNull Long id, @NonNull String token){
-        return UserMapper.INSTANCE.toEntity(userService.findByIdAndTenant(id, token));
+        return userService.findUserByIdAndTenant(id, token);
     }
 
     public Coin fetchCoin(@NonNull Long id, @NonNull String token){
         return CoinMapper.INSTANCE.toEntity(coinService.findByIdAndTenant(id, token));
     }
 
-    public Reward fetchReward(@NonNull Long id){
-        return rewardService.findById(id);
+    public Reward fetchReward(@NonNull Long id, @NonNull String token){
+        return rewardService.findRewardByIdAndTenant(id, token);
     }
 }

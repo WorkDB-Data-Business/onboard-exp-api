@@ -1,6 +1,6 @@
 package br.com.harvest.onboardexperience.domain.dtos;
 
-import java.math.BigDecimal;
+import java.math.BigInteger;
 
 import javax.validation.constraints.*;
 
@@ -31,9 +31,8 @@ public class RewardDto {
 	private String description;
 
 	@NotNull
-	@DecimalMin(value = ValidationUtils.MIN_PRICE, inclusive = false)
-	@Digits(fraction = ValidationUtils.MAX_PRICE_FRACTION, integer = ValidationUtils.MAX_PRICE)
-	private BigDecimal price;
+	@Min(ValidationUtils.MIN_PRICE)
+	private BigInteger price;
 	
 	@JsonIgnore
 	private ClientDto client;

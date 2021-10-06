@@ -57,5 +57,13 @@ public class GenericUtils {
 	public static String formatNameToUsername(String name) {
 		return name.toLowerCase().replace(" ", ".");
 	}
-	
+
+	public static Boolean checkIfOptionalHaveValue(Optional<?> optional){
+		if(Objects.isNull(optional) || optional.isEmpty()){
+			return false;
+		}
+
+		return true;
+	}
+
 }

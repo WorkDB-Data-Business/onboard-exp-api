@@ -5,6 +5,8 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 
 import br.com.harvest.onboardexperience.domain.dtos.forms.RewardForm;
+import br.com.harvest.onboardexperience.usecases.UserRewardUseCase;
+import br.com.harvest.onboardexperience.usecases.forms.RewardPurchaseForm;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -29,6 +31,9 @@ public class RewardController {
 	
 	@Autowired
 	private RewardService service;
+
+	@Autowired
+	private UserRewardUseCase useCase;
 	
 	@Operation(description = "Retorna as recompensas cadastradas.")
 	@PreAuthorize("hasAuthority('ADMIN')")
@@ -48,7 +53,7 @@ public class RewardController {
 	@PreAuthorize("hasAuthority('ADMIN')")
 	@GetMapping(path = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<RewardDto> findById(@PathVariable  @Pattern(regexp = RegexUtils.ONLY_NUMBERS) Long id, @RequestHeader("Authorization") String token) {
-		return ResponseEntity.ok(service.findByIdAndTenant(id, token));
+		return ResponseEntity.ok(service.findRewardDtoByIdAndTenant(id, token));
 	}
 	
 	@Operation(description = "Salva uma recompensa no banco de dados e a retorna.")
@@ -82,6 +87,14 @@ public class RewardController {
 	@PatchMapping(path = "/disable/{id}")
 	public void disable(@PathVariable  @Pattern(regexp = RegexUtils.ONLY_NUMBERS) Long id, @RequestHeader("Authorization") String token) {
 		service.disableReward(id, token);
+	}
+
+	@Operation(description = "Realiza a compra de uma recompensa.")
+	@ResponseStatus(HttpStatus.OK)
+	@PreAuthorize("hasAuthority('ADMIN') or hasAuthority('COLABORATOR')")
+	@PostMapping(path = "/purchase")
+	public void purchaseReward(@Valid @RequestBody RewardPurchaseForm form, @RequestHeader("Authorization") String token) {
+		useCase.purchaseReward(form, token);
 	}
 
 }

@@ -1,5 +1,6 @@
 package br.com.harvest.onboardexperience.domain.entities;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -94,7 +95,7 @@ public class User extends BaseEntityAudit {
 	@OneToMany(mappedBy = "user")
 	private Set<UserCoin> coins;
 
-//	@OneToMany(mappedBy = "user")
-//	private List<RewardPurchase> rewards;
+	@OneToMany(mappedBy = "user")
+	private List<RewardPurchase> rewards = new ArrayList<>();
 	
 }
