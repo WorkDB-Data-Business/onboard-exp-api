@@ -59,6 +59,17 @@ public class FetchService {
         return users;
     }
 
+    public List<User> fetchUsers(List<Long> usersId){
+        List<User> users = new ArrayList<>();
+        if(ObjectUtils.isNotEmpty(usersId)){
+            for(Long userId : usersId){
+                User user = userService.findUserById(userId);
+                users.add(user);
+            }
+        }
+        return users;
+    }
+
     public List<Client> fetchClients(List<Long> clientsId, Client author) {
         List<Client> clients = new ArrayList<>() {{
             add(author);
@@ -95,6 +106,10 @@ public class FetchService {
 
     public User fetchUser(@NonNull Long id, @NonNull String token){
         return userService.findUserByIdAndTenant(id, token);
+    }
+
+    public User fetchUser(@NonNull Long id){
+        return userService.findUserById(id);
     }
 
     public Coin fetchCoin(@NonNull Long id, @NonNull String token){

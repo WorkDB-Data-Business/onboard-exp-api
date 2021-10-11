@@ -226,3 +226,20 @@ CREATE TABLE IF NOT EXISTS public.tbharvest_library_link(
 
     CONSTRAINT tbharvest_library_link_pk PRIMARY KEY (idlink, idclient)
 );
+
+CREATE TABLE IF NOT EXISTS public.tbnotification(
+    idnotification BIGSERIAL,
+    text CHARACTER VARYING NOT NULL,
+    sent_at TIMESTAMP default now(),
+    author BIGINT NOT NULL,
+
+    CONSTRAINT tbnotification_pk PRIMARY KEY (idnotification)
+);
+
+CREATE TABLE IF NOT EXISTS public.tbnotification_user(
+    idnotification BIGINT NOT NULL,
+    iduser BIGINT NOT NULL,
+    was_visualized BOOLEAN NOT NULL DEFAULT false,
+
+    CONSTRAINT tbnotification_user_pk PRIMARY KEY (idnotification, iduser)
+);

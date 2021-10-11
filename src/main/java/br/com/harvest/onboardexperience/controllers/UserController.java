@@ -7,6 +7,8 @@ import javax.validation.constraints.Pattern;
 import br.com.harvest.onboardexperience.domain.dtos.forms.ChangePasswordForm;
 import br.com.harvest.onboardexperience.domain.dtos.forms.UserForm;
 import br.com.harvest.onboardexperience.domain.dtos.forms.UserWelcomeForm;
+import br.com.harvest.onboardexperience.infra.notification.dtos.NotificationDto;
+import br.com.harvest.onboardexperience.infra.notification.services.NotificationService;
 import br.com.harvest.onboardexperience.usecases.UserUseCase;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -23,6 +25,8 @@ import br.com.harvest.onboardexperience.utils.RegexUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
+import java.util.List;
+
 @Tag(name = "Users")
 @RestController
 @RequestMapping("/v1/users")
@@ -34,6 +38,9 @@ public class UserController {
 
 	@Autowired
 	private UserUseCase useCase;
+
+	@Autowired
+	private NotificationService notificationService;
 
 	@Operation(description = "Retorna os usuários cadastrados.")
 	@PreAuthorize("hasAuthority('ADMIN')")
@@ -117,11 +124,29 @@ public class UserController {
 	}
 
 	@Operation(description = "Realiza a alteração da senha no primeiro acesso.")
-	@PreAuthorize("hasAuthority('ADMIN') or hasAuthority('COLABORATOR') or hasAuthority('MASTER')")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	@PatchMapping(path = "/welcome/change-password/{id}")
 	public void changePasswordFirstAccess(@PathVariable  @Pattern(regexp = RegexUtils.ONLY_NUMBERS) Long id, @RequestBody @NotNull @Valid ChangePasswordForm form, @RequestHeader("Authorization") String token) {
 		useCase.changePassword(id, form, token);
+	}
+
+	@Operation(description = "Realiza a busca das notificações do usuário.")
+	@GetMapping(path = "/notifications")
+	public ResponseEntity<List<NotificationDto>> getNotificationsFromUser(@RequestHeader("Authorization") String token) {
+		return ResponseEntity.ok().body(notificationService.getAllNotificationsFromUser(token));
+	}
+
+	@Operation(description = "Realiza a visualização de uma notificação do usuário.")
+	@PatchMapping(path = "/notifications/visualize/{id}")
+	public void visualizeNotification(@PathVariable  @Pattern(regexp = RegexUtils.ONLY_NUMBERS) Long id,
+									  @RequestHeader("Authorization") String token) {
+		notificationService.visualizeNotification(id, token);
+	}
+
+	@Operation(description = "Realiza a visualização de uma notificação do usuário.")
+	@PatchMapping(path = "/notifications/visualize/all")
+	public void visualizeAllNotification(@RequestHeader("Authorization") String token) {
+		notificationService.visualizeAllNotifications(token);
 	}
 
 }

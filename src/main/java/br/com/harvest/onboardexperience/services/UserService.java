@@ -208,8 +208,13 @@ public class UserService {
     }
 
     public User findUserByEmail(String email) {
-        return repository.findByEmailContainingIgnoreCase(email).orElseThrow(() -> new UserNotFoundException("User with email "
-                + email + " not found."));
+        return repository.findByEmailContainingIgnoreCase(email).orElseThrow(
+                () -> new UserNotFoundException(ExceptionMessageFactory.createNotFoundMessage("user", "email", email)));
+    }
+
+    public User findUserById(Long id) {
+        return repository.findById(id).orElseThrow(
+                () -> new UserNotFoundException(ExceptionMessageFactory.createNotFoundMessage("user", "ID", id.toString())));
     }
 
     private void encryptPassword(@NonNull UserDto user) {
