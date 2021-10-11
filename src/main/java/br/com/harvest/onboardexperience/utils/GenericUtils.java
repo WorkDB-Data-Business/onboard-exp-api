@@ -1,23 +1,20 @@
 package br.com.harvest.onboardexperience.utils;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
-import br.com.harvest.onboardexperience.infra.storage.dtos.FileDto;
 import lombok.NonNull;
-import org.springframework.util.ObjectUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.util.ReflectionUtils;
-import org.springframework.web.servlet.HandlerExceptionResolver;
 
 import br.com.caelum.stella.ValidationMessage;
 import br.com.caelum.stella.validation.CNPJValidator;
 import br.com.caelum.stella.validation.CPFValidator;
-import br.com.harvest.onboardexperience.domain.exceptions.SubdomainNotFoundException;
 
 public class GenericUtils {
 	
@@ -64,6 +61,20 @@ public class GenericUtils {
 		}
 
 		return true;
+	}
+
+	public static List<Long> extractIDsFromList(@NonNull List<?> objects, Class<?> clazz){
+		List<Long> ids = new ArrayList<>();
+		if(ObjectUtils.isNotEmpty(objects)){
+			ids = objects.stream().
+					map(object ->
+					executeMethodFromGenericClass(clazz, "getId", Optional.of(object)))
+					.map(objectString -> objectString.toString())
+					.mapToLong(id -> Long.parseLong(id))
+					.boxed()
+					.collect(Collectors.toList());
+		}
+		return ids;
 	}
 
 }

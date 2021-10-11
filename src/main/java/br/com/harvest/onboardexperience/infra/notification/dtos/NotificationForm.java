@@ -15,9 +15,9 @@ public class NotificationForm {
     @NotBlank
     private String text;
 
-    private List<Long> clients;
-
     private List<Long> users;
+
+    private List<Long> clients;
 
     private Long author;
 

@@ -20,12 +20,20 @@ public class NotificationController {
     @Autowired
     private NotificationService notificationService;
 
-    @Operation(description = "Salva uma notificação no banco de dados.")
+    @Operation(description = "Envia as notificações para os usuários selecionados.")
     @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MASTER')")
     @ResponseStatus(HttpStatus.OK)
     @PostMapping("/notification")
     public void sendNotification(@Valid @RequestBody NotificationForm form) {
         notificationService.sendNotification(form);
+    }
+
+    @Operation(description = "Salva uma notificação no banco de dados.")
+    @PreAuthorize("hasAuthority('MASTER')")
+    @ResponseStatus(HttpStatus.OK)
+    @PostMapping("/notification/all")
+    public void sendNotificationToAllUsersFromClients(@Valid @RequestBody NotificationForm form) {
+        notificationService.sendNotificationToAllUsersFromClients(form);
     }
 
 }

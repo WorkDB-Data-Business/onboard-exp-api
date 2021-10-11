@@ -228,9 +228,8 @@ CREATE TABLE IF NOT EXISTS public.tbharvest_library_link(
 );
 
 CREATE TABLE IF NOT EXISTS public.tbnotification(
-    idnotification BIGINT,
+    idnotification BIGSERIAL,
     text CHARACTER VARYING NOT NULL,
-    was_visualized BOOLEAN NOT NULL DEFAULT false,
     sent_at TIMESTAMP default now(),
     author BIGINT NOT NULL,
 
@@ -238,15 +237,9 @@ CREATE TABLE IF NOT EXISTS public.tbnotification(
 );
 
 CREATE TABLE IF NOT EXISTS public.tbnotification_user(
-    idnotification_user BIGINT,
+    idnotification BIGINT NOT NULL,
     iduser BIGINT NOT NULL,
+    was_visualized BOOLEAN NOT NULL DEFAULT false,
 
-    CONSTRAINT tbnotification_user_pk PRIMARY KEY (idnotification_user, iduser)
-);
-
-CREATE TABLE IF NOT EXISTS public.tbnotification_client(
-    idnotification_client BIGINT,
-    idclient BIGINT NOT NULL,
-
-    CONSTRAINT tbnotification_client_pk PRIMARY KEY (idnotification_client)
+    CONSTRAINT tbnotification_user_pk PRIMARY KEY (idnotification, iduser)
 );

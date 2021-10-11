@@ -21,6 +21,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 	Optional<User> findByUsernameContainingIgnoreCaseAndClient(String username, Client client);
 	Optional<User> findByEmailContainingIgnoreCase(String email);
 	Optional<User> findByCpf(String cpf);
+	List<User> findAllByClient(Client client);
 
 	@Query(value="SELECT u FROM User u WHERE " +
 			"u.client.tenant = :tenant AND (" +

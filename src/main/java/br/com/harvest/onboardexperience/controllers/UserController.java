@@ -136,4 +136,17 @@ public class UserController {
 		return ResponseEntity.ok().body(notificationService.getAllNotificationsFromUser(token));
 	}
 
+	@Operation(description = "Realiza a visualização de uma notificação do usuário.")
+	@PatchMapping(path = "/notifications/visualize/{id}")
+	public void visualizeNotification(@PathVariable  @Pattern(regexp = RegexUtils.ONLY_NUMBERS) Long id,
+									  @RequestHeader("Authorization") String token) {
+		notificationService.visualizeNotification(id, token);
+	}
+
+	@Operation(description = "Realiza a visualização de uma notificação do usuário.")
+	@PatchMapping(path = "/notifications/visualize/all")
+	public void visualizeAllNotification(@RequestHeader("Authorization") String token) {
+		notificationService.visualizeAllNotifications(token);
+	}
+
 }
