@@ -15,6 +15,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.Nullable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -38,7 +39,7 @@ public class HarvestLibraryController {
     @Operation(description = "Faz upload de arquivos e links na biblioteca da Harvest.")
     @PreAuthorize("hasAuthority('MASTER')")
     @PostMapping
-    public void upload(@ModelAttribute @Valid LinkForm dto,
+    public void upload(@ModelAttribute LinkForm dto,
                        @RequestParam(value = "authorizedClients", required = false) List<Long> authorizedClients,
                        @RequestParam(value = "file", required = false) MultipartFile file,
                        @RequestHeader("Authorization") String token) {
@@ -49,7 +50,7 @@ public class HarvestLibraryController {
     @PreAuthorize("hasAuthority('MASTER')")
     @PutMapping(value="/{id}")
     public void upload(@PathVariable  @Pattern(regexp = RegexUtils.ONLY_NUMBERS) Long id,
-                       @ModelAttribute @Valid LinkForm dto,
+                       @ModelAttribute LinkForm dto,
                        @RequestParam(value = "authorizedClients", required = false) List<Long> authorizedClients,
                        @RequestParam(value = "file", required = false) MultipartFile file,
                        @RequestHeader("Authorization") String token)
