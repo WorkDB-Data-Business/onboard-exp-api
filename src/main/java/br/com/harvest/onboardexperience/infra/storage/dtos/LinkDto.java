@@ -1,6 +1,8 @@
 package br.com.harvest.onboardexperience.infra.storage.dtos;
 
 import br.com.harvest.onboardexperience.infra.storage.enumerators.ContentType;
+import br.com.harvest.onboardexperience.infra.storage.enumerators.Storage;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
 import java.util.List;
@@ -23,5 +25,8 @@ public class LinkDto {
     private ContentType contentType;
 
     private Boolean isActive;
+
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private Storage storage;
 
 }

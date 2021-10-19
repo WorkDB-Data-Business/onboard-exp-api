@@ -3,8 +3,10 @@ package br.com.harvest.onboardexperience.infra.storage.services;
 import br.com.harvest.onboardexperience.domain.entities.Client;
 import br.com.harvest.onboardexperience.domain.exceptions.LinkNotFoundException;
 import br.com.harvest.onboardexperience.infra.storage.dtos.LinkDto;
+import br.com.harvest.onboardexperience.infra.storage.dtos.LinkSimpleDto;
 import br.com.harvest.onboardexperience.infra.storage.dtos.UploadForm;
 import br.com.harvest.onboardexperience.infra.storage.entities.Link;
+import br.com.harvest.onboardexperience.infra.storage.enumerators.Storage;
 import br.com.harvest.onboardexperience.infra.storage.interfaces.StorageService;
 import br.com.harvest.onboardexperience.infra.storage.mappers.LinkMapper;
 import br.com.harvest.onboardexperience.infra.storage.repositories.LinkRepository;
@@ -21,6 +23,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Function;
 
 @Service
 public class LinkStorageService implements StorageService {
@@ -36,6 +39,11 @@ public class LinkStorageService implements StorageService {
 
     @Autowired
     private FetchService fetchService;
+
+    private Function<LinkSimpleDto, LinkSimpleDto> setStorage = linkSimpleDto -> {
+        linkSimpleDto.setStorage(Storage.LINK);
+        return linkSimpleDto;
+    };
 
     @Override
     public void save(@NonNull UploadForm form, @NonNull String token) {
@@ -58,7 +66,9 @@ public class LinkStorageService implements StorageService {
     @Override
     public Page<?> findAll(@NonNull String token, Pageable pageable) {
         Client client = tenantService.fetchClientByTenantFromToken(token);
-        return repository.findAllByAuthorizedClients(client, pageable).map(LinkMapper.INSTANCE::toLinkSimpleDto);
+        return repository.findAllByAuthorizedClients(client, pageable)
+                .map(LinkMapper.INSTANCE::toLinkSimpleDto)
+                .map(setStorage);
     }
 
     @Override
@@ -87,6 +97,7 @@ public class LinkStorageService implements StorageService {
         LinkDto dto = LinkMapper.INSTANCE.toDto(link);
 
         dto.setAuthorizedClientsId(StorageService.getIDFromClients(link.getAuthorizedClients()));
+        dto.setStorage(Storage.LINK);
 
         return Optional.of(dto);
     }

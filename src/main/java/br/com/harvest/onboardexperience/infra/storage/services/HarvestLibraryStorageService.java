@@ -8,6 +8,7 @@ import br.com.harvest.onboardexperience.infra.storage.dtos.FileDto;
 import br.com.harvest.onboardexperience.infra.storage.dtos.FileSimpleDto;
 import br.com.harvest.onboardexperience.infra.storage.dtos.UploadForm;
 import br.com.harvest.onboardexperience.infra.storage.entities.HarvestFile;
+import br.com.harvest.onboardexperience.infra.storage.enumerators.Storage;
 import br.com.harvest.onboardexperience.infra.storage.interfaces.StorageService;
 import br.com.harvest.onboardexperience.infra.storage.mappers.FileMapper;
 import br.com.harvest.onboardexperience.infra.storage.repositories.FileContentStore;
@@ -31,6 +32,7 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Function;
 
 @Service
 @Slf4j
@@ -50,6 +52,11 @@ public class HarvestLibraryStorageService implements StorageService {
 
     @Autowired
     private FetchService fetchService;
+
+    private Function<FileSimpleDto, FileSimpleDto> setStorage = fileSimpleDto -> {
+        fileSimpleDto.setStorage(Storage.HARVEST_FILE);
+        return fileSimpleDto;
+    };
 
     private final String FILE_FOLDER = "files";
 
@@ -74,7 +81,9 @@ public class HarvestLibraryStorageService implements StorageService {
     @Override
     public Page<FileSimpleDto> findAll(@NonNull String token, Pageable pageable) {
         Client client = tenantService.fetchClientByTenantFromToken(token);
-        return fileRepository.findAllByAuthorizedClients(client, pageable).map(FileMapper.INSTANCE::toFileSimpleDto);
+        return fileRepository.findAllByAuthorizedClients(client, pageable)
+                .map(FileMapper.INSTANCE::toFileSimpleDto)
+                .map(setStorage);
     }
 
     @Override
@@ -108,6 +117,7 @@ public class HarvestLibraryStorageService implements StorageService {
 
         dto.setFileEncoded(StorageService.encodeFileToBase64(fileContentStore.getContent(harvestFile)));
         dto.setAuthorizedClientsId(StorageService.getIDFromClients(harvestFile.getAuthorizedClients()));
+        dto.setStorage(Storage.HARVEST_FILE);
 
         return Optional.of(dto);
     }
