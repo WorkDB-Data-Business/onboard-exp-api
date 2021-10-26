@@ -37,7 +37,8 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 	@ExceptionHandler({
 			BusinessException.class, UserAlreadyExistsException.class, CoinAlreadyExistsException.class,
 			ClientAlreadyExistsException.class, CompanyRoleAlreadyExistsException.class,
-			RewardAlreadyExistsException.class, FileAlreadyExistsException.class
+			InvalidCnpjException.class, InvalidCpfException.class, RewardAlreadyExistsException.class,
+			FileAlreadyExistsException.class
 	})
 	public ResponseEntity<?> handleBusinessException(BusinessException e){
 		logger.error(e);
