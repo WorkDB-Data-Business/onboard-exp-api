@@ -35,6 +35,10 @@ public class Link extends BaseEntityAudit {
     @Column(name = "link")
     private String link;
 
+    @ManyToOne
+    @JoinColumn(name = "author")
+    private Client author;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "content_type")
     private ContentType contentType;

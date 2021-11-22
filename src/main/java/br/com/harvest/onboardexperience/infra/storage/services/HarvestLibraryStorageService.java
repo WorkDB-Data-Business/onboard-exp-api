@@ -8,6 +8,7 @@ import br.com.harvest.onboardexperience.infra.storage.dtos.FileDto;
 import br.com.harvest.onboardexperience.infra.storage.dtos.FileSimpleDto;
 import br.com.harvest.onboardexperience.infra.storage.dtos.UploadForm;
 import br.com.harvest.onboardexperience.infra.storage.entities.HarvestFile;
+import br.com.harvest.onboardexperience.infra.storage.entities.Link;
 import br.com.harvest.onboardexperience.infra.storage.enumerators.Storage;
 import br.com.harvest.onboardexperience.infra.storage.interfaces.StorageService;
 import br.com.harvest.onboardexperience.infra.storage.mappers.FileMapper;
@@ -93,7 +94,7 @@ public class HarvestLibraryStorageService implements StorageService {
 
         HarvestFile updatedHarvestFile = convertFormToFile(form, token);
 
-        BeanUtils.copyProperties(updatedHarvestFile, harvestFile, "id", "createdAt", "createdBy");
+        BeanUtils.copyProperties(updatedHarvestFile, harvestFile, "id", "author", "createdAt", "createdBy");
 
         uploadFile(harvestFile, form);
 
@@ -126,8 +127,7 @@ public class HarvestLibraryStorageService implements StorageService {
     public void updateAuthorizedClients(@NonNull Long id, @NonNull String token, @NonNull List<Long> authorizedClients) {
         HarvestFile file = getFileByIdAndAuthorizedClient(id, token, true);
 
-        file.setAuthorizedClients(fetchService.fetchClients(authorizedClients,
-                tenantService.fetchClientByTenantFromToken(token)));
+        file.setAuthorizedClients(fetchService.fetchClients(authorizedClients));
 
         fileRepository.save(file);
     }
@@ -143,7 +143,7 @@ public class HarvestLibraryStorageService implements StorageService {
         );
 
         if(validateAuthor){
-            StorageService.validateAuthor(client, harvestFile.getAuthorizedClients());
+            validateAuthor(harvestFile, client);
         }
 
         return harvestFile;
@@ -170,10 +170,18 @@ public class HarvestLibraryStorageService implements StorageService {
     private HarvestFile convertFormToFile(@NonNull UploadForm form, @NonNull String token) {
         Client client = tenantService.fetchClientByTenantFromToken(token);
         return HarvestFile.builder()
-                .authorizedClients(fetchService.fetchClients(form.getAuthorizedClients(), client))
+                .author(fetchService.fetchHavestClient())
+                .authorizedClients(fetchService.fetchClients(form.getAuthorizedClients()))
                 .contentPath(createFilePath(form.getFile(), client))
                 .name(form.getFile().getOriginalFilename())
                 .mimeType(form.getFile().getContentType()).build();
+    }
+
+    private void validateAuthor(@NonNull HarvestFile file, @NonNull Client client){
+        if(!file.getAuthor().equals(client)){
+            throw new GenericUploadException("Only the author can update a file.", "The client who request isn't the author" +
+                    " of the file");
+        }
     }
 
 }

@@ -35,13 +35,6 @@ public interface StorageService {
 		return null;
 	}
 
-	static void validateAuthor(Client client, List<Client> authorizedClients){
-		if(!client.equals(getAuthor(authorizedClients))){
-			throw new GenericUploadException("Only the author can update a file.", "The client who request isn't the author" +
-					" of the file");
-		}
-	}
-
 	static List<Long> getIDFromClients(List<Client> clients){
 		List<Long> ids = new ArrayList<>();
 		if(ObjectUtils.isNotEmpty(clients)){

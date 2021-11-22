@@ -1,6 +1,7 @@
 package br.com.harvest.onboardexperience.infra.storage.services;
 
 import br.com.harvest.onboardexperience.domain.entities.Client;
+import br.com.harvest.onboardexperience.domain.exceptions.GenericUploadException;
 import br.com.harvest.onboardexperience.domain.exceptions.LinkNotFoundException;
 import br.com.harvest.onboardexperience.infra.storage.dtos.LinkDto;
 import br.com.harvest.onboardexperience.infra.storage.dtos.LinkSimpleDto;
@@ -35,9 +36,6 @@ public class LinkStorageService implements StorageService {
     private TenantService tenantService;
 
     @Autowired
-    private ClientService clientService;
-
-    @Autowired
     private FetchService fetchService;
 
     private Function<LinkSimpleDto, LinkSimpleDto> setStorage = linkSimpleDto -> {
@@ -49,7 +47,11 @@ public class LinkStorageService implements StorageService {
     public void save(@NonNull UploadForm form, @NonNull String token) {
         validate(form);
 
-        Link link = Link.builder().authorizedClients(fetchService.fetchClients(form.getAuthorizedClients(), token)).build();
+        Link link = Link
+                .builder()
+                .authorizedClients(fetchService.fetchClients(form.getAuthorizedClients()))
+                .author(fetchService.fetchHavestClient())
+                .build();
 
         BeanUtils.copyProperties(form.getLink(), link);
 
@@ -76,9 +78,9 @@ public class LinkStorageService implements StorageService {
 
         Link link = getLinkByIdAndAuthorizedClient(id, token, true);
 
-        link.setAuthorizedClients(fetchService.fetchClients(form.getAuthorizedClients(), token));
+        link.setAuthorizedClients(fetchService.fetchClients(form.getAuthorizedClients()));
 
-        BeanUtils.copyProperties(form.getLink(), link, "id", "createdBy", "createdAt");
+        BeanUtils.copyProperties(form.getLink(), link, "id", "author", "createdBy", "createdAt");
 
         repository.save(link);
     }
@@ -106,8 +108,7 @@ public class LinkStorageService implements StorageService {
     public void updateAuthorizedClients(@NonNull Long id, @NonNull String token, @NonNull List<Long> authorizedClients) {
         Link link = getLinkByIdAndAuthorizedClient(id, token, true);
 
-        link.setAuthorizedClients(fetchService.fetchClients(authorizedClients,
-                tenantService.fetchClientByTenantFromToken(token)));
+        link.setAuthorizedClients(fetchService.fetchClients(authorizedClients));
 
         repository.save(link);
     }
@@ -120,9 +121,16 @@ public class LinkStorageService implements StorageService {
         );
 
         if(validateAuthor) {
-            StorageService.validateAuthor(client, link.getAuthorizedClients());
+            validateAuthor(link, client);
         }
 
         return link;
+    }
+
+    private void validateAuthor(@NonNull Link link, @NonNull Client client){
+        if(!link.getAuthor().equals(client)){
+            throw new GenericUploadException("Only the author can update a link.", "The client who request isn't the author" +
+                    " of the link");
+        }
     }
 }

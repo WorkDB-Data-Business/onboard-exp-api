@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class FetchService {
@@ -36,6 +37,8 @@ public class FetchService {
 
     @Autowired
     private RewardService rewardService;
+
+    private final Long HARVEST_CLIENT = 1L;
 
     public List<CompanyRoleDto> fetchCompanyRoles(List<Long> companyRolesId, String token){
         List<CompanyRoleDto> companyRoles = new ArrayList<>();
@@ -70,38 +73,17 @@ public class FetchService {
         return users;
     }
 
-    public List<Client> fetchClients(List<Long> clientsId, Client author) {
-        List<Client> clients = new ArrayList<>() {{
-            add(author);
-        }};
-
-        if (ObjectUtils.isNotEmpty(clientsId)) {
-            for (Long clientId : clientsId) {
-                if (clientId.equals(author.getId())) continue;
-                Client client = ClientMapper.INSTANCE.toEntity(clientService.findById(clientId));
-                clients.add(client);
-            }
-        }
-
-        return clients;
+    public Client fetchClientById(@NonNull Long id){
+        return ClientMapper.INSTANCE.toEntity(clientService.findById(id));
     }
 
-    public List<Client> fetchClients(List<Long> clientsId, String token) {
-        Client client = tenantService.fetchClientByTenantFromToken(token);
-        return fetchClients(clientsId, client);
+    public Client fetchHavestClient(){
+        return fetchClientById(HARVEST_CLIENT);
     }
 
     public List<Client> fetchClients(List<Long> clientsId) {
-        List<Client> clients = new ArrayList<>();
-
-        if (ObjectUtils.isNotEmpty(clientsId)) {
-            for (Long clientId : clientsId) {
-                Client client = ClientMapper.INSTANCE.toEntity(clientService.findById(clientId));
-                clients.add(client);
-            }
-        }
-
-        return clients;
+        return clientsId.stream().map(clientService::findById)
+                .map(ClientMapper.INSTANCE::toEntity).collect(Collectors.toList());
     }
 
     public User fetchUser(@NonNull Long id, @NonNull String token){
