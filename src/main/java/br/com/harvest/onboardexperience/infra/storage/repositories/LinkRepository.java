@@ -14,6 +14,6 @@ public interface LinkRepository extends JpaRepository<Link, Long> {
 
     Page<Link> findAllByAuthorizedClients(Client client, Pageable pageable);
 
-    Optional<Link> findByIdAndAuthorizedClients(Long id, Client client);
+    Optional<Link> findByIdAndAuthorizedClientsOrAuthor(Long id, Client client, Client author);
 
 }

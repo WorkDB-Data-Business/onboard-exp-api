@@ -11,7 +11,6 @@ import br.com.harvest.onboardexperience.infra.storage.enumerators.Storage;
 import br.com.harvest.onboardexperience.infra.storage.interfaces.StorageService;
 import br.com.harvest.onboardexperience.infra.storage.mappers.LinkMapper;
 import br.com.harvest.onboardexperience.infra.storage.repositories.LinkRepository;
-import br.com.harvest.onboardexperience.services.ClientService;
 import br.com.harvest.onboardexperience.services.FetchService;
 import br.com.harvest.onboardexperience.services.TenantService;
 import lombok.NonNull;
@@ -38,7 +37,7 @@ public class LinkStorageService implements StorageService {
     @Autowired
     private FetchService fetchService;
 
-    private Function<LinkSimpleDto, LinkSimpleDto> setStorage = linkSimpleDto -> {
+    private final Function<LinkSimpleDto, LinkSimpleDto> SET_STORAGE = linkSimpleDto -> {
         linkSimpleDto.setStorage(Storage.LINK);
         return linkSimpleDto;
     };
@@ -50,7 +49,7 @@ public class LinkStorageService implements StorageService {
         Link link = Link
                 .builder()
                 .authorizedClients(fetchService.fetchClients(form.getAuthorizedClients()))
-                .author(fetchService.fetchHavestClient())
+                .author(tenantService.fetchClientByTenantFromToken(token))
                 .build();
 
         BeanUtils.copyProperties(form.getLink(), link);
@@ -70,13 +69,13 @@ public class LinkStorageService implements StorageService {
         Client client = tenantService.fetchClientByTenantFromToken(token);
         return repository.findAllByAuthorizedClients(client, pageable)
                 .map(LinkMapper.INSTANCE::toLinkSimpleDto)
-                .map(setStorage);
+                .map(SET_STORAGE);
     }
 
     @Override
     public void update(@NonNull Long id, @NonNull UploadForm form, @NonNull String token) {
 
-        Link link = getLinkByIdAndAuthorizedClient(id, token, true);
+        Link link = getLinkByIdAndAuthorizedClient(id, token);
 
         link.setAuthorizedClients(fetchService.fetchClients(form.getAuthorizedClients()));
 
@@ -87,14 +86,14 @@ public class LinkStorageService implements StorageService {
 
     @Override
     public void delete(@NonNull Long id, @NonNull String token) {
-        Link link = getLinkByIdAndAuthorizedClient(id, token, true);
+        Link link = getLinkByIdAndAuthorizedClient(id, token);
         repository.delete(link);
     }
 
     @Override
     public Optional<LinkDto> find(@NonNull Long id, @NonNull String token) {
 
-        Link link = getLinkByIdAndAuthorizedClient(id, token, true);
+        Link link = getLinkByIdAndAuthorizedClient(id, token);
 
         LinkDto dto = LinkMapper.INSTANCE.toDto(link);
 
@@ -106,31 +105,20 @@ public class LinkStorageService implements StorageService {
 
     @Override
     public void updateAuthorizedClients(@NonNull Long id, @NonNull String token, @NonNull List<Long> authorizedClients) {
-        Link link = getLinkByIdAndAuthorizedClient(id, token, true);
+        Link link = getLinkByIdAndAuthorizedClient(id, token);
 
         link.setAuthorizedClients(fetchService.fetchClients(authorizedClients));
 
         repository.save(link);
     }
 
-    private Link getLinkByIdAndAuthorizedClient(@NonNull Long id, @NonNull String token, @NonNull Boolean validateAuthor){
+    private Link getLinkByIdAndAuthorizedClient(@NonNull Long id, @NonNull String token){
         Client client = tenantService.fetchClientByTenantFromToken(token);
 
-        Link link = repository.findByIdAndAuthorizedClients(id, client).orElseThrow(
+        Link link = repository.findByIdAndAuthorizedClientsOrAuthor(id, client, client).orElseThrow(
                 () -> new LinkNotFoundException("Link not found.", "The requested link doesn't exist or you don't have access to get it.")
         );
 
-        if(validateAuthor) {
-            validateAuthor(link, client);
-        }
-
         return link;
-    }
-
-    private void validateAuthor(@NonNull Link link, @NonNull Client client){
-        if(!link.getAuthor().equals(client)){
-            throw new GenericUploadException("Only the author can update a link.", "The client who request isn't the author" +
-                    " of the link");
-        }
     }
 }

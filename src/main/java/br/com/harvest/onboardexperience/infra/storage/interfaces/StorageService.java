@@ -22,10 +22,10 @@ public interface StorageService {
 	void save(@NonNull UploadForm form, @NonNull String token);
 	void validate(@NonNull UploadForm form);
 	Page<?> findAll(@NonNull String token, Pageable pageable);
-	void update(@NonNull Long id, @NonNull UploadForm form, @NonNull String token);
-	void delete(@NonNull Long id, @NonNull String token);
-	Optional<?> find(@NonNull Long id, @NonNull String token);
-	void updateAuthorizedClients(@NonNull Long id, @NonNull String token, @NonNull  List<Long> authorizedClients);
+	void update(@NonNull Long id, @NonNull UploadForm form, @NonNull String token) throws Exception;
+	void delete(@NonNull Long id, @NonNull String token) throws Exception;
+	Optional<?> find(@NonNull Long id, @NonNull String token) throws Exception;
+	void updateAuthorizedClients(@NonNull Long id, @NonNull String token, @NonNull  List<Long> authorizedClients) throws Exception;
 
 
 	static Client getAuthor(List<Client> authorizedClients){

@@ -18,6 +18,6 @@ public interface FileRepository extends JpaRepository<HarvestFile, Long> {
 
     Page<HarvestFile> findAllByAuthorizedClients(Client client, Pageable pageable);
 
-    Optional<HarvestFile> findByIdAndAuthorizedClients(Long id, Client client);
+    Optional<HarvestFile> findByIdAndAuthorizedClientsOrAuthor(Long id, Client client, Client author);
 
 }

@@ -1,9 +1,11 @@
 package br.com.harvest.onboardexperience.services;
 
 import br.com.harvest.onboardexperience.domain.exceptions.UserAlreadyExistsException;
+import br.com.harvest.onboardexperience.utils.Constants;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -22,6 +24,8 @@ import br.com.harvest.onboardexperience.utils.GenericUtils;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.Optional;
+
 @Slf4j
 @Service
 public class ClientService {
@@ -37,6 +41,19 @@ public class ClientService {
 
     @Autowired
     private CompanyRoleService companyRoleService;
+
+    @Value(Constants.HARVEST_CLIENT_CNPJ)
+    private String harvestClientCnpj;
+
+    @Value(Constants.HARVEST_CLIENT_EMAIL)
+    private String harvestClientEmail;
+
+    @Value(Constants.HARVEST_CLIENT_NAME)
+    private String harvestClientName;
+
+    @Value(Constants.HARVEST_CLIENT_TENANT)
+    private String harvestClientTenant;
+
 
     @Transactional
     public ClientDto create(@NonNull ClientDto dto) throws Exception {
@@ -183,5 +200,38 @@ public class ClientService {
         if (repository.findByCnpj(dto.getCnpj()).isPresent()) {
             throw new ClientAlreadyExistsException(ExceptionMessageFactory.createAlreadyExistsMessage("client", "CNPJ", dto.getCnpj()));
         }
+    }
+
+    public Client getHarvestClient(){
+        return ClientMapper.INSTANCE.toEntity(findById(Constants.HARVEST_CLIENT_ID));
+    }
+
+    private Boolean needToImport(Client client){
+        return repository.findByNameContainingIgnoreCase(harvestClientName).isEmpty();
+    }
+
+    public void saveHarvestClient() {
+        try {
+            Optional.of(createHarvestClient())
+                    .filter(this::needToImport)
+                            .ifPresent(client -> {
+                                repository.save(client);
+                                log.info("The load of harvest client occurred successful");});
+        } catch(Exception e) {
+            log.error("Occurred an error to load harvest client: " + e.getMessage(), e.getCause());
+        }
+    }
+
+    private Client createHarvestClient(){
+       return Client.builder().cnpj(harvestClientCnpj)
+                .id(Constants.HARVEST_CLIENT_ID)
+                .name(harvestClientName)
+                .isActive(true)
+                .isBlocked(false)
+                .isExpired(false)
+                .isMaster(true)
+                .tenant(harvestClientTenant)
+                .email(harvestClientEmail)
+                .build();
     }
 }

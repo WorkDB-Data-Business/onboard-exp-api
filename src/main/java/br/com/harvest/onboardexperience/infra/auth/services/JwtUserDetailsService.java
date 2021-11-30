@@ -1,9 +1,10 @@
 package br.com.harvest.onboardexperience.infra.auth.services;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
+import br.com.harvest.onboardexperience.domain.entities.Permission;
+import br.com.harvest.onboardexperience.domain.enumerators.PermissionEnum;
+import br.com.harvest.onboardexperience.domain.enumerators.RoleEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -34,15 +35,22 @@ public class JwtUserDetailsService implements UserDetailsService {
     }
 
     private List<GrantedAuthority> getAuthorities(Set<Role> roles) {
-        List<GrantedAuthority> authorities = new ArrayList<>();
-        for (Role role : roles) {
-            authorities.add(new SimpleGrantedAuthority(role.getRole().getName()));
-            role.getPermissions().stream()
-                    .map(p -> new SimpleGrantedAuthority(p.getPermission().getName()))
-                    .forEach(authorities::add);
-        }
+        Set<GrantedAuthority> authorities = new HashSet<>();
 
-        return authorities;
+        roles.stream().map(Role::getRole).map(RoleEnum::getName)
+                .map(String::toUpperCase)
+                .map(SimpleGrantedAuthority::new)
+                .forEach(authorities::add);
+
+        roles.stream().map(Role::getPermissions)
+                .flatMap(Collection::stream)
+                .map(Permission::getPermission)
+                .map(PermissionEnum::getName)
+                .map(String::toUpperCase)
+                .map(SimpleGrantedAuthority::new)
+                .forEach(authorities::add);
+
+        return new ArrayList<>(authorities);
     }
 
 }

@@ -90,7 +90,7 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 			errors.add(error);
 		}
 		
-		Message message = new MessageBuilder().addMessage("The object " + e.getBindingResult().getObjectName() + " have validation errors.")
+		Message message = new MessageBuilder().addMessage("The object " + e.getBindingResult().getObjectName() + " has validation errors.")
 				.withErrors(errors)
 				.withComments("Please, fix the errors and try again.")
 				.build();
