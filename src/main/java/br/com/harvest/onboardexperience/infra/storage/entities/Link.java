@@ -3,6 +3,7 @@ package br.com.harvest.onboardexperience.infra.storage.entities;
 
 import br.com.harvest.onboardexperience.domain.entities.BaseEntityAudit;
 import br.com.harvest.onboardexperience.domain.entities.Client;
+import br.com.harvest.onboardexperience.domain.entities.User;
 import br.com.harvest.onboardexperience.infra.storage.enumerators.ContentType;
 import br.com.harvest.onboardexperience.utils.SQLQueryUtils;
 import lombok.*;
@@ -37,7 +38,7 @@ public class Link extends BaseEntityAudit {
 
     @ManyToOne
     @JoinColumn(name = "author")
-    private Client author;
+    private User author;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "content_type")

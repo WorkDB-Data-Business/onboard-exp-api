@@ -197,7 +197,7 @@ CREATE TABLE IF NOT EXISTS public.tbfile(
     created_at TIMESTAMP default now(),
     updated_at TIMESTAMP,
 
-  	FOREIGN KEY (author) REFERENCES tbclient(idclient),
+  	FOREIGN KEY (author) REFERENCES tbuser(iduser),
 
     CONSTRAINT tbfile_pk PRIMARY KEY (idfile)
 );
@@ -214,7 +214,7 @@ CREATE TABLE IF NOT EXISTS public.tblink(
     created_at TIMESTAMP default now(),
     updated_at TIMESTAMP,
 
-	FOREIGN KEY (author) REFERENCES tbclient(idclient),
+	FOREIGN KEY (author) REFERENCES tbuser(iduser),
 
     CONSTRAINT tblink_pk PRIMARY KEY (idlink)
 );

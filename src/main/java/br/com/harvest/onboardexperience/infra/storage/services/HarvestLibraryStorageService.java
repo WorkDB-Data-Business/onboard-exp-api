@@ -2,12 +2,13 @@ package br.com.harvest.onboardexperience.infra.storage.services;
 
 
 import br.com.harvest.onboardexperience.domain.entities.Client;
+import br.com.harvest.onboardexperience.domain.entities.User;
 import br.com.harvest.onboardexperience.domain.exceptions.GenericUploadException;
-import br.com.harvest.onboardexperience.domain.exceptions.LinkNotFoundException;
 import br.com.harvest.onboardexperience.infra.storage.dtos.FileDto;
 import br.com.harvest.onboardexperience.infra.storage.dtos.FileSimpleDto;
 import br.com.harvest.onboardexperience.infra.storage.dtos.UploadForm;
 import br.com.harvest.onboardexperience.infra.storage.entities.HarvestFile;
+import br.com.harvest.onboardexperience.infra.storage.entities.Link;
 import br.com.harvest.onboardexperience.infra.storage.enumerators.Storage;
 import br.com.harvest.onboardexperience.infra.storage.interfaces.StorageService;
 import br.com.harvest.onboardexperience.infra.storage.mappers.FileMapper;
@@ -16,6 +17,8 @@ import br.com.harvest.onboardexperience.infra.storage.repositories.FileRepositor
 import br.com.harvest.onboardexperience.services.ClientService;
 import br.com.harvest.onboardexperience.services.FetchService;
 import br.com.harvest.onboardexperience.services.TenantService;
+import br.com.harvest.onboardexperience.services.UserService;
+import br.com.harvest.onboardexperience.utils.GenericUtils;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -47,6 +50,9 @@ public class HarvestLibraryStorageService implements StorageService {
 
     @Autowired
     private ClientService clientService;
+
+    @Autowired
+    private UserService userService;
 
     @Autowired
     private FetchService fetchService;
@@ -87,7 +93,7 @@ public class HarvestLibraryStorageService implements StorageService {
     @Override
     public void update(@NonNull Long id, @NonNull UploadForm form, @NonNull String token) throws Exception {
 
-        HarvestFile harvestFile = getFileByIdAndAuthorizedClient(id, token);
+        HarvestFile harvestFile = getFileByIdAndAuthorizedClient(id, token, true);
 
         HarvestFile updatedHarvestFile = convertFormToFile(form, token);
 
@@ -100,7 +106,7 @@ public class HarvestLibraryStorageService implements StorageService {
 
     @Override
     public void delete(@NonNull Long id, @NonNull String token) throws Exception {
-        HarvestFile harvestFile = getFileByIdAndAuthorizedClient(id, token);
+        HarvestFile harvestFile = getFileByIdAndAuthorizedClient(id, token, true);
 
         fileContentStore.unsetContent(harvestFile);
 
@@ -109,12 +115,12 @@ public class HarvestLibraryStorageService implements StorageService {
 
     @Override
     public Optional<FileDto> find(@NonNull Long id, @NonNull String token) throws Exception {
-        HarvestFile harvestFile = getFileByIdAndAuthorizedClient(id, token);
+        HarvestFile harvestFile = getFileByIdAndAuthorizedClient(id, token, false);
 
         FileDto dto = FileMapper.INSTANCE.toDto(harvestFile);
 
         dto.setFileEncoded(StorageService.encodeFileToBase64(fileContentStore.getContent(harvestFile)));
-        dto.setAuthorizedClientsId(StorageService.getIDFromClients(harvestFile.getAuthorizedClients()));
+        dto.setAuthorizedClientsId(GenericUtils.extractIDsFromList(harvestFile.getAuthorizedClients(), Client.class));
         dto.setStorage(Storage.HARVEST_FILE);
 
         return Optional.of(dto);
@@ -122,22 +128,25 @@ public class HarvestLibraryStorageService implements StorageService {
 
     @Override
     public void updateAuthorizedClients(@NonNull Long id, @NonNull String token, @NonNull List<Long> authorizedClients) throws Exception {
-        HarvestFile file = getFileByIdAndAuthorizedClient(id, token);
+        HarvestFile file = getFileByIdAndAuthorizedClient(id, token, true);
 
         file.setAuthorizedClients(fetchService.fetchClients(authorizedClients));
 
         fileRepository.save(file);
     }
 
+    private HarvestFile getFileByIdAndAuthorizedClient(@NonNull Long id, @NonNull String token, Boolean validateAuthor) throws Exception {
 
+        User user = userService.findUserByToken(token);
 
-    private HarvestFile getFileByIdAndAuthorizedClient(@NonNull Long id, @NonNull String token) throws Exception {
+        HarvestFile harvestFile = fileRepository.findByIdAndAuthorizedClients(id, user.getClient())
+                .or(() -> fileRepository.findByIdAndAuthor(id, user))
+                .orElseThrow(
+                () -> new FileNotFoundException("The requested file doesn't exist or you don't have access to get it."));
 
-        Client client = tenantService.fetchClientByTenantFromToken(token);
-
-        HarvestFile harvestFile = fileRepository.findByIdAndAuthorizedClientsOrAuthor(id, client, client).orElseThrow(
-                () -> new FileNotFoundException("The requested file doesn't exist or you don't have access to get it.")
-        );
+        if(validateAuthor){
+            StorageService.validateAuthor(harvestFile, HarvestFile.class, user, "You're not the author of the file.");
+        }
 
         return harvestFile;
     }
@@ -152,20 +161,19 @@ public class HarvestLibraryStorageService implements StorageService {
     }
 
     private String createFilePath(MultipartFile file, Client client) {
-        StringBuilder builder = new StringBuilder(FILE_FOLDER)
+        return new StringBuilder(FILE_FOLDER)
                 .append("/")
                 .append(client.getCnpj())
                 .append("/")
-                .append(file.getOriginalFilename());
-        return builder.toString();
+                .append(file.getOriginalFilename()).toString();
     }
 
     private HarvestFile convertFormToFile(@NonNull UploadForm form, @NonNull String token) {
-        Client client = tenantService.fetchClientByTenantFromToken(token);
+        User user = userService.findUserByToken(token);
         return HarvestFile.builder()
-                .author(fetchService.fetchHavestClient())
+                .author(user)
                 .authorizedClients(Objects.nonNull(form.getAuthorizedClients()) ? fetchService.fetchClients(form.getAuthorizedClients()) : null)
-                .contentPath(createFilePath(form.getFile(), client))
+                .contentPath(createFilePath(form.getFile(), user.getClient()))
                 .name(form.getFile().getOriginalFilename())
                 .mimeType(form.getFile().getContentType()).build();
     }

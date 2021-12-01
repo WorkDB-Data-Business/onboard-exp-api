@@ -1,10 +1,7 @@
 package br.com.harvest.onboardexperience.utils;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -44,7 +41,9 @@ public class GenericUtils {
 		}
 
 		Method method = ReflectionUtils.findMethod(clazz, methodName);
-		return ReflectionUtils.invokeMethod(method, targetObject.get());
+		return Objects.nonNull(method) && targetObject.isPresent()
+				? ReflectionUtils.invokeMethod(method, targetObject.get())
+				: null;
 	}
 
 	public static Boolean stringNullOrEmpty(String val) {
@@ -64,9 +63,8 @@ public class GenericUtils {
 	}
 
 	public static List<Long> extractIDsFromList(@NonNull List<?> objects, Class<?> clazz){
-		List<Long> ids = new ArrayList<>();
 		if(ObjectUtils.isNotEmpty(objects)){
-			ids = objects.stream().
+			return objects.stream().
 					map(object ->
 					executeMethodFromGenericClass(clazz, "getId", Optional.of(object)))
 					.map(objectString -> objectString.toString())
@@ -74,7 +72,7 @@ public class GenericUtils {
 					.boxed()
 					.collect(Collectors.toList());
 		}
-		return ids;
+		return Collections.emptyList();
 	}
 
 }

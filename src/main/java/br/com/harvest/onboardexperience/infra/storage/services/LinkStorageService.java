@@ -1,7 +1,7 @@
 package br.com.harvest.onboardexperience.infra.storage.services;
 
 import br.com.harvest.onboardexperience.domain.entities.Client;
-import br.com.harvest.onboardexperience.domain.exceptions.GenericUploadException;
+import br.com.harvest.onboardexperience.domain.entities.User;
 import br.com.harvest.onboardexperience.domain.exceptions.LinkNotFoundException;
 import br.com.harvest.onboardexperience.infra.storage.dtos.LinkDto;
 import br.com.harvest.onboardexperience.infra.storage.dtos.LinkSimpleDto;
@@ -13,6 +13,8 @@ import br.com.harvest.onboardexperience.infra.storage.mappers.LinkMapper;
 import br.com.harvest.onboardexperience.infra.storage.repositories.LinkRepository;
 import br.com.harvest.onboardexperience.services.FetchService;
 import br.com.harvest.onboardexperience.services.TenantService;
+import br.com.harvest.onboardexperience.services.UserService;
+import br.com.harvest.onboardexperience.utils.GenericUtils;
 import lombok.NonNull;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,6 +39,9 @@ public class LinkStorageService implements StorageService {
     @Autowired
     private FetchService fetchService;
 
+    @Autowired
+    private UserService userService;
+
     private final Function<LinkSimpleDto, LinkSimpleDto> SET_STORAGE = linkSimpleDto -> {
         linkSimpleDto.setStorage(Storage.LINK);
         return linkSimpleDto;
@@ -48,8 +53,8 @@ public class LinkStorageService implements StorageService {
 
         Link link = Link
                 .builder()
-                .authorizedClients(fetchService.fetchClients(form.getAuthorizedClients()))
-                .author(tenantService.fetchClientByTenantFromToken(token))
+                .authorizedClients(Objects.nonNull(form.getAuthorizedClients()) ? fetchService.fetchClients(form.getAuthorizedClients()) : null)
+                .author(userService.findUserByToken(token))
                 .build();
 
         BeanUtils.copyProperties(form.getLink(), link);
@@ -75,7 +80,7 @@ public class LinkStorageService implements StorageService {
     @Override
     public void update(@NonNull Long id, @NonNull UploadForm form, @NonNull String token) {
 
-        Link link = getLinkByIdAndAuthorizedClient(id, token);
+        Link link = getLinkByIdAndAuthorizedClient(id, token, true);
 
         link.setAuthorizedClients(fetchService.fetchClients(form.getAuthorizedClients()));
 
@@ -86,18 +91,18 @@ public class LinkStorageService implements StorageService {
 
     @Override
     public void delete(@NonNull Long id, @NonNull String token) {
-        Link link = getLinkByIdAndAuthorizedClient(id, token);
+        Link link = getLinkByIdAndAuthorizedClient(id, token, true);
         repository.delete(link);
     }
 
     @Override
     public Optional<LinkDto> find(@NonNull Long id, @NonNull String token) {
 
-        Link link = getLinkByIdAndAuthorizedClient(id, token);
+        Link link = getLinkByIdAndAuthorizedClient(id, token, false);
 
         LinkDto dto = LinkMapper.INSTANCE.toDto(link);
 
-        dto.setAuthorizedClientsId(StorageService.getIDFromClients(link.getAuthorizedClients()));
+        dto.setAuthorizedClientsId(GenericUtils.extractIDsFromList(link.getAuthorizedClients(), Client.class));
         dto.setStorage(Storage.LINK);
 
         return Optional.of(dto);
@@ -105,19 +110,24 @@ public class LinkStorageService implements StorageService {
 
     @Override
     public void updateAuthorizedClients(@NonNull Long id, @NonNull String token, @NonNull List<Long> authorizedClients) {
-        Link link = getLinkByIdAndAuthorizedClient(id, token);
+        Link link = getLinkByIdAndAuthorizedClient(id, token, true);
 
         link.setAuthorizedClients(fetchService.fetchClients(authorizedClients));
 
         repository.save(link);
     }
 
-    private Link getLinkByIdAndAuthorizedClient(@NonNull Long id, @NonNull String token){
-        Client client = tenantService.fetchClientByTenantFromToken(token);
+    private Link getLinkByIdAndAuthorizedClient(@NonNull Long id, @NonNull String token, Boolean validateAuthor){
+        User user = userService.findUserByToken(token);
 
-        Link link = repository.findByIdAndAuthorizedClientsOrAuthor(id, client, client).orElseThrow(
+        Link link = repository.findByIdAndAuthorizedClients(id, user.getClient()).or(() -> repository.findByIdAndAuthor(id, user))
+                .orElseThrow(
                 () -> new LinkNotFoundException("Link not found.", "The requested link doesn't exist or you don't have access to get it.")
         );
+
+        if(validateAuthor){
+            StorageService.validateAuthor(link, Link.class, user, "You're not the author of the link.");
+        }
 
         return link;
     }

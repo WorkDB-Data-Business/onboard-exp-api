@@ -224,14 +224,18 @@ public class UserService {
 
     }
 
-    public User findUserByEmail(String email) {
+    public User findUserByEmail(@NonNull String email) {
         return repository.findByEmailContainingIgnoreCase(email).orElseThrow(
                 () -> new UserNotFoundException(ExceptionMessageFactory.createNotFoundMessage("user", "email", email)));
     }
 
-    public User findUserById(Long id) {
+    public User findUserById(@NonNull Long id) {
         return repository.findById(id).orElseThrow(
                 () -> new UserNotFoundException(ExceptionMessageFactory.createNotFoundMessage("user", "ID", id.toString())));
+    }
+
+    public User findUserByToken(@NonNull String token){
+        return  findUserById(jwtUtils.getUserId(token));
     }
 
     private void encryptPassword(@NonNull UserDto user) {

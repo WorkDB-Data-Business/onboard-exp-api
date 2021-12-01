@@ -2,6 +2,7 @@ package br.com.harvest.onboardexperience.infra.storage.entities;
 
 import br.com.harvest.onboardexperience.domain.entities.BaseEntityAudit;
 import br.com.harvest.onboardexperience.domain.entities.Client;
+import br.com.harvest.onboardexperience.domain.entities.User;
 import lombok.*;
 import org.springframework.content.commons.annotations.ContentId;
 import org.springframework.content.commons.annotations.ContentLength;
@@ -28,7 +29,7 @@ public class HarvestFile extends BaseEntityAudit {
 
     @ManyToOne
     @JoinColumn(name = "author")
-    private Client author;
+    private User author;
 
     @Column(name = "file_path")
     private String contentPath;

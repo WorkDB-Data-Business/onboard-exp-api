@@ -1,5 +1,6 @@
 package br.com.harvest.onboardexperience;
 
+import java.io.FileNotFoundException;
 import java.nio.file.FileAlreadyExistsException;
 import java.util.ArrayList;
 import java.util.List;
@@ -45,6 +46,14 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST).contentType(MediaType.APPLICATION_JSON).body(e);
 	}
 
+	@ExceptionHandler({
+		ForbiddenAccess.class
+	})
+	public ResponseEntity<?> handleForbiddenAccessException(Exception e){
+		logger.error(e);
+		return ResponseEntity.status(HttpStatus.FORBIDDEN).contentType(MediaType.APPLICATION_JSON).body(e);
+	}
+
 	@ExceptionHandler(Exception.class)
 	public ResponseStatusException handleException(Exception e){
 		logger.error(e);
@@ -57,12 +66,10 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 	
 	@ExceptionHandler({CompanyRoleNotFoundException.class, UserNotFoundException.class, CoinNotFoundException.class,
 	ClientNotFoundException.class, RewardNotFoundException.class, PermissionNotFoundException.class,
-	GroupNotFoundException.class, PasswordResetTokenNotFoundException.class})
-	public ResponseEntity<?> handleNotFoundException(SubdomainNotFoundException e){
+	GroupNotFoundException.class, PasswordResetTokenNotFoundException.class, FileNotFoundException.class})
+	public ResponseEntity<?> handleNotFoundException(Exception e){
 		logger.error(e);
-		var message = new MessageBuilder().addMessage(e.getMessage()).withError(e.getMessage(), e.getMessage()).build();
-								  
-		return ResponseEntity.status(HttpStatus.BAD_REQUEST).contentType(MediaType.APPLICATION_JSON).body(message);
+		return ResponseEntity.status(HttpStatus.NOT_FOUND).contentType(MediaType.APPLICATION_JSON).body(e);
 	}
 	
 	@ExceptionHandler(PasswordResetTokenExpiredException.class)

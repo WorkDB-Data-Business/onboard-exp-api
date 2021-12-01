@@ -2,6 +2,7 @@ package br.com.harvest.onboardexperience.infra.storage.repositories;
 
 
 import br.com.harvest.onboardexperience.domain.entities.Client;
+import br.com.harvest.onboardexperience.domain.entities.User;
 import br.com.harvest.onboardexperience.infra.storage.entities.HarvestFile;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -18,6 +19,8 @@ public interface FileRepository extends JpaRepository<HarvestFile, Long> {
 
     Page<HarvestFile> findAllByAuthorizedClients(Client client, Pageable pageable);
 
-    Optional<HarvestFile> findByIdAndAuthorizedClientsOrAuthor(Long id, Client client, Client author);
+    Optional<HarvestFile> findByIdAndAuthorizedClients(Long id, Client client);
+
+    Optional<HarvestFile> findByIdAndAuthor(Long id, User author);
 
 }
