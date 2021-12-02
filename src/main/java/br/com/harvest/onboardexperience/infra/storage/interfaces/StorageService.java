@@ -1,8 +1,11 @@
 package br.com.harvest.onboardexperience.infra.storage.interfaces;
 
 import br.com.harvest.onboardexperience.domain.entities.Client;
+import br.com.harvest.onboardexperience.domain.entities.User;
+import br.com.harvest.onboardexperience.domain.exceptions.ForbiddenAccess;
 import br.com.harvest.onboardexperience.domain.exceptions.GenericUploadException;
 import br.com.harvest.onboardexperience.infra.storage.dtos.UploadForm;
+import br.com.harvest.onboardexperience.utils.GenericUtils;
 import lombok.NonNull;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ObjectUtils;
@@ -14,6 +17,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -22,32 +26,16 @@ public interface StorageService {
 	void save(@NonNull UploadForm form, @NonNull String token);
 	void validate(@NonNull UploadForm form);
 	Page<?> findAll(@NonNull String token, Pageable pageable);
-	void update(@NonNull Long id, @NonNull UploadForm form, @NonNull String token);
-	void delete(@NonNull Long id, @NonNull String token);
-	Optional<?> find(@NonNull Long id, @NonNull String token);
-	void updateAuthorizedClients(@NonNull Long id, @NonNull String token, @NonNull  List<Long> authorizedClients);
+	void update(@NonNull Long id, @NonNull UploadForm form, @NonNull String token) throws Exception;
+	void delete(@NonNull Long id, @NonNull String token) throws Exception;
+	Optional<?> find(@NonNull Long id, @NonNull String token) throws Exception;
+	void updateAuthorizedClients(@NonNull Long id, @NonNull String token, @NonNull  List<Long> authorizedClients) throws Exception;
 
-
-	static Client getAuthor(List<Client> authorizedClients){
-		if(ObjectUtils.isNotEmpty(authorizedClients)){
-			return authorizedClients.get(0);
+	static void validateAuthor(Object object, Class<?> classToValidate, User user, String messageError){
+		User author = (User) GenericUtils.executeMethodFromGenericClass(classToValidate, "getAuthor", Optional.of(object));
+		if(!user.equals(author)){
+			throw new ForbiddenAccess(messageError);
 		}
-		return null;
-	}
-
-	static void validateAuthor(Client client, List<Client> authorizedClients){
-		if(!client.equals(getAuthor(authorizedClients))){
-			throw new GenericUploadException("Only the author can update a file.", "The client who request isn't the author" +
-					" of the file");
-		}
-	}
-
-	static List<Long> getIDFromClients(List<Client> clients){
-		List<Long> ids = new ArrayList<>();
-		if(ObjectUtils.isNotEmpty(clients)){
-			ids = clients.stream().mapToLong(client -> client.getId()).boxed().collect(Collectors.toList());
-		}
-		return ids;
 	}
 
 	static String encodeFileToBase64(InputStream inputStream){

@@ -37,7 +37,6 @@ public class HarvestLibraryController {
 
     @ResponseStatus(HttpStatus.OK)
     @Operation(description = "Faz upload de arquivos e links na biblioteca da Harvest.")
-    @PreAuthorize("hasAuthority('MASTER')")
     @PostMapping
     public void upload(@ModelAttribute LinkForm dto,
                        @RequestParam(value = "authorizedClients", required = false) List<Long> authorizedClients,
@@ -47,35 +46,31 @@ public class HarvestLibraryController {
     }
 
     @ResponseStatus(HttpStatus.OK)
-    @PreAuthorize("hasAuthority('MASTER')")
     @PutMapping(value="/{id}")
     public void upload(@PathVariable  @Pattern(regexp = RegexUtils.ONLY_NUMBERS) Long id,
                        @ModelAttribute LinkForm dto,
                        @RequestParam(value = "authorizedClients", required = false) List<Long> authorizedClients,
                        @RequestParam(value = "file", required = false) MultipartFile file,
                        @RequestHeader("Authorization") String token)
-            throws IOException {
+            throws Exception {
         storageAdapter.setForm(dto, file, authorizedClients, token).update(id);
     }
 
-    @PreAuthorize("hasAuthority('MASTER')")
     @DeleteMapping("/{id}/{type}")
     public void delete(@PathVariable  @Pattern(regexp = RegexUtils.ONLY_NUMBERS) Long id,
                        @PathVariable Storage type,
-                       @RequestHeader("Authorization") String token) {
+                       @RequestHeader("Authorization") String token) throws Exception {
         storageAdapter.setStorage(type).delete(id, token);
     }
 
-    @PreAuthorize("hasAuthority('MASTER') or hasAuthority('ADMIN') or hasAuthority('COLABORATOR')")
     @GetMapping("/{id}/{type}")
     public ResponseEntity<?> find(@PathVariable  @Pattern(regexp = RegexUtils.ONLY_NUMBERS) Long id,
                                   @PathVariable  Storage type,
-                                  @RequestHeader("Authorization") String token) {
+                                  @RequestHeader("Authorization") String token) throws Exception {
 
         return findByIdAndType(id, type, token);
     }
 
-    @PreAuthorize("hasAuthority('MASTER') or hasAuthority('ADMIN') or hasAuthority('COLABORATOR')")
     @GetMapping("/{type}")
     public ResponseEntity<Page<?>> findAll(Pageable pageable,
                                            @PathVariable  Storage type,
@@ -83,13 +78,12 @@ public class HarvestLibraryController {
         return findAllByClientAndType(type, token, pageable);
     }
 
-    @PreAuthorize("hasAuthority('MASTER')")
     @PatchMapping(value="/authorize/{id}/{type}")
     public void updateAuthorizedClients(@PathVariable  @Pattern(regexp = RegexUtils.ONLY_NUMBERS) Long id,
                                         @PathVariable  Storage type,
                        @RequestParam(value = "authorizedClients") List<Long> authorizedClients,
                        @RequestHeader("Authorization") String token)
-            throws IOException {
+            throws Exception {
         storageAdapter.setStorage(type).updateAuthorizedClients(id, token, authorizedClients);
     }
 
@@ -112,7 +106,7 @@ public class HarvestLibraryController {
         }
     }
 
-    private ResponseEntity<?> findByIdAndType(@NonNull Long id, @NonNull Storage type, @NonNull String token){
+    private ResponseEntity<?> findByIdAndType(@NonNull Long id, @NonNull Storage type, @NonNull String token) throws Exception {
         switch (type) {
             case HARVEST_FILE: {
                 Optional<?> file = this.storageAdapter.setStorage(Storage.HARVEST_FILE).find(id, token);

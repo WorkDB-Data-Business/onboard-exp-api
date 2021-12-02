@@ -1,24 +1,27 @@
 package br.com.harvest.onboardexperience.services;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 
-import br.com.harvest.onboardexperience.domain.dtos.forms.UserWelcomeForm;
+import br.com.harvest.onboardexperience.domain.entities.Client;
+import br.com.harvest.onboardexperience.domain.entities.CompanyRole;
+import br.com.harvest.onboardexperience.domain.entities.Role;
 import br.com.harvest.onboardexperience.domain.enumerators.RoleEnum;
+import br.com.harvest.onboardexperience.mappers.RoleMapper;
+import br.com.harvest.onboardexperience.utils.Constants;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import br.com.harvest.onboardexperience.configurations.application.PasswordConfiguration;
-import br.com.harvest.onboardexperience.domain.dtos.ClientDto;
-import br.com.harvest.onboardexperience.domain.dtos.CompanyRoleDto;
 import br.com.harvest.onboardexperience.domain.dtos.RoleDto;
 import br.com.harvest.onboardexperience.domain.dtos.UserDto;
 import br.com.harvest.onboardexperience.domain.dtos.forms.UserForm;
@@ -60,6 +63,21 @@ public class UserService {
     @Autowired
     private TenantService tenantService;
 
+    @Value(Constants.HARVEST_USER_USERNAME)
+    private String harvestUserUsername;
+
+    @Value(Constants.HARVEST_USER_PASSWORD)
+    private String harvestUserPassword;
+
+    @Value(Constants.HARVEST_USER_FIRST_NAME)
+    private String harvestUserFirstName;
+
+    @Value(Constants.HARVEST_USER_LAST_NAME)
+    private String harvestUserLastName;
+
+    @Value(Constants.HARVEST_USER_EMAIL)
+    private String harvestUserEmail;
+
 
     public UserDto create(@NonNull UserForm dto, String token) {
         UserDto userDto = convetFormToUserDto(dto, token);
@@ -95,9 +113,8 @@ public class UserService {
     private Set<RoleDto> convertUserRoles(@NonNull UserForm form){
         Set<RoleDto> rolesDto = new HashSet<>();
 
-        if (form.getIsAdmin()) rolesDto.add(roleService.findRoleByRole(RoleEnum.ADMIN));
-        if (form.getIsCol()) rolesDto.add(roleService.findRoleByRole(RoleEnum.COLABORATOR));
-        if (form.getIsMaster()) rolesDto.add(roleService.findRoleByRole(RoleEnum.MASTER));
+        if (form.getIsAdmin()) rolesDto.add(RoleMapper.INSTANCE.toDto(roleService.findRoleByRoleEnum(RoleEnum.ADMIN)));
+        if (form.getIsCol()) rolesDto.add(RoleMapper.INSTANCE.toDto(roleService.findRoleByRoleEnum(RoleEnum.EMPLOYEE)));
 
         return rolesDto;
     }
@@ -207,14 +224,18 @@ public class UserService {
 
     }
 
-    public User findUserByEmail(String email) {
+    public User findUserByEmail(@NonNull String email) {
         return repository.findByEmailContainingIgnoreCase(email).orElseThrow(
                 () -> new UserNotFoundException(ExceptionMessageFactory.createNotFoundMessage("user", "email", email)));
     }
 
-    public User findUserById(Long id) {
+    public User findUserById(@NonNull Long id) {
         return repository.findById(id).orElseThrow(
                 () -> new UserNotFoundException(ExceptionMessageFactory.createNotFoundMessage("user", "ID", id.toString())));
+    }
+
+    public User findUserByToken(@NonNull String token){
+        return  findUserById(jwtUtils.getUserId(token));
     }
 
     private void encryptPassword(@NonNull UserDto user) {
@@ -299,6 +320,47 @@ public class UserService {
 
         validateCpf(user, dto);
 
+    }
+
+    private User createHarvestUser(Client client, CompanyRole companyRole, Role masterRole){
+        return User.builder()
+                .id(Constants.HARVEST_USER_ID)
+                .firstName(harvestUserFirstName)
+                .lastName(harvestUserLastName)
+                .email(harvestUserEmail)
+                .username(harvestUserUsername)
+                .password(passwordConfiguration.encoder().encode(harvestUserPassword))
+                .isChangePasswordRequired(true)
+                .isActive(true)
+                .isFirstLogin(true)
+                .isExpired(false)
+                .isBlocked(false)
+                .client(client)
+                .isClient(true)
+                .companyRole(companyRole)
+                .roles(Set.of(masterRole))
+                .build();
+    }
+
+    private Boolean needToImport(User user){
+        return repository.findById(user.getId()).isEmpty();
+    }
+
+    public void saveHarvestUser() {
+
+        try {
+            Optional.of(createHarvestUser(clientService.getHarvestClient(),
+                            companyRoleService.getHarvestCompanyRole(),
+                            roleService.findRoleByRoleEnum(RoleEnum.MASTER)))
+                    .filter(this::needToImport)
+                    .ifPresent(user -> {
+                        repository.save(user);
+                        log.info("The load of harvest user occurred successful");
+                    });
+
+        } catch (Exception e) {
+            log.error("Occurred an error to load harvest user: " + e.getMessage(), e.getCause());
+        }
     }
 
 }

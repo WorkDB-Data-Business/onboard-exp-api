@@ -3,10 +3,12 @@ package br.com.harvest.onboardexperience.services;
 import br.com.harvest.onboardexperience.domain.dtos.ClientDto;
 import br.com.harvest.onboardexperience.domain.dtos.forms.CompanyRoleForm;
 import br.com.harvest.onboardexperience.domain.exceptions.CompanyRoleAlreadyExistsException;
+import br.com.harvest.onboardexperience.utils.Constants;
 import br.com.harvest.onboardexperience.utils.GenericUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -22,6 +24,9 @@ import br.com.harvest.onboardexperience.utils.JwtTokenUtils;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
+import java.text.MessageFormat;
+import java.util.Optional;
+
 @Slf4j
 @Service
 public class CompanyRoleService {
@@ -35,6 +40,11 @@ public class CompanyRoleService {
     @Autowired
     private TenantService tenantService;
 
+    @Value(Constants.HARVEST_COMPANY_ROLE_NAME)
+    private String harvestCompanyRole;
+
+    @Autowired
+    private ClientService clientService;
 
     public CompanyRoleDto create(@NonNull CompanyRoleForm form, @NonNull final String token) {
         CompanyRoleDto dto = convertFormToCompanyRoleDto(form, token);
@@ -129,4 +139,33 @@ public class CompanyRoleService {
     public void disableAllByClient(@NonNull final Client client) {
         repository.disableAllByClient(client.getId());
     }
+
+    public void saveHarvestCompanyRole() {
+        try {
+            Optional.of(createHarvestCompanyRole()).filter(this::needToImport)
+                    .ifPresent(companyRole -> {
+                        repository.save(companyRole);
+                        log.info("The load of harvest user's company role occurred successful");
+                    });
+
+        } catch (Exception e) {
+            log.error(MessageFormat.format("Occurred an error to load harvest user's company role: {1}", e.getMessage()), e.getCause());
+        }
+    }
+
+    public CompanyRole getHarvestCompanyRole(){
+        return repository.getById(Constants.HARVEST_COMPANY_ROLE_ID);
+    }
+
+    private Boolean needToImport(CompanyRole companyRole){
+        return repository.findByNameContainingIgnoreCase(companyRole.getName()).isEmpty();
+    }
+
+    private CompanyRole createHarvestCompanyRole(){
+        return CompanyRole.builder()
+                .isActive(true)
+                .name(harvestCompanyRole)
+                .client(clientService.getHarvestClient()).build();
+    }
+
 }

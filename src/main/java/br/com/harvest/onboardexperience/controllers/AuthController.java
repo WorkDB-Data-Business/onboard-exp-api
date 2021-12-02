@@ -78,8 +78,7 @@ public class AuthController {
 	@RequestMapping(value = "/auth", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.POST)
 	public ResponseEntity<?> createAuthenticationToken(@RequestBody JwtRequest authenticationRequest, HttpServletRequest request, HttpServletResponse 
 			response, TimeZone timeZone) throws Exception {
-		
-		
+
 		authenticate(authenticationRequest.getEmail(), authenticationRequest.getPassword());
 		
 		Boolean isFirstLogin = login.doFirstLoginByEmail(authenticationRequest.getEmail());

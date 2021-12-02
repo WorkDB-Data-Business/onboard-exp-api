@@ -190,11 +190,14 @@ CREATE TABLE IF NOT EXISTS public.tbfile(
     file_path CHARACTER VARYING,
     content_id CHARACTER VARYING,
     content_length BIGINT,
+    author BIGINT NOT NULL,
     mime_type CHARACTER VARYING,
     created_by CHARACTER VARYING,
     updated_by CHARACTER VARYING,
     created_at TIMESTAMP default now(),
     updated_at TIMESTAMP,
+
+  	FOREIGN KEY (author) REFERENCES tbuser(iduser),
 
     CONSTRAINT tbfile_pk PRIMARY KEY (idfile)
 );
@@ -203,12 +206,15 @@ CREATE TABLE IF NOT EXISTS public.tblink(
     idlink BIGSERIAL NOT NULL,
     description CHARACTER VARYING,
     link CHARACTER VARYING,
+    author BIGINT NOT NULL,
     content_type CHARACTER VARYING,
     is_active BOOLEAN NOT NULL,
     created_by CHARACTER VARYING,
     updated_by CHARACTER VARYING,
     created_at TIMESTAMP default now(),
     updated_at TIMESTAMP,
+
+	FOREIGN KEY (author) REFERENCES tbuser(iduser),
 
     CONSTRAINT tblink_pk PRIMARY KEY (idlink)
 );
