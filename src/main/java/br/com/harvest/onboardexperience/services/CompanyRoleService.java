@@ -40,8 +40,8 @@ public class CompanyRoleService {
     @Autowired
     private TenantService tenantService;
 
-    @Value(Constants.HARVEST_COMPANY_ROLE_NAME)
-    private String harvestCompanyRole;
+    @Value(Constants.Harvest.CompanyRole.NAME)
+    private String harvestCompanyRoleName;
 
     @Autowired
     private ClientService clientService;
@@ -154,7 +154,7 @@ public class CompanyRoleService {
     }
 
     public CompanyRole getHarvestCompanyRole(){
-        return repository.getById(Constants.HARVEST_COMPANY_ROLE_ID);
+        return repository.getById(Constants.Harvest.CompanyRole.ID);
     }
 
     private Boolean needToImport(CompanyRole companyRole){
@@ -164,7 +164,7 @@ public class CompanyRoleService {
     private CompanyRole createHarvestCompanyRole(){
         return CompanyRole.builder()
                 .isActive(true)
-                .name(harvestCompanyRole)
+                .name(harvestCompanyRoleName)
                 .client(clientService.getHarvestClient()).build();
     }
 

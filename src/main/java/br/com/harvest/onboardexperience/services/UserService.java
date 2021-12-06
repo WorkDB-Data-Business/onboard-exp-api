@@ -63,19 +63,19 @@ public class UserService {
     @Autowired
     private TenantService tenantService;
 
-    @Value(Constants.HARVEST_USER_USERNAME)
+    @Value(Constants.Harvest.User.USERNAME)
     private String harvestUserUsername;
 
-    @Value(Constants.HARVEST_USER_PASSWORD)
+    @Value(Constants.Harvest.User.PASSWORD)
     private String harvestUserPassword;
 
-    @Value(Constants.HARVEST_USER_FIRST_NAME)
+    @Value(Constants.Harvest.User.FIRST_NAME)
     private String harvestUserFirstName;
 
-    @Value(Constants.HARVEST_USER_LAST_NAME)
+    @Value(Constants.Harvest.User.LAST_NAME)
     private String harvestUserLastName;
 
-    @Value(Constants.HARVEST_USER_EMAIL)
+    @Value(Constants.Harvest.User.EMAIL)
     private String harvestUserEmail;
 
 
@@ -324,7 +324,7 @@ public class UserService {
 
     private User createHarvestUser(Client client, CompanyRole companyRole, Role masterRole){
         return User.builder()
-                .id(Constants.HARVEST_USER_ID)
+                .id(Constants.Harvest.User.ID)
                 .firstName(harvestUserFirstName)
                 .lastName(harvestUserLastName)
                 .email(harvestUserEmail)

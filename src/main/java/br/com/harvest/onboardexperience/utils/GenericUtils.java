@@ -2,6 +2,7 @@ package br.com.harvest.onboardexperience.utils;
 
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 
@@ -46,6 +47,14 @@ public class GenericUtils {
 				: null;
 	}
 
+	public static void sleep(TimeUnit unit, Integer time){
+		try {
+			unit.sleep(time);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
+
 	public static Boolean stringNullOrEmpty(String val) {
 		return (val == null || val.trim().isEmpty() );
 	}
@@ -60,6 +69,10 @@ public class GenericUtils {
 		}
 
 		return true;
+	}
+
+	public static String generateUUID(){
+		return UUID.randomUUID().toString();
 	}
 
 	public static List<Long> extractIDsFromList(@NonNull List<?> objects, Class<?> clazz){

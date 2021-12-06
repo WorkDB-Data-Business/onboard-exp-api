@@ -249,3 +249,18 @@ CREATE TABLE IF NOT EXISTS public.tbnotification_user(
 
     CONSTRAINT tbnotification_user_pk PRIMARY KEY (idnotification, iduser)
 );
+
+CREATE TABLE IF NOT EXISTS public.tbscorm(
+    idscorm CHARACTER VARYING NOT NULL,
+    idclient BIGINT NOT NULL,
+    title CHARACTER VARYING NOT NULL,
+
+    created_by CHARACTER VARYING,
+    updated_by CHARACTER VARYING,
+    created_at TIMESTAMP default now(),
+    updated_at TIMESTAMP,
+
+	FOREIGN KEY (idclient) REFERENCES tbclient(idclient),
+
+    CONSTRAINT tbscorm_pk PRIMARY KEY (idscorm)
+);
