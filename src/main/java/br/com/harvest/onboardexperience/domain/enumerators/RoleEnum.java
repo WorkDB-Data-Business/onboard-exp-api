@@ -11,7 +11,7 @@ public enum RoleEnum {
 			Set.of(PermissionEnum.DELETE, PermissionEnum.READ, PermissionEnum.UPDATE, PermissionEnum.WRITE)),
 	ADMIN("Admin",
 			Set.of(PermissionEnum.DELETE, PermissionEnum.READ, PermissionEnum.UPDATE, PermissionEnum.WRITE)),
-	EMPLOYEE("Employee",
+	COLABORATOR("Colaborator",
 			Set.of(PermissionEnum.READ, PermissionEnum.UPDATE));
 
 	private String name;

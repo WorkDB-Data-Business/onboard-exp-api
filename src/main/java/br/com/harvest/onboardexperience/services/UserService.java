@@ -114,7 +114,7 @@ public class UserService {
         Set<RoleDto> rolesDto = new HashSet<>();
 
         if (form.getIsAdmin()) rolesDto.add(RoleMapper.INSTANCE.toDto(roleService.findRoleByRoleEnum(RoleEnum.ADMIN)));
-        if (form.getIsCol()) rolesDto.add(RoleMapper.INSTANCE.toDto(roleService.findRoleByRoleEnum(RoleEnum.EMPLOYEE)));
+        if (form.getIsCol()) rolesDto.add(RoleMapper.INSTANCE.toDto(roleService.findRoleByRoleEnum(RoleEnum.COLABORATOR)));
 
         return rolesDto;
     }
