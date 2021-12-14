@@ -1,23 +1,20 @@
 package br.com.harvest.onboardexperience.infra.scorm.dtos;
 
-import br.com.harvest.onboardexperience.infra.scorm.entities.ScormRegistration;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.rusticisoftware.cloud.v2.client.model.CourseSchema;
-import lombok.*;
-import org.apache.commons.lang3.ObjectUtils;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-import javax.persistence.OneToMany;
 import java.time.OffsetDateTime;
 import java.util.List;
-import java.util.Set;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(callSuper = false)
-public class ScormDto {
+public class ScormCourseDto {
 
     @JsonProperty("id")
     private String id;
@@ -43,13 +40,4 @@ public class ScormDto {
     @JsonProperty("tags")
     private List<String> tags;
 
-    @JsonIgnore
-    private Set<ScormRegistrationDto> registrations;
-
-    public Integer getRegistrationCount() {
-        if(ObjectUtils.isEmpty(this.registrations)){
-            return 0;
-        }
-        return this.registrations.size();
-    }
 }

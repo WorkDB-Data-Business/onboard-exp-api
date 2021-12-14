@@ -46,7 +46,9 @@ CREATE TABLE IF NOT EXISTS public.tbuser(
 	is_client BOOLEAN NOT NULL,
 	is_first_login BOOLEAN NOT NULL,
 	is_change_password_required BOOLEAN NOT NULL,
+	idscorm_learner CHARACTER VARYING NOT NULL,
 	idclient BIGINT NOT NULL,
+
 	created_by CHARACTER VARYING,
 	updated_by CHARACTER VARYING,
 	created_at TIMESTAMP default now(),
@@ -254,6 +256,10 @@ CREATE TABLE IF NOT EXISTS public.tbscorm(
     idscorm CHARACTER VARYING NOT NULL,
     idclient BIGINT NOT NULL,
     title CHARACTER VARYING NOT NULL,
+    created_on_scorm_cloud TIMESTAMP NOT NULL,
+    updated_on_scorm_cloud TIMESTAMP NOT NULL,
+    version NUMERIC NOT NULL,
+    course_learning_standard CHARACTER VARYING NOT NULL,
 
     created_by CHARACTER VARYING,
     updated_by CHARACTER VARYING,
@@ -263,4 +269,22 @@ CREATE TABLE IF NOT EXISTS public.tbscorm(
 	FOREIGN KEY (idclient) REFERENCES tbclient(idclient),
 
     CONSTRAINT tbscorm_pk PRIMARY KEY (idscorm)
+);
+
+CREATE TABLE IF NOT EXISTS public.tbscorm_registration(
+    idscorm_registration CHARACTER VARYING NOT NULL,
+    iduser BIGINT NOT NULL,
+    idscorm CHARACTER VARYING NOT NULL,
+    is_completed BOOLEAN NOT NULL,
+    is_active BOOLEAN NOT NULL,
+
+    created_by CHARACTER VARYING,
+    updated_by CHARACTER VARYING,
+    created_at TIMESTAMP default now(),
+    updated_at TIMESTAMP,
+
+	FOREIGN KEY (iduser) REFERENCES tbuser(iduser),
+	FOREIGN KEY (idscorm) REFERENCES tbscorm(idscorm),
+
+    CONSTRAINT tbscorm_registration_pk PRIMARY KEY (idscorm_registration)
 );

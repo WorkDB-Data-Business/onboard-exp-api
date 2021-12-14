@@ -2,7 +2,8 @@
 
 package br.com.harvest.onboardexperience.infra.scorm;
 
-import br.com.harvest.onboardexperience.infra.scorm.factories.ScormRegistrationFactory;
+import br.com.harvest.onboardexperience.infra.scorm.filters.ScormCourseFilter;
+import br.com.harvest.onboardexperience.infra.scorm.filters.ScormRegistrationFilter;
 import br.com.harvest.onboardexperience.utils.GenericUtils;
 import com.rusticisoftware.cloud.v2.client.ApiException;
 import com.rusticisoftware.cloud.v2.client.api.CourseApi;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 
@@ -51,19 +53,8 @@ public class ScormAPI {
         return proccessCourse(courseApi, jobId).getImportResult().getCourse();
     }
 
-    public void createRegistration(String courseId, LearnerSchema learner, String registrationId) throws ApiException {
-        registrationApi.createRegistration(ScormRegistrationFactory.createRegistrationSchema(courseId, learner, registrationId), null);
-    }
-
-    private LearnerSchema createLearnerSchema(@NonNull String learnerId,
-                                              @NonNull String email,
-                                              @NonNull String firstName,
-                                              @NonNull String lastName){
-        return new LearnerSchema()
-                .id(learnerId)
-                .email(email)
-                .firstName(firstName)
-                .lastName(lastName);
+    public void createRegistration(CreateRegistrationSchema schema) throws ApiException {
+        registrationApi.createRegistration(schema, null);
     }
 
     public String buildLaunchLink(String registrationId) throws ApiException {
@@ -76,32 +67,40 @@ public class ScormAPI {
                 null);
     }
 
-    public List<CourseSchema> getAllCourses() throws ApiException {
+    public List<CourseSchema> getAllCourses(@NonNull ScormCourseFilter filter) throws ApiException {
 
-        CourseListSchema response = courseApi.getCourses(null, null, null, null, null,
-                null, null, null, null, null);
+        CourseListSchema response = courseApi.getCourses(filter.getSince(), filter.getUntil(), filter.getDatetimeFilter(),
+                filter.getTags(), filter.getFilter(), filter.getFilterBy(), filter.getOrderBy(), null,
+                filter.getIncludeCourseMetadata(), filter.getIncludeRegistrationCount());
 
         List<CourseSchema> courseList = response.getCourses();
 
-        while (response.getMore() != null) {
-            response = courseApi.getCourses(null, null, null, null, null, null,
-                    null, response.getMore(), null, null);
+        while (Objects.nonNull(response.getMore())) {
+            response = courseApi.getCourses(filter.getSince(), filter.getUntil(), null,
+                    filter.getTags(), null,filter.getFilterBy(), filter.getOrderBy(), response.getMore(),
+                    true, true);
             courseList.addAll(response.getCourses());
         }
 
         return courseList;
     }
 
-    public List<RegistrationSchema> getAllRegistrations() throws ApiException {
-        RegistrationListSchema response = registrationApi.getRegistrations(null, null, null, null,
-                null, null, null, null, null, null, null,
-                null, null);
+    public CourseSchema getCourse(@NonNull String courseId) throws ApiException {
+        return courseApi.getCourse(courseId, true, true);
+    }
+
+    public List<RegistrationSchema> getAllRegistrations(@NonNull ScormRegistrationFilter filter) throws ApiException {
+        RegistrationListSchema response = registrationApi.getRegistrations(filter.getCourseId(), filter.getLearnerId(),
+                filter.getSince(), filter.getUntil(),filter.getDatetimeFilter(), filter.getTags(),
+                filter.getFilter(), filter.getFilterBy(), filter.getOrderBy(), null, filter.getIncludeChildResults(),
+                filter.getIncludeInteractionsAndObjectives(), filter.getIncludeRuntime());
 
         List<RegistrationSchema> registrationList = response.getRegistrations();
-        while (response.getMore() != null) {
-            response = registrationApi.getRegistrations(null, null, null, null, null,
-                    null, null, null, null, response.getMore(), null,
-                    null, null);
+        while (Objects.nonNull(response.getMore())) {
+            response = registrationApi.getRegistrations(filter.getCourseId(), filter.getLearnerId(),
+                    filter.getSince(), filter.getUntil(),filter.getDatetimeFilter(), filter.getTags(),
+                    filter.getFilter(), filter.getFilterBy(), filter.getOrderBy(), response.getMore(), filter.getIncludeChildResults(),
+                    filter.getIncludeInteractionsAndObjectives(), filter.getIncludeRuntime());
             registrationList.addAll(response.getRegistrations());
         }
 

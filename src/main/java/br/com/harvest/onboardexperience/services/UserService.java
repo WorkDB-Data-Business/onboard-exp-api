@@ -84,11 +84,18 @@ public class UserService {
 
         validateUser(userDto);
 
-        User user = repository.save(UserMapper.INSTANCE.toEntity(userDto));
+        User user = UserMapper.INSTANCE.toEntity(userDto);
+
+        setScormLearnerId(user);
+
+        user = repository.save(user);
 
         log.info("The user " + userDto.getUsername() + " was saved successful.");
         return UserMapper.INSTANCE.toDto(user);
+    }
 
+    private void setScormLearnerId(@NonNull User user){
+        user.setScormLearnerId(GenericUtils.generateUUID());
     }
 
     private UserDto convetFormToUserDto(UserForm form, String token) {
@@ -126,7 +133,6 @@ public class UserService {
         User user = repository.findByIdAndClient_Tenant(id, userDto.getClient().getTenant()).orElseThrow(
                 () -> new UserNotFoundException(ExceptionMessageFactory.createNotFoundMessage("user", "ID", id.toString())));
 
-        // TODO: create method to update password only.
         validateUser(user, userDto);
 
         BeanUtils.copyProperties(UserMapper.INSTANCE.toEntity(userDto), user,  "id", "client", "createdBy", "createdAt", "password");
@@ -334,6 +340,7 @@ public class UserService {
                 .isActive(true)
                 .isFirstLogin(true)
                 .isExpired(false)
+                .scormLearnerId(GenericUtils.generateUUID())
                 .isBlocked(false)
                 .client(client)
                 .isClient(true)

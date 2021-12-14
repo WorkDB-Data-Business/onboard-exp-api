@@ -97,5 +97,8 @@ public class User extends BaseEntityAudit {
 
 	@OneToMany(mappedBy = "user")
 	private List<RewardPurchase> rewards = new ArrayList<>();
+
+	@Column(name = "idscorm_learner")
+	private String scormLearnerId;
 	
 }

@@ -149,7 +149,7 @@ public class CompanyRoleService {
                     });
 
         } catch (Exception e) {
-            log.error(MessageFormat.format("Occurred an error to load harvest user's company role: {1}", e.getMessage()), e.getCause());
+            log.error("Occurred an error to load harvest user's company role.", e.getMessage(), e.getCause());
         }
     }
 
