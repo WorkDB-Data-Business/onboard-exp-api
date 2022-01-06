@@ -116,7 +116,7 @@ public class UserController {
 	}
 
 	@Operation(description = "Realiza a inserção do formulário de boas-vindas de um usuário no banco de dados.")
-	@PreAuthorize("hasAuthority('ADMIN') or hasAuthority('COLABORATOR')")
+	@PreAuthorize("hasAuthority('ADMIN') or hasAuthority('COLABORATOR') or hasAuthority('MASTER')")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	@PatchMapping(path = "/welcome/{id}")
 	public void welcome(@PathVariable  @Pattern(regexp = RegexUtils.ONLY_NUMBERS) Long id, @RequestBody @NotNull @Valid UserWelcomeForm form, @RequestHeader("Authorization") String token) {
