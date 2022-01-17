@@ -41,7 +41,7 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 			InvalidCnpjException.class, InvalidCpfException.class, RewardAlreadyExistsException.class,
 			FileAlreadyExistsException.class
 	})
-	public ResponseEntity<?> handleBusinessException(BusinessException e){
+	public ResponseEntity<?> handleBusinessException(Exception e){
 		logger.error(e);
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST).contentType(MediaType.APPLICATION_JSON).body(e);
 	}
