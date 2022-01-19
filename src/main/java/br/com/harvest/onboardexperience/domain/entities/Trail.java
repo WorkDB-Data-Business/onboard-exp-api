@@ -6,7 +6,7 @@ import javax.persistence.*;
 
 @Data
 @Entity()
-@Table(name = "tb_trail",schema = "public")
+@Table(name = "tbtrail",schema = "public")
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -16,7 +16,7 @@ public class Trail extends BaseEntityAudit{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_trail")
+    @Column(name = "idtrail")
     private Long id;
 
     @Column(name = "name_trail")
@@ -32,7 +32,7 @@ public class Trail extends BaseEntityAudit{
     private String arquivoTrilhaNome;
 
     @ManyToOne
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "iduser")
     private User userCreatedTrail;
 
     @Column(name = "is_active")
