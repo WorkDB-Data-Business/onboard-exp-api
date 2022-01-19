@@ -10,11 +10,11 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class TrilhaForm {
+public class TrailForm {
 
-    @JsonProperty("nomeTrilha")
-    private String nomeTrilha;
+    @JsonProperty("name")
+    private String nameTrail;
 
-    @JsonProperty("descricaoTrilha")
+    @JsonProperty("des")
     private String descricaoTrilha;
 }

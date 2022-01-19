@@ -10,12 +10,12 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class TrilhaDTO {
+public class TrailDTO {
 
     private Long id;
-    private String nomeTrilha;
+    private String nameTRail;
     private String arquivoTrilhaNome;
     private byte[] arquivoTrilhaBytes;
-    private String descricaoTrilha;
-    private User userCreatedTrilha;
+    private String descriotionTrail;
+    private User userCreatedTrail;
 }

@@ -6,35 +6,40 @@ import javax.persistence.*;
 
 @Data
 @Entity()
-@Table(name = "tb_trilha",schema = "public")
+@Table(name = "tb_trail",schema = "public")
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @EqualsAndHashCode(callSuper = true)
-public class Trilha extends BaseEntityAudit{
+public class Trail extends BaseEntityAudit{
 
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_trilha")
+    @Column(name = "id_trail")
     private Long id;
 
-    @Column(name = "descricao_trilha")
-    private String descricaoTrilha;
+    @Column(name = "name_trail")
+    private String nameTrail;
 
-
-    @Column(name = "nome_trilha")
-    private String nomeTrilha;
+    @Column(name = "description_trail")
+    private String descriptionTrail;
 
     @Column(name = "arquivo_trilha")
     private byte[] arquivoTrilhaBytes;
-
 
     @Column(name = "arquivo_trilha_nome")
     private String arquivoTrilhaNome;
 
     @ManyToOne
     @JoinColumn(name = "user_id")
-    private User userCreatedTrilha;
+    private User userCreatedTrail;
+
+    @Column(name = "is_active")
+    private Boolean isActive;
+
+    @Column(name = "is_available")
+    private Boolean isAvailable;
+
 
 }
