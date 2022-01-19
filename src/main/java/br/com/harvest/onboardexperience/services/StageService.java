@@ -6,6 +6,7 @@ import br.com.harvest.onboardexperience.domain.dtos.StageDto;
 import br.com.harvest.onboardexperience.domain.entities.Coin;
 import br.com.harvest.onboardexperience.domain.entities.Stage;
 import br.com.harvest.onboardexperience.domain.exceptions.BusinessException;
+import br.com.harvest.onboardexperience.domain.exceptions.RewardNotFoundException;
 import br.com.harvest.onboardexperience.domain.exceptions.StageNotFoundExecption;
 import br.com.harvest.onboardexperience.domain.factories.ExceptionMessageFactory;
 import br.com.harvest.onboardexperience.mappers.ClientMapper;
@@ -152,6 +153,13 @@ public class StageService {
 
         String isEnabled = stage.getIsActive().equals(true) ? "Disabled" : "enabled";
         log.info("The Stage with ID" + id + "Was" + isEnabled + "Sucessful");
+
+    }
+
+    public Stage findRewardByIdAndTenant(Long id, String token) {
+        String tenant = jwtUtils.getUserTenant(token);
+        return repository.findByIdAndClient_Tenant(id, tenant).orElseThrow(
+                () -> new RewardNotFoundException(ExceptionMessageFactory.createNotFoundMessage("stage", "ID", id.toString())));
 
     }
 }

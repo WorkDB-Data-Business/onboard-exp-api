@@ -28,6 +28,9 @@ public class Stage extends BaseEntityAudit {
     @Column(name = "description")
     private String description;
 
+    @Column(name = "amount_coins")
+    private BigInteger amountCoins;
+
     @ManyToOne
     @JoinColumn(name = "idclient")
     private Client client;
@@ -41,5 +44,11 @@ public class Stage extends BaseEntityAudit {
 
     @Column(name = "is_available")
     private Boolean isAvailable;
+
+    @Column(name = "is_prerequisite")
+    private Boolean isPrerequisite;
+
+    @Column(name = "is_muted")
+    private Boolean isMuted;
 
 }

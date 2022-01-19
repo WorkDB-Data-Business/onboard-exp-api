@@ -1,7 +1,9 @@
 package br.com.harvest.onboardexperience.services;
 
+import br.com.harvest.onboardexperience.domain.entities.Reward;
 import br.com.harvest.onboardexperience.domain.enumerators.FileTypeEnum;
 import br.com.harvest.onboardexperience.domain.exceptions.BusinessException;
+import br.com.harvest.onboardexperience.domain.exceptions.RewardNotFoundException;
 import br.com.harvest.onboardexperience.infra.storage.services.ImageStorageService;
 import br.com.harvest.onboardexperience.mappers.ClientMapper;
 import br.com.harvest.onboardexperience.utils.GenericUtils;
@@ -162,4 +164,11 @@ public class CoinService {
         }
     }
 
+    public Coin findRewardByIdAndTenant(Long id, String token) {
+        String tenant = jwtUtils.getUserTenant(token);
+        return repository.findByIdAndClient_Tenant(id, tenant).orElseThrow(
+                () -> new CoinNotFoundException(ExceptionMessageFactory.createNotFoundMessage("C", "ID", id.toString())));
+    }
+
 }
+

@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonProperty.Access;
 import lombok.*;
 
+import javax.persistence.Column;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -28,11 +29,19 @@ public class StageDto {
 	@Size(min = ValidationUtils.MIN_SIZE_DESCRIPTION)
 	private String description;
 
+	private Long amountCoins;
+
 	@Builder.Default
 	private Boolean isActive = true;
 
 	@Builder.Default
 	private Boolean isAvailable = false;
+
+	@Builder.Default
+	private Boolean isPrerequisite = false;
+
+	@Builder.Default
+	private Boolean isMuted = false;
 
 	private Long coinId;
 
