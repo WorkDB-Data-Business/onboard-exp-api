@@ -1,10 +1,7 @@
 package br.com.harvest.onboardexperience.usecases;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 import javax.management.relation.RoleNotFoundException;
 import javax.servlet.http.HttpServletRequest;
@@ -195,7 +192,8 @@ public class UserUseCase {
                 .model("forgot_password.html")
                 .receivers(Set.of(user.getEmail()))
                 .subject("Recuperação de senha")
-                .variables(Map.of("name", user.getNickname(), "link", buildLinkForPasswordReset(token, request)))
+                .variables(Map.of("name", Objects.isNull(user.getNickname()) ? user.getFirstName() : user.getNickname(),
+                        "link", buildLinkForPasswordReset(token, request)))
                 .build();
     }
 
