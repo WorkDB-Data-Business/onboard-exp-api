@@ -3,6 +3,8 @@ package br.com.harvest.onboardexperience.domain.entities;
 import lombok.*;
 
 import javax.persistence.*;
+import java.util.List;
+import java.util.Set;
 
 @Data
 @Entity()
@@ -12,7 +14,6 @@ import javax.persistence.*;
 @Builder
 @EqualsAndHashCode(callSuper = true)
 public class Trail extends BaseEntityAudit{
-
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -40,6 +41,13 @@ public class Trail extends BaseEntityAudit{
 
     @Column(name = "is_available")
     private Boolean isAvailable;
+
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "tbtrail_stage",
+            joinColumns = @JoinColumn(name = "idtrail"),
+            inverseJoinColumns = @JoinColumn(name = "idstage"))
+    private List<Stage> stages;
 
 
 }

@@ -49,6 +49,7 @@ public class UserStageUseCase {
 
     // Retorna com todas as etapas disponiveis
     public List<StageDto> findAllStagesAvailables(@NonNull StageDto dto, MultipartFile file, String token) {
+
         String tenant = jwtUtils.getUserTenant(token);
 
         List<Stage> stages = repository.findAllByIsAvailableAndClient_Tenant(true, tenant);

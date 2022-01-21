@@ -58,7 +58,6 @@ CREATE TABLE IF NOT EXISTS public.tbuser(
 	CONSTRAINT tbuser_pk PRIMARY KEY (iduser)
 );
 
-		
 
 CREATE TABLE IF NOT EXISTS public.tbrole(
 	idrole bigserial NOT NULL,

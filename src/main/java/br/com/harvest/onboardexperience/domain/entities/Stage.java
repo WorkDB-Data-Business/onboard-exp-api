@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.math.BigInteger;
+import java.util.List;
 
 @Data
 @EqualsAndHashCode
@@ -50,5 +51,7 @@ public class Stage extends BaseEntityAudit {
 
     @Column(name = "is_muted")
     private Boolean isMuted;
+
+
 
 }

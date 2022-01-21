@@ -6,7 +6,7 @@ import br.com.harvest.onboardexperience.domain.entities.Trail;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class TrailMapper {
+public interface TrailMapper {
 
     public static Trail toEntity(TrailDTO dto){
         return Trail

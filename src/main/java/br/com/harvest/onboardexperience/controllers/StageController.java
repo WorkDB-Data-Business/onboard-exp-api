@@ -86,10 +86,11 @@ public class StageController {
     public void disable(@PathVariable  @Pattern(regexp = RegexUtils.ONLY_NUMBERS) Long id, @RequestHeader("Authorization") String token) {
         service.disableStage(id, token);
     }
+
     @Operation(description = "Retorna com todas as etapas disponiveis.")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('ADMIN')")
-    @GetMapping(path ="/stagesavailable", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path ="/stagesavailables", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<StageDto>> findByStageAvailable (StageDto dto, @RequestParam("file") MultipartFile file, @RequestHeader("Authorization") String token)throws RuntimeException {
         return ResponseEntity.ok().body(usecase.findAllStagesAvailables(dto,file,token));
     }
