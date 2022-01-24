@@ -1,10 +1,12 @@
 package br.com.harvest.onboardexperience.controllers;
 
 
+import br.com.harvest.onboardexperience.domain.dtos.EventDto;
 import br.com.harvest.onboardexperience.domain.dtos.StageDto;
 import br.com.harvest.onboardexperience.domain.entities.Coin;
 import br.com.harvest.onboardexperience.domain.entities.Stage;
 import br.com.harvest.onboardexperience.domain.entities.UserCoin;
+import br.com.harvest.onboardexperience.services.EventService;
 import br.com.harvest.onboardexperience.services.StageService;
 import br.com.harvest.onboardexperience.usecases.UserStageUseCase;
 import br.com.harvest.onboardexperience.usecases.forms.StageForm;
@@ -42,6 +44,9 @@ public class StageController {
 
     @Autowired
     private UserStageUseCase usecase;
+
+    @Autowired
+    private EventService eventService;
 
     @Operation(description = "Retorna Etapas Cadastradas.")
     @PreAuthorize("hasAuthority('ADMIN')")
@@ -93,6 +98,12 @@ public class StageController {
     @GetMapping(path ="/stagesavailables", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<StageDto>> findByStageAvailable (StageDto dto, @RequestParam("file") MultipartFile file, @RequestHeader("Authorization") String token)throws RuntimeException {
         return ResponseEntity.ok().body(usecase.findAllStagesAvailables(dto,file,token));
+    }
+    @Operation(description = "Cria um evento dentro da Etapa.")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @PostMapping(path ="/event", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<EventDto> create(@Valid @ModelAttribute @NotNull EventDto dto, @RequestParam("file") MultipartFile file, @RequestHeader("Authorization") String token) throws RuntimeException{
+        return ResponseEntity.ok().body(eventService.create(dto,file,token));
     }
 
     @Operation(description = "Realiza a conclusão da etapa")

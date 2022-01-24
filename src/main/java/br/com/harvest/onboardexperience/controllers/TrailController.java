@@ -85,4 +85,6 @@ public class TrailController {
     public  ResponseEntity<StageDto> createNewStage(@Valid @ModelAttribute @NotNull StageDto dto, @RequestParam("file") MultipartFile file, @RequestHeader("Authorization") String token) throws RuntimeException{
         return ResponseEntity.ok().body(stageService.create(dto, file, token));
     }
+
+
 }

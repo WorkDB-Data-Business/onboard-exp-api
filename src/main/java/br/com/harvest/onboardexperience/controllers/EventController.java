@@ -49,13 +49,6 @@ public class EventController {
         return ResponseEntity.ok(eventService.searchEventId(id,token));
     }
 
-    @Operation(description = "Cria um evento dentro da Etapa.")
-    @PreAuthorize("hasAuthority('ADMIN')")
-    @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<EventDto> create(@Valid @ModelAttribute @NotNull EventDto dto, @RequestParam("file") MultipartFile file, @RequestHeader("Authorization") String token) throws RuntimeException{
-        return ResponseEntity.ok().body(eventService.create(dto,file,token));
-    }
-
     @Operation(description = "Realiza alteração de um evento.")
     @PreAuthorize("hasAuthority('ADMIN')")
     @PutMapping(path = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
