@@ -80,7 +80,17 @@ public class QuestionEventService {
 
         questionEvent = questionEventRepository.save(questionEvent);
 
-        log.info("The Question" + questionEvent.getName() + "was created sucessful");
+        return QuestionEventMapper.INSTANCE.toDto(questionEvent);
+    }
+
+    public QuestionEventDto noteQuestion(QuestionEventDto dto, MultipartFile file, String token) {
+
+        String tenant = jwtUtils.getUserTenant(token);
+        QuestionEvent questionEvent = QuestionEventMapper.INSTANCE.toEntity(dto);
+
+        setClient(questionEvent,token);
+
+        questionEvent = questionEventRepository.save(questionEvent);
 
         return QuestionEventMapper.INSTANCE.toDto(questionEvent);
     }

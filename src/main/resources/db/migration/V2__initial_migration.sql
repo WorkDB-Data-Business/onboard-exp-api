@@ -63,6 +63,7 @@ CREATE TABLE IF NOT EXISTS public.tbquestion(
 	idquestion BIGSERIAL NOT NULL,
 	name CHARACTER VARYING NOT NULL,
 	descripton CHARACTER VARYING NOT NULL,
+	note_question BIGINT NOT NULL,
 	is_active BOOLEAN NOT NULL,
 	is_multiplechoice BOOLEAN NOT NULL,
 	is_descriptive BOOLEAN NOT NULL,
@@ -71,7 +72,6 @@ CREATE TABLE IF NOT EXISTS public.tbquestion(
 
 	FOREIGN KEY (idevent) REFERENCES tbevent(idevent),
 	FOREIGN KEY (idclient) REFERENCES tbclient(idclient),
-
 
 	CONSTRAINT tbquestion_pk PRIMARY KEY (idquestion)
 

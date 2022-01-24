@@ -27,6 +27,9 @@ public class QuestionEvent {
     @Column(name = "descripton")
     private String descripton;
 
+    @Column(name = "note_question")
+    private Long noteQuestion;
+
     @Column(name = "is_active")
     private Boolean isActive;
 
