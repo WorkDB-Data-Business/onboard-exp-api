@@ -123,6 +123,14 @@
 			<artifactId>spring-boot-starter-data-rest</artifactId>
 		</dependency>
 
+		<dependency>
+			<groupId>com.rusticisoftware.cloud.v2.client</groupId>
+			<artifactId>scormcloud-api-v2-client</artifactId>
+			<version>2.0.0</version>
+			<scope>compile</scope>
+		</dependency>
+
+
 	</dependencies>
 
 	<build>

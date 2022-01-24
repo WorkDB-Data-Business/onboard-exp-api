@@ -42,16 +42,16 @@ public class ClientService {
     @Autowired
     private CompanyRoleService companyRoleService;
 
-    @Value(Constants.HARVEST_CLIENT_CNPJ)
+    @Value(Constants.Harvest.Client.CNPJ)
     private String harvestClientCnpj;
 
-    @Value(Constants.HARVEST_CLIENT_EMAIL)
+    @Value(Constants.Harvest.Client.EMAIL)
     private String harvestClientEmail;
 
-    @Value(Constants.HARVEST_CLIENT_NAME)
+    @Value(Constants.Harvest.Client.NAME)
     private String harvestClientName;
 
-    @Value(Constants.HARVEST_CLIENT_TENANT)
+    @Value(Constants.Harvest.Client.TENANT)
     private String harvestClientTenant;
 
 
@@ -203,7 +203,7 @@ public class ClientService {
     }
 
     public Client getHarvestClient(){
-        return ClientMapper.INSTANCE.toEntity(findById(Constants.HARVEST_CLIENT_ID));
+        return ClientMapper.INSTANCE.toEntity(findById(Constants.Harvest.Client.ID));
     }
 
     private Boolean needToImport(Client client){
@@ -224,7 +224,7 @@ public class ClientService {
 
     private Client createHarvestClient(){
        return Client.builder().cnpj(harvestClientCnpj)
-                .id(Constants.HARVEST_CLIENT_ID)
+                .id(Constants.Harvest.Client.ID)
                 .name(harvestClientName)
                 .isActive(true)
                 .isBlocked(false)

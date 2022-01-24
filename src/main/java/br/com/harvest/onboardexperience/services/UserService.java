@@ -63,19 +63,19 @@ public class UserService {
     @Autowired
     private TenantService tenantService;
 
-    @Value(Constants.HARVEST_USER_USERNAME)
+    @Value(Constants.Harvest.User.USERNAME)
     private String harvestUserUsername;
 
-    @Value(Constants.HARVEST_USER_PASSWORD)
+    @Value(Constants.Harvest.User.PASSWORD)
     private String harvestUserPassword;
 
-    @Value(Constants.HARVEST_USER_FIRST_NAME)
+    @Value(Constants.Harvest.User.FIRST_NAME)
     private String harvestUserFirstName;
 
-    @Value(Constants.HARVEST_USER_LAST_NAME)
+    @Value(Constants.Harvest.User.LAST_NAME)
     private String harvestUserLastName;
 
-    @Value(Constants.HARVEST_USER_EMAIL)
+    @Value(Constants.Harvest.User.EMAIL)
     private String harvestUserEmail;
 
 
@@ -84,11 +84,18 @@ public class UserService {
 
         validateUser(userDto);
 
-        User user = repository.save(UserMapper.INSTANCE.toEntity(userDto));
+        User user = UserMapper.INSTANCE.toEntity(userDto);
+
+        setScormLearnerId(user);
+
+        user = repository.save(user);
 
         log.info("The user " + userDto.getUsername() + " was saved successful.");
         return UserMapper.INSTANCE.toDto(user);
+    }
 
+    private void setScormLearnerId(@NonNull User user){
+        user.setScormLearnerId(GenericUtils.generateUUID());
     }
 
     private UserDto convetFormToUserDto(UserForm form, String token) {
@@ -126,7 +133,6 @@ public class UserService {
         User user = repository.findByIdAndClient_Tenant(id, userDto.getClient().getTenant()).orElseThrow(
                 () -> new UserNotFoundException(ExceptionMessageFactory.createNotFoundMessage("user", "ID", id.toString())));
 
-        // TODO: create method to update password only.
         validateUser(user, userDto);
 
         BeanUtils.copyProperties(UserMapper.INSTANCE.toEntity(userDto), user,  "id", "client", "createdBy", "createdAt", "password");
@@ -324,7 +330,7 @@ public class UserService {
 
     private User createHarvestUser(Client client, CompanyRole companyRole, Role masterRole){
         return User.builder()
-                .id(Constants.HARVEST_USER_ID)
+                .id(Constants.Harvest.User.ID)
                 .firstName(harvestUserFirstName)
                 .lastName(harvestUserLastName)
                 .email(harvestUserEmail)
@@ -334,6 +340,7 @@ public class UserService {
                 .isActive(true)
                 .isFirstLogin(true)
                 .isExpired(false)
+                .scormLearnerId(GenericUtils.generateUUID())
                 .isBlocked(false)
                 .client(client)
                 .isClient(true)

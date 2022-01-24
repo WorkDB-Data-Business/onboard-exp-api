@@ -120,7 +120,7 @@ public class UserUseCase {
         userRepository.save(user);
     }
 
-    public void changePassword(@NonNull final Long id, @NonNull ChangePasswordForm form, final String token){
+    public void changePassword(@NonNull final Long id, @NonNull final ChangePasswordForm form, @NonNull final String token){
         String tenant = jwtTokenUtils.getUserTenant(token);
 
         User user = userRepository.findByIdAndClient_Tenant(id, tenant).orElseThrow(
@@ -133,17 +133,15 @@ public class UserUseCase {
     }
 
     public void sendEmailToResetPassword(@NonNull EmailForm form, HttpServletRequest request) throws Exception {
-        User user = userRepository.findByEmailContainingIgnoreCase(form.getEmail()).orElse(null);
+        Optional<User> user = userRepository.findByEmailContainingIgnoreCase(form.getEmail());
 
-        if(user == null){
-            return;
+        if(user.isPresent()) {
+            String token = UUID.randomUUID().toString();
+
+            createPasswordResetToken(user.get(), token);
+
+            sendResetPasswordEmail(user.get(), token, request);
         }
-
-        String token = UUID.randomUUID().toString();
-
-        createPasswordResetToken(user, token);
-
-        sendResetPasswordEmail(user, token, request);
     }
 
     public void resetPassword(@NonNull String token, ChangePasswordForm passwordForm){
@@ -162,7 +160,7 @@ public class UserUseCase {
         List<PasswordResetToken> passwordResetTokens = passwordResetTokenRepository.findAllByUserAndIsExpired(user, false);
 
         if(ObjectUtils.isNotEmpty(passwordResetTokens)) {
-            passwordResetTokens.stream().forEach(passwordResetToken -> expirePasswordResetToken(passwordResetToken));
+            passwordResetTokens.forEach(this::expirePasswordResetToken);
         }
     }
 
