@@ -110,11 +110,11 @@ public class ScormService {
         return tempfile;
     }
 
-    public void registerOnScormCourse(@NonNull String scormID, @NonNull String token) throws ApiException, ScormCourseNotFoundException {
+    public String registerOnScormCourse(@NonNull String scormID, @NonNull String token) throws ApiException, ScormCourseNotFoundException {
         Scorm scorm = findByIdAndToken(scormID, token);
         ScormRegistration registration = createScormCourseRegistration(scorm, token);
         uploadRegistrationToScormCloud(registration);
-        registrationRepository.save(registration);
+        return registrationRepository.save(registration).getId();
     }
 
     public ScormRegistration findScormRegistrationByIdAndToken(@NonNull String courseId, @NonNull String registrationId, @NonNull String token){

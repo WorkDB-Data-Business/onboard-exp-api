@@ -55,12 +55,11 @@ public class ScormController {
         service.deleteScormCourse(scormID, token);
     }
 
-    @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(description = "Realiza o registro do usuário com o curso.")
     @PostMapping(value = "/{scormID}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public void registerOnCourse(@PathVariable String scormID,
+    public ResponseEntity<String> registerOnCourse(@PathVariable String scormID,
                                              @NonNull @RequestHeader("Authorization") String token) throws ApiException, ScormCourseNotFoundException {
-        service.registerOnScormCourse(scormID, token);
+        return ResponseEntity.ok(service.registerOnScormCourse(scormID, token));
     }
 
     @Operation(description = "Realiza a geração do link de execução do usuário com o curso.")
