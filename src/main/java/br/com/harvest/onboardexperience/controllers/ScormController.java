@@ -63,9 +63,17 @@ public class ScormController {
         service.registerOnScormCourse(scormID, token);
     }
 
+    @Operation(description = "Realiza a geração do link de execução do usuário com o curso.")
+    @GetMapping(value = "/courses/{courseId}/registrations/{registrationID}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> buildExecutionLinkCourse(@PathVariable("courseId") String courseId,
+                                                           @PathVariable("registrationID") String registrationID,
+                                                 @NonNull @RequestHeader("Authorization") String token) throws ApiException, ScormCourseNotFoundException {
+        return ResponseEntity.ok(service.generateScormExecutionLink(courseId, registrationID, token));
+    }
+
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(description = "Deleta o registro do usuário com o curso.")
-    @DeleteMapping(value = "/{scormID}/registration", produces = MediaType.APPLICATION_JSON_VALUE)
+    @DeleteMapping(value = "/{scormID}/registrations", produces = MediaType.APPLICATION_JSON_VALUE)
     public void deleteRegistrationCourse(@PathVariable String scormID,
                                  @NonNull @RequestHeader("Authorization") String token) throws ApiException, ScormCourseNotFoundException {
         service.deleteRegistration(scormID, token);

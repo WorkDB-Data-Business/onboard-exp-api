@@ -2,6 +2,7 @@ package br.com.harvest.onboardexperience.infra.scorm.services;
 
 import br.com.harvest.onboardexperience.domain.entities.Client;
 import br.com.harvest.onboardexperience.domain.entities.User;
+import br.com.harvest.onboardexperience.domain.exceptions.RegistrationNotFoundException;
 import br.com.harvest.onboardexperience.domain.exceptions.ScormCourseNotFoundException;
 import br.com.harvest.onboardexperience.infra.scorm.ScormAPI;
 import br.com.harvest.onboardexperience.infra.scorm.dtos.ScormDto;
@@ -114,6 +115,19 @@ public class ScormService {
         ScormRegistration registration = createScormCourseRegistration(scorm, token);
         uploadRegistrationToScormCloud(registration);
         registrationRepository.save(registration);
+    }
+
+    public ScormRegistration findScormRegistrationByIdAndToken(@NonNull String courseId, @NonNull String registrationId, @NonNull String token){
+        User user = userService.findUserById(tokenUtils.getUserId(token));
+        Scorm scorm = findByIdAndToken(courseId, token);
+
+        return registrationRepository.findByUserAndScormAndIsActive(user, scorm, true).orElseThrow(
+                () -> new RegistrationNotFoundException("The user has no register in this course.")
+        );
+    }
+
+    public String generateScormExecutionLink(@NonNull String courseId, @NonNull String registrationId, @NonNull String token) throws ApiException {
+        return scormAPI.buildLaunchLink(findScormRegistrationByIdAndToken(courseId, registrationId, token).getId());
     }
 
     public void deleteRegistration(@NonNull String scormId, @NonNull Long userId) throws ApiException {
