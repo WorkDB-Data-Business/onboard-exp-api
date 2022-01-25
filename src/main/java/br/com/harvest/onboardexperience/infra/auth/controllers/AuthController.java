@@ -1,4 +1,4 @@
-package br.com.harvest.onboardexperience.controllers;
+package br.com.harvest.onboardexperience.infra.auth.controllers;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -76,8 +76,7 @@ public class AuthController {
 
 	@Operation(description = "Realiza a autenticação e retorna o token JWT.")
 	@RequestMapping(value = "/auth", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.POST)
-	public ResponseEntity<?> createAuthenticationToken(@RequestBody JwtRequest authenticationRequest, HttpServletRequest request, HttpServletResponse 
-			response, TimeZone timeZone) throws Exception {
+	public ResponseEntity<?> createAuthenticationToken(@RequestBody JwtRequest authenticationRequest, TimeZone timeZone) {
 
 		authenticate(authenticationRequest.getEmail(), authenticationRequest.getPassword());
 		
@@ -91,7 +90,7 @@ public class AuthController {
 		return ResponseEntity.ok(new JwtResponse(token));
 	}
 	
-	private void authenticate(String username, String password) throws Exception {
+	private void authenticate(String username, String password) {
 		try {
 			authManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
 		} catch (DisabledException e) {
@@ -116,7 +115,7 @@ public class AuthController {
 	}
 
 	@RequestMapping(value = "/refreshtoken", method = RequestMethod.GET)
-	public ResponseEntity<?> refreshtoken(HttpServletRequest request) throws Exception {
+	public ResponseEntity<?> refreshtoken(HttpServletRequest request) {
 		DefaultClaims claims = (io.jsonwebtoken.impl.DefaultClaims) request.getAttribute("claims");
 
 		Map<String, Object> expectedMap = getMapFromIoJsonwebtokenClaims(claims);
@@ -134,7 +133,7 @@ public class AuthController {
 	@ResponseStatus(HttpStatus.OK)
 	@Operation(description = "Altera a senha pelo token.")
 	@PostMapping(value = "/auth/change-password/", produces = MediaType.APPLICATION_JSON_VALUE)
-	public void changePassword(@RequestParam String token, @NotNull @Valid @RequestBody ChangePasswordForm form) throws Exception {
+	public void changePassword(@RequestParam String token, @NotNull @Valid @RequestBody ChangePasswordForm form) {
 		userUseCase.resetPassword(token, form);
 	}
 

@@ -1,10 +1,7 @@
 package br.com.harvest.onboardexperience.usecases;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 import javax.management.relation.RoleNotFoundException;
 import javax.servlet.http.HttpServletRequest;
@@ -123,7 +120,7 @@ public class UserUseCase {
         userRepository.save(user);
     }
 
-    public void changePassword(@NonNull final Long id, @NonNull ChangePasswordForm form, final String token){
+    public void changePassword(@NonNull final Long id, @NonNull final ChangePasswordForm form, @NonNull final String token){
         String tenant = jwtTokenUtils.getUserTenant(token);
 
         User user = userRepository.findByIdAndClient_Tenant(id, tenant).orElseThrow(
@@ -136,17 +133,15 @@ public class UserUseCase {
     }
 
     public void sendEmailToResetPassword(@NonNull EmailForm form, HttpServletRequest request) throws Exception {
-        User user = userRepository.findByEmailContainingIgnoreCase(form.getEmail()).orElse(null);
+        Optional<User> user = userRepository.findByEmailContainingIgnoreCase(form.getEmail());
 
-        if(user == null){
-            return;
+        if(user.isPresent()) {
+            String token = UUID.randomUUID().toString();
+
+            createPasswordResetToken(user.get(), token);
+
+            sendResetPasswordEmail(user.get(), token, request);
         }
-
-        String token = UUID.randomUUID().toString();
-
-        createPasswordResetToken(user, token);
-
-        sendResetPasswordEmail(user, token, request);
     }
 
     public void resetPassword(@NonNull String token, ChangePasswordForm passwordForm){
@@ -165,7 +160,7 @@ public class UserUseCase {
         List<PasswordResetToken> passwordResetTokens = passwordResetTokenRepository.findAllByUserAndIsExpired(user, false);
 
         if(ObjectUtils.isNotEmpty(passwordResetTokens)) {
-            passwordResetTokens.stream().forEach(passwordResetToken -> expirePasswordResetToken(passwordResetToken));
+            passwordResetTokens.forEach(this::expirePasswordResetToken);
         }
     }
 
@@ -195,7 +190,8 @@ public class UserUseCase {
                 .model("forgot_password.html")
                 .receivers(Set.of(user.getEmail()))
                 .subject("Recuperação de senha")
-                .variables(Map.of("name", user.getNickname(), "link", buildLinkForPasswordReset(token, request)))
+                .variables(Map.of("name", Objects.isNull(user.getNickname()) ? user.getFirstName() : user.getNickname(),
+                        "link", buildLinkForPasswordReset(token, request)))
                 .build();
     }
 
