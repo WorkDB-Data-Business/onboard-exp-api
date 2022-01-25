@@ -2,6 +2,8 @@ package br.com.harvest.onboardexperience.infra.storage.entities;
 
 
 import br.com.harvest.onboardexperience.domain.entities.BaseEntityAudit;
+import br.com.harvest.onboardexperience.domain.entities.User;
+import ch.qos.logback.core.boolex.EvaluationException;
 import lombok.*;
 import org.springframework.content.commons.annotations.ContentId;
 import org.springframework.content.commons.annotations.ContentLength;
@@ -25,6 +27,10 @@ public class Image extends BaseEntityAudit {
 
     @Column(name = "name")
     private String name;
+
+
+    @Column(name = "author")
+    private User author;
 
     @Column(name = "file_path")
     private String contentPath;

@@ -1,5 +1,6 @@
 package br.com.harvest.onboardexperience.infra.storage.dtos;
 
+import br.com.harvest.onboardexperience.domain.entities.User;
 import br.com.harvest.onboardexperience.infra.storage.enumerators.Storage;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
@@ -16,6 +17,8 @@ public class FileDto {
     private Long id;
 
     private String name;
+
+    private User author;
 
     private List<Long> authorizedClientsId;
 
