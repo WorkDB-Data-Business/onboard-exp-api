@@ -22,6 +22,9 @@ public class UserCoinForm {
     private Long coinId;
 
     @NotNull
+    private Long StageId;
+
+    @NotNull
     @Min(ValidationUtils.MIN_COIN)
     private BigInteger amount;
 
