@@ -2,10 +2,7 @@ package br.com.harvest.onboardexperience.services;
 
 import br.com.harvest.onboardexperience.domain.dtos.CompanyRoleDto;
 import br.com.harvest.onboardexperience.domain.dtos.UserDto;
-import br.com.harvest.onboardexperience.domain.entities.Client;
-import br.com.harvest.onboardexperience.domain.entities.Coin;
-import br.com.harvest.onboardexperience.domain.entities.Reward;
-import br.com.harvest.onboardexperience.domain.entities.User;
+import br.com.harvest.onboardexperience.domain.entities.*;
 import br.com.harvest.onboardexperience.mappers.ClientMapper;
 import br.com.harvest.onboardexperience.mappers.CoinMapper;
 import br.com.harvest.onboardexperience.mappers.CompanyRoleMapper;
@@ -40,6 +37,9 @@ public class FetchService {
 
     @Autowired
     private RewardService rewardService;
+
+    @Autowired
+    private StageService stageService;
 
     private final Long HARVEST_CLIENT = 1L;
 
@@ -97,4 +97,8 @@ public class FetchService {
     public Reward fetchReward(@NonNull Long id, @NonNull String token){
         return rewardService.findRewardByIdAndTenant(id, token);
     }
+    public Stage fetchStage(@NonNull Long id, @NonNull String token){
+        return stageService.findRewardByIdAndTenant(id, token);
+    }
+
 }

@@ -169,4 +169,11 @@ public class CoinService {
         }
     }
 
+    public Coin findRewardByIdAndTenant(Long id, String token) {
+        String tenant = jwtUtils.getUserTenant(token);
+        return repository.findByIdAndClient_Tenant(id, tenant).orElseThrow(
+                () -> new CoinNotFoundException(ExceptionMessageFactory.createNotFoundMessage("C", "ID", id.toString())));
+    }
+
 }
+
