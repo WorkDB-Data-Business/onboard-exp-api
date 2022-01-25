@@ -76,3 +76,22 @@ CREATE TABLE IF NOT EXISTS public.tbquestion(
 	CONSTRAINT tbquestion_pk PRIMARY KEY (idquestion)
 
 );
+
+CREATE TABLE IF NOT EXISTS public.tbclient_file(
+    idfile BIGSERIAL NOT NULL,
+    name CHARACTER VARYING,
+    file_path CHARACTER VARYING,
+    content_id CHARACTER VARYING,
+    content_length BIGINT,
+    author BIGINT NOT NULL,
+    mime_type CHARACTER VARYING,
+    created_by CHARACTER VARYING,
+    updated_by CHARACTER VARYING,
+    created_at TIMESTAMP default now(),
+    updated_at TIMESTAMP,
+
+  	FOREIGN KEY (author) REFERENCES tbuser(iduser),
+
+    CONSTRAINT tbclient_file_pk PRIMARY KEY (idfile)
+);
+

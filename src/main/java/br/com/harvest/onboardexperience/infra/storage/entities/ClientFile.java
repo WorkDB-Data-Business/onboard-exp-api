@@ -1,7 +1,7 @@
 package br.com.harvest.onboardexperience.infra.storage.entities;
 
-
 import br.com.harvest.onboardexperience.domain.entities.BaseEntityAudit;
+import br.com.harvest.onboardexperience.domain.entities.Client;
 import br.com.harvest.onboardexperience.domain.entities.User;
 import lombok.*;
 import org.springframework.content.commons.annotations.ContentId;
@@ -9,18 +9,17 @@ import org.springframework.content.commons.annotations.ContentLength;
 import org.springframework.content.commons.annotations.MimeType;
 
 import javax.persistence.*;
+import java.util.List;
 
-@Entity
-@Table(name = "tbfile")
+@Entity(name = "tbclient_file")
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = false)
-public class Image extends BaseEntityAudit {
-
+public class ClientFile extends BaseEntityAudit {
     @Id
-    @Column(name = "idfile")
+    @Column(name = "idclient_file")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
@@ -34,7 +33,7 @@ public class Image extends BaseEntityAudit {
     @Column(name = "file_path")
     private String contentPath;
 
-    @ContentId
+      @ContentId
     private String contentId;
 
     @ContentLength
@@ -42,5 +41,6 @@ public class Image extends BaseEntityAudit {
 
     @MimeType
     private String mimeType;
+
 
 }
