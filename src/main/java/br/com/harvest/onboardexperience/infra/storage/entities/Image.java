@@ -29,7 +29,8 @@ public class Image extends BaseEntityAudit {
     private String name;
 
 
-    @Column(name = "author")
+    @ManyToOne
+    @JoinColumn(name = "author")
     private User author;
 
     @Column(name = "file_path")

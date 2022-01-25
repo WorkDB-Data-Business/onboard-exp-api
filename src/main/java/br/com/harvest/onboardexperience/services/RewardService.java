@@ -2,10 +2,12 @@ package br.com.harvest.onboardexperience.services;
 
 import br.com.harvest.onboardexperience.domain.dtos.forms.RewardForm;
 import br.com.harvest.onboardexperience.domain.entities.Client;
+import br.com.harvest.onboardexperience.domain.entities.User;
 import br.com.harvest.onboardexperience.mappers.ClientMapper;
 import br.com.harvest.onboardexperience.domain.enumerators.FileTypeEnum;
 import br.com.harvest.onboardexperience.infra.storage.services.ImageStorageService;
 import br.com.harvest.onboardexperience.mappers.CoinMapper;
+import br.com.harvest.onboardexperience.repositories.UserRepository;
 import br.com.harvest.onboardexperience.utils.GenericUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,9 +55,13 @@ public class RewardService {
 	@Autowired
 	private FetchService fetchService;
 
+	@Autowired
+	private UserRepository userRepository;
+
 	
 	public RewardDto create(@NonNull RewardForm form, MultipartFile file , @NonNull final String token) {
 		Client client = tenantService.fetchClientByTenantFromToken(token);
+		User user = userRepository.findById(jwtUtils.getUserId(token)).orElseThrow(() -> new RuntimeException("usuário não encontrado")) ;
 
 		RewardDto dto = convertFormToRewardDto(form, token);
 
@@ -63,7 +69,7 @@ public class RewardService {
 
 			validate(dto, client);
 			
-			saveImage(file, dto);
+			saveImage(file, dto, user);
 
 			Reward reward = repository.save(RewardMapper.INSTANCE.toEntity(dto));
 
@@ -78,6 +84,7 @@ public class RewardService {
 	
 	public RewardDto update(@NonNull Long id, @NonNull RewardForm form, MultipartFile file, @NonNull final String token) {
 		Client client = tenantService.fetchClientByTenantFromToken(token);
+		User user = userRepository.findById(jwtUtils.getUserId(token)).orElseThrow(() -> new RuntimeException("usuário não encontrado")) ;
 
 		Reward reward = repository.findByIdAndClient(id, client).orElseThrow(
 				() -> new RewardNotFoundException(ExceptionMessageFactory.createNotFoundMessage("reward", "ID", id.toString())));
@@ -85,7 +92,7 @@ public class RewardService {
 		RewardDto dto = convertFormToRewardDto(form, token);
 
 		validate(reward, dto, client);
-		saveImage(file, dto);
+		saveImage(file, dto, user);
 
 		BeanUtils.copyProperties(dto, reward, "id", "client", "createdAt", "createdBy");
 
@@ -146,8 +153,8 @@ public class RewardService {
 		checkIfRewardAlreadyExists(reward, client);
 	}
 
-	private void saveImage(MultipartFile file, RewardDto dto) {
-		dto.setImagePath(imageStorageService.uploadImage(file, dto.getClient().getCnpj(), dto.getName(), FileTypeEnum.REWARD));
+	private void saveImage(MultipartFile file, RewardDto dto, User author) {
+		dto.setImagePath(imageStorageService.uploadImage(file, dto.getClient().getCnpj(), dto.getName(), FileTypeEnum.REWARD, author));
 	}
 
 	private void validate(@NonNull Reward reward, @NonNull RewardDto dto, @NonNull final Client client) {

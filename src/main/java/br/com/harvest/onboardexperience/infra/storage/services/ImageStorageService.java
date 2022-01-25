@@ -1,5 +1,6 @@
 package br.com.harvest.onboardexperience.infra.storage.services;
 
+import br.com.harvest.onboardexperience.domain.entities.User;
 import br.com.harvest.onboardexperience.domain.enumerators.FileTypeEnum;
 import br.com.harvest.onboardexperience.domain.exceptions.GenericUploadException;
 import br.com.harvest.onboardexperience.infra.storage.entities.Image;
@@ -26,13 +27,14 @@ public class ImageStorageService {
 
     private final String FILE_FOLDER = "files";
 
-    public String uploadImage(@NonNull MultipartFile file, @NonNull String folder, String fileNameParam, @NonNull FileTypeEnum imageDomain){
+    public String uploadImage(@NonNull MultipartFile file, @NonNull String folder, String fileNameParam, @NonNull FileTypeEnum imageDomain, User author){
         String fileName = fileNameParam + "." + FilenameUtils.getExtension(file.getOriginalFilename());
 
         Image image = Image.builder()
                 .contentPath(createFilePath(file, folder, fileName, imageDomain))
                 .name(fileName)
                 .mimeType(file.getContentType())
+                .author(author)
                 .build();
 
         uploadImage(image, file);
