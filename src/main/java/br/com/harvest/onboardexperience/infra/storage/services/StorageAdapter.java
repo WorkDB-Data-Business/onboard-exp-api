@@ -37,17 +37,6 @@ public class StorageAdapter {
 
         return setStorage(storage);
     }
-    public StorageAdapter setFormClient(LinkForm link, MultipartFile file,List<Long> authorizedClients, @NonNull String token){
-
-        this.form = new UploadForm(file,link,authorizedClients);
-        this.token = token;
-
-        Storage storage = Objects.nonNull(form.getLink()) ? Storage.LINK : Storage.CLIENT_FILE;
-
-        return setStorage(storage);
-    }
-
-
 
     public StorageAdapter setStorage(@NonNull Storage storage){
         switch (storage) {
@@ -62,21 +51,7 @@ public class StorageAdapter {
         }
         return this;
     }
-    public StorageAdapter setStorageClient(@NonNull Storage storage){
-        switch (storage) {
-            case LINK:
-                this.storageService = this.context.getBean(LinkStorageService.class);
-                break;
-            case CLIENT_FILE:
-                this.storageService = this.context.getBean(HarvestLibraryStorageService.class);
-                break;
-            default:
-                this.storageService = null;
-        }
-        return this;
-    }
-
-    public void save(){
+        public void save(){
         validate();
         this.storageService.save(this.form, this.token);
     }
