@@ -1,11 +1,11 @@
 package br.com.harvest.onboardexperience.services;
 
-import br.com.harvest.onboardexperience.domain.entities.Reward;
+import br.com.harvest.onboardexperience.domain.entities.User;
 import br.com.harvest.onboardexperience.domain.enumerators.FileTypeEnum;
 import br.com.harvest.onboardexperience.domain.exceptions.BusinessException;
-import br.com.harvest.onboardexperience.domain.exceptions.RewardNotFoundException;
 import br.com.harvest.onboardexperience.infra.storage.services.ImageStorageService;
 import br.com.harvest.onboardexperience.mappers.ClientMapper;
+import br.com.harvest.onboardexperience.repositories.UserRepository;
 import br.com.harvest.onboardexperience.utils.GenericUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,11 +45,15 @@ public class CoinService {
     @Autowired
     private ImageStorageService imageStorageService;
 
+    @Autowired
+    private UserRepository userRepository;
+
     public CoinDto create(@NonNull CoinDto dto, MultipartFile file, String token) {
         String tenant = jwtUtils.getUserTenant(token);
+        User user = userRepository.findById(jwtUtils.getUserId(token)).orElseThrow(() -> new RuntimeException("usuário não encontrado")) ;
 
         validate(dto, tenant);
-        saveImage(file, dto);
+        saveImage(file, dto, user);
 
         Coin coin = repository.save(CoinMapper.INSTANCE.toEntity(dto));
 
@@ -60,6 +64,7 @@ public class CoinService {
 
     public CoinDto update(@NonNull Long id, @NonNull CoinDto dto, @NonNull MultipartFile file, @NonNull String token) {
         String tenant = jwtUtils.getUserTenant(token);
+        User user = userRepository.findById(jwtUtils.getUserId(token)).orElseThrow(() -> new RuntimeException("usuário não encontrado")) ;
 
         Coin coin = repository.findByIdAndClient_Tenant(id, tenant).orElseThrow(
                 () -> new CoinNotFoundException(ExceptionMessageFactory.createNotFoundMessage("coin", "ID", id.toString())));
@@ -68,7 +73,7 @@ public class CoinService {
 
         validate(coin, dto, tenant);
 
-        saveImage(file, dto);
+        saveImage(file, dto, user);
 
         BeanUtils.copyProperties(dto, coin, "id", "client", "createdAt", "createdBy", dto.getImagePath() == null ? "imagePath" : "");
 
@@ -125,8 +130,8 @@ public class CoinService {
             log.info("The coin with ID " + id + " was " + isEnabled + " successful.");
     }
 
-    private void saveImage(MultipartFile file, CoinDto dto) {
-        dto.setImagePath(imageStorageService.uploadImage(file, dto.getClient().getCnpj(), dto.getName(), FileTypeEnum.COIN));
+    private void saveImage(MultipartFile file, CoinDto dto, User author) {
+        dto.setImagePath(imageStorageService.uploadImage(file, dto.getClient().getCnpj(), dto.getName(), FileTypeEnum.COIN, author));
     }
 
     private Boolean checkIfIsSameCoin(@NonNull Coin coin, @NonNull CoinDto coinDto) {
