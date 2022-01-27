@@ -74,6 +74,7 @@ public class UserUseCase {
                     .isFirstLogin(true)
                     .isBlocked(false)
                     .isChangePasswordRequired(true)
+                    .scormLearnerId(GenericUtils.generateUUID())
                     .isExpired(false)
                     .lastName("User")
                     .isFirstLogin(true)
