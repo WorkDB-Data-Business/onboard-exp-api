@@ -172,6 +172,7 @@ public class HarvestLibraryStorageService implements StorageService {
         User user = userService.findUserByToken(token);
         return HarvestFile.builder()
                 .author(user)
+                .description(form.getDescription())
                 .authorizedClients(Objects.nonNull(form.getAuthorizedClients()) ? fetchService.fetchClients(form.getAuthorizedClients()) : null)
                 .contentPath(createFilePath(form.getFile(), user.getClient()))
                 .name(form.getFile().getOriginalFilename())
