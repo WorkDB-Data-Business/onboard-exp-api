@@ -17,10 +17,6 @@ public class LinkForm {
 
     private Long id;
 
-    @Size(min = 5)
-    @NotBlank
-    private String description;
-
     @NotBlank
     private String link;
 

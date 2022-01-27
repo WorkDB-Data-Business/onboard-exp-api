@@ -21,7 +21,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -51,10 +53,12 @@ public class LinkStorageService implements StorageService {
     public void save(@NonNull UploadForm form, @NonNull String token) {
         validate(form);
 
+        User author = userService.findUserByToken(token);
         Link link = Link
                 .builder()
-                .authorizedClients(Objects.nonNull(form.getAuthorizedClients()) ? fetchService.fetchClients(form.getAuthorizedClients()) : null)
-                .author(userService.findUserByToken(token))
+                .description(form.getDescription())
+                .authorizedClients(generateAuthorizedClients(form.getAuthorizedClients(), author))
+                .author(author)
                 .build();
 
         BeanUtils.copyProperties(form.getLink(), link);
@@ -82,11 +86,21 @@ public class LinkStorageService implements StorageService {
 
         Link link = getLinkByIdAndAuthorizedClient(id, token, true);
 
-        link.setAuthorizedClients(fetchService.fetchClients(form.getAuthorizedClients()));
+        link.setAuthorizedClients(generateAuthorizedClients(form.getAuthorizedClients(), link.getAuthor()));
 
         BeanUtils.copyProperties(form.getLink(), link, "id", "author", "createdBy", "createdAt");
 
         repository.save(link);
+    }
+
+    private List<Client> generateAuthorizedClients(List<Long> clientsId, @NonNull User user){
+        if(ObjectUtils.isEmpty(clientsId)){
+            clientsId = new ArrayList<>();
+        }
+
+        clientsId.add(user.getClient().getId());
+
+        return fetchService.fetchClients(clientsId);
     }
 
     @Override

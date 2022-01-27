@@ -40,9 +40,10 @@ public class HarvestLibraryController {
     @PostMapping
     public void upload(@ModelAttribute LinkForm dto,
                        @RequestParam(value = "authorizedClients", required = false) List<Long> authorizedClients,
+                       @RequestParam(value = "description", required = false) String description,
                        @RequestParam(value = "file", required = false) MultipartFile file,
                        @RequestHeader("Authorization") String token) {
-        storageAdapter.setForm(dto, file, authorizedClients, token).save();
+        storageAdapter.setForm(dto, file, authorizedClients, description, token).save();
     }
 
     @ResponseStatus(HttpStatus.OK)
@@ -50,10 +51,11 @@ public class HarvestLibraryController {
     public void upload(@PathVariable  @Pattern(regexp = RegexUtils.ONLY_NUMBERS) Long id,
                        @ModelAttribute LinkForm dto,
                        @RequestParam(value = "authorizedClients", required = false) List<Long> authorizedClients,
+                       @RequestParam(value = "description", required = false) String description,
                        @RequestParam(value = "file", required = false) MultipartFile file,
                        @RequestHeader("Authorization") String token)
             throws Exception {
-        storageAdapter.setForm(dto, file, authorizedClients, token).update(id);
+        storageAdapter.setForm(dto, file, authorizedClients, description, token).update(id);
     }
 
     @DeleteMapping("/{id}/{type}")

@@ -27,6 +27,9 @@ public class HarvestFile extends BaseEntityAudit {
     @Column(name = "name")
     private String name;
 
+    @Column(name = "description")
+    private String description;
+
     @ManyToOne
     @JoinColumn(name = "author")
     private User author;

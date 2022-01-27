@@ -1,0 +1,2 @@
+ALTER TABLE tbfile
+ADD description CHARACTER VARYING;

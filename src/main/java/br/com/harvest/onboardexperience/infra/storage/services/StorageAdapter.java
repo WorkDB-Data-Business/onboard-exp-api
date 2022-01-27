@@ -28,9 +28,9 @@ public class StorageAdapter {
 
     private String token;
 
-    public StorageAdapter setForm(LinkForm link, MultipartFile file, List<Long> authorizedClients, @NonNull String token){
+    public StorageAdapter setForm(LinkForm link, MultipartFile file, List<Long> authorizedClients, String description, @NonNull String token){
 
-        this.form = new UploadForm(file, link, authorizedClients);
+        this.form = new UploadForm(file, link, authorizedClients, description);
         this.token = token;
 
         Storage storage = Objects.nonNull(form.getLink()) ? Storage.LINK : Storage.HARVEST_FILE;
@@ -51,7 +51,12 @@ public class StorageAdapter {
         }
         return this;
     }
+<<<<<<< HEAD
         public void save(){
+=======
+
+    public void save(){
+>>>>>>> c896888945cca12305fdf6c50f9a12fb5f344d7e
         validate();
         this.storageService.save(this.form, this.token);
     }
