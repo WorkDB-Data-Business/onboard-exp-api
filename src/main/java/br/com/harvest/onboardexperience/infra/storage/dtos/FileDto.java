@@ -24,6 +24,8 @@ public class FileDto {
 
     private String fileEncoded;
 
+    private String description;
+
     private Long contentLength;
 
     private String mimeType;

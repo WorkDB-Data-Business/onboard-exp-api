@@ -22,6 +22,8 @@ public class FileSimpleDto {
 
     private Long contentLength;
 
+    private String description;
+
     private String mimeType;
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)

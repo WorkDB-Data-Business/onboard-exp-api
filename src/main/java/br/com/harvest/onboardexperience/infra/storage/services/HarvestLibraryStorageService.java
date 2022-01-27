@@ -172,6 +172,8 @@ public class HarvestLibraryStorageService implements StorageService {
 
         return HarvestFile.builder()
                 .author(user)
+                .description(form.getDescription())
+                .authorizedClients(Objects.nonNull(form.getAuthorizedClients()) ? fetchService.fetchClients(form.getAuthorizedClients()) : null)
                 .authorizedClients(generateAuthorizedClients(form.getAuthorizedClients(), user))
                 .contentPath(createFilePath(form.getFile(), user.getClient()))
                 .name(form.getFile().getOriginalFilename())
