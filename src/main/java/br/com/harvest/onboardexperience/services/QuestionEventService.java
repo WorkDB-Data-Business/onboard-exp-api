@@ -83,7 +83,8 @@ public class QuestionEventService {
         return QuestionEventMapper.INSTANCE.toDto(questionEvent);
     }
 
-    public QuestionEventDto noteQuestion(QuestionEventDto dto, MultipartFile file, String token) {
+
+    public QuestionEventDto noteQuestion(QuestionEventDto dto, String token) {
 
         String tenant = jwtUtils.getUserTenant(token);
         QuestionEvent questionEvent = QuestionEventMapper.INSTANCE.toEntity(dto);
@@ -93,6 +94,7 @@ public class QuestionEventService {
         questionEvent = questionEventRepository.save(questionEvent);
 
         return QuestionEventMapper.INSTANCE.toDto(questionEvent);
+
     }
 
 }

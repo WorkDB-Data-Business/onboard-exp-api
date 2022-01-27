@@ -57,11 +57,11 @@ public class QuestionEventController {
         return ResponseEntity.ok().body(questionEventService.answerQuestion(dto,file,token));
     }
 
-    @Operation(description = "Inserir nova ")
+    @Operation(description = "Inserir nota da pergunta ")
     @PreAuthorize("hasAuthority('ADMIN')")
     @PostMapping(path ="/v1/questions/note", produces =  MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<QuestionEventDto> noteQuestion(@Valid @ModelAttribute @NotNull QuestionEventDto dto, @RequestParam("file") MultipartFile file, @RequestHeader("Authorization") String token) throws RuntimeException{
-        return ResponseEntity.ok().body(questionEventService.noteQuestion(dto,file,token));
+    public ResponseEntity<QuestionEventDto> noteQuestion(@NotNull QuestionEventDto dto, @RequestHeader("Authorization") String token) throws RuntimeException{
+        return ResponseEntity.ok().body(questionEventService.noteQuestion(dto,token));
     }
 
 
