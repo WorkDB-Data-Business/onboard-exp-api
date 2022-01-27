@@ -12,6 +12,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -39,9 +40,10 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 			BusinessException.class, UserAlreadyExistsException.class, CoinAlreadyExistsException.class,
 			ClientAlreadyExistsException.class, CompanyRoleAlreadyExistsException.class,
 			InvalidCnpjException.class, InvalidCpfException.class, RewardAlreadyExistsException.class,
-			FileAlreadyExistsException.class
+			FileAlreadyExistsException.class, InsufficientCoinException.class, PasswordResetTokenExpiredException.class,
+			BadCredentialsException.class, UserBlockedException.class, UserDisabledException.class
 	})
-	public ResponseEntity<?> handleBusinessException(Exception e){
+	public ResponseEntity<?> handleBadRequestException(Exception e){
 		logger.error(e);
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST).contentType(MediaType.APPLICATION_JSON).body(e);
 	}
@@ -55,7 +57,7 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 	}
 
 	@ExceptionHandler(Exception.class)
-	public ResponseStatusException handleException(Exception e){
+	public ResponseEntity<?> handleException(Exception e){
 		logger.error(e);
 		throw new ResponseStatusException(
 				HttpStatus.INTERNAL_SERVER_ERROR,
@@ -72,18 +74,6 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 		return ResponseEntity.status(HttpStatus.NOT_FOUND).contentType(MediaType.APPLICATION_JSON).body(e);
 	}
 	
-	@ExceptionHandler(PasswordResetTokenExpiredException.class)
-	public ResponseEntity<?> handleAlreadyExpiredException(PasswordResetTokenExpiredException e){
-		logger.error(e);
-		return ResponseEntity.status(HttpStatus.BAD_REQUEST).contentType(MediaType.APPLICATION_JSON).body(e);
-	}
-
-	@ExceptionHandler(InsufficientCoinException.class)
-	public ResponseEntity<?> handleInsufficientCoinException(InsufficientCoinException e){
-		logger.error(e);
-		return ResponseEntity.status(HttpStatus.BAD_REQUEST).contentType(MediaType.APPLICATION_JSON).body(e);
-	}
-	
 	@Override
 	protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException e,
 			HttpHeaders headers, HttpStatus status, WebRequest request) {
@@ -97,7 +87,7 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 			errors.add(error);
 		}
 		
-		Message message = new MessageBuilder().addMessage("The object " + e.getBindingResult().getObjectName() + " has validation errors.")
+		Message message = new MessageBuilder().addMessage("The request has validation errors.")
 				.withErrors(errors)
 				.withComments("Please, fix the errors and try again.")
 				.build();

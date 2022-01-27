@@ -26,10 +26,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -161,21 +164,28 @@ public class HarvestLibraryStorageService implements StorageService {
     }
 
     private String createFilePath(MultipartFile file, Client client) {
-        return new StringBuilder(FILE_FOLDER)
-                .append("/")
-                .append(client.getCnpj())
-                .append("/")
-                .append(file.getOriginalFilename()).toString();
+        return MessageFormat.format("{0}/{1}/{2}", FILE_FOLDER, client.getCnpj(), file.getOriginalFilename());
     }
 
     private HarvestFile convertFormToFile(@NonNull UploadForm form, @NonNull String token) {
         User user = userService.findUserByToken(token);
+
         return HarvestFile.builder()
                 .author(user)
-                .authorizedClients(Objects.nonNull(form.getAuthorizedClients()) ? fetchService.fetchClients(form.getAuthorizedClients()) : null)
+                .authorizedClients(generateAuthorizedClients(form.getAuthorizedClients(), user))
                 .contentPath(createFilePath(form.getFile(), user.getClient()))
                 .name(form.getFile().getOriginalFilename())
                 .mimeType(form.getFile().getContentType()).build();
+    }
+
+    private List<Client> generateAuthorizedClients(List<Long> clientsId, @NonNull User user){
+        if(ObjectUtils.isEmpty(clientsId)){
+            clientsId = new ArrayList<>();
+        }
+
+        clientsId.add(user.getClient().getId());
+
+        return fetchService.fetchClients(clientsId);
     }
 
 }
