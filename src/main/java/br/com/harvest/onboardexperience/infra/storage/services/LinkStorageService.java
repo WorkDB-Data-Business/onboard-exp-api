@@ -56,6 +56,7 @@ public class LinkStorageService implements StorageService {
         User author = userService.findUserByToken(token);
         Link link = Link
                 .builder()
+                .description(form.getDescription())
                 .authorizedClients(generateAuthorizedClients(form.getAuthorizedClients(), author))
                 .author(author)
                 .build();
