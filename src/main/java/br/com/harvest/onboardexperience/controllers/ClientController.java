@@ -19,6 +19,8 @@ import br.com.harvest.onboardexperience.utils.RegexUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
+import java.util.List;
+
 @Tag(name = "Clients")
 @RestController
 @RequestMapping("/v1/clients")
@@ -33,6 +35,13 @@ public class ClientController {
 	@GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Page<ClientDto>> findAll(Pageable pageable) {
 		return ResponseEntity.ok(service.findAll(pageable));
+	}
+
+	@Operation(description = "Retorna os clientes cadastrados.")
+	@PreAuthorize("hasAuthority('MASTER')")
+	@GetMapping(value = "/list",produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<List<ClientDto>> findAll() {
+		return ResponseEntity.ok(service.findAll());
 	}
 
 	@Operation(description = "Retorna os cliente com base no valor buscado.")

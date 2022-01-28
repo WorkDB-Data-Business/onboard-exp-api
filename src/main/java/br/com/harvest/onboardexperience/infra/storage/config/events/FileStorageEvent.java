@@ -17,10 +17,6 @@ public class FileStorageEvent {
 
     @HandleBeforeSetContent
     public void handleBeforeSetContent(HarvestFile harvestFile) throws FileAlreadyExistsException {
-        if(fileRepository.findByContentPath(harvestFile.getContentPath()).isPresent()){
-            throw new FileAlreadyExistsException(harvestFile.getFileName() + " already exists.");
-        }
-
         if(fileRepository.existsByName(harvestFile.getName())){
             throw new FileAlreadyExistsException(harvestFile.getName() + " already exists.");
         }

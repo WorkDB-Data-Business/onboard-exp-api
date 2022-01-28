@@ -18,6 +18,8 @@ public class FileSimpleDto {
 
     private String contentId;
 
+    private String previewImagePath;
+
     private String contentPath;
 
     private Long contentLength;

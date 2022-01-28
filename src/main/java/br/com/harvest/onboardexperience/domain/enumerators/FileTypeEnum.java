@@ -5,7 +5,9 @@ import lombok.Getter;
 @Getter
 public enum FileTypeEnum {
 
-	COIN("coin"), REWARD("reward");
+	COIN("coin"),
+	REWARD("reward"),
+	IMAGE("image");
 
 	private String name;
 
