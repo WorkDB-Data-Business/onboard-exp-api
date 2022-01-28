@@ -37,7 +37,7 @@ build:
 	@mvn clean package -Dmaven.test.skip=true
 
 run: build
-	@docker-compose down -v
+	@docker-compose down
 	@docker-compose -f docker-compose.yml up --build -d --force-recreate
 
 install-env-variables-windows: configure-exec-policy

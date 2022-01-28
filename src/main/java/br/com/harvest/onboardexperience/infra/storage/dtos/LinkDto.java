@@ -20,6 +20,8 @@ public class LinkDto {
 
     private List<Long> authorizedClientsId;
 
+    private String previewImagePath;
+
     private String link;
 
     private ContentType contentType;
