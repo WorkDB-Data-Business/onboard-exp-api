@@ -10,6 +10,7 @@ import br.com.harvest.onboardexperience.infra.storage.dtos.FileSimpleDto;
 import br.com.harvest.onboardexperience.infra.storage.dtos.UploadForm;
 import br.com.harvest.onboardexperience.infra.storage.entities.HarvestFile;
 import br.com.harvest.onboardexperience.infra.storage.enumerators.Storage;
+import br.com.harvest.onboardexperience.infra.storage.filters.HarvestLibraryFilter;
 import br.com.harvest.onboardexperience.infra.storage.interfaces.StorageService;
 import br.com.harvest.onboardexperience.infra.storage.mappers.FileMapper;
 import br.com.harvest.onboardexperience.infra.storage.repositories.FileContentStore;
@@ -28,7 +29,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -90,7 +90,7 @@ public class HarvestLibraryStorageService implements StorageService {
     }
 
     @Override
-    public Page<FileSimpleDto> findAll(@NonNull String token, Pageable pageable) {
+    public Page<FileSimpleDto> findAll(@NonNull String token, HarvestLibraryFilter filter, Pageable pageable) {
         Client client = tenantService.fetchClientByTenantFromToken(token);
         return fileRepository.findAllByAuthorizedClients(client, pageable)
                 .map(FileMapper.INSTANCE::toFileSimpleDto)

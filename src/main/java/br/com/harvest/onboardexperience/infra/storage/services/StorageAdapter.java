@@ -3,6 +3,7 @@ package br.com.harvest.onboardexperience.infra.storage.services;
 import br.com.harvest.onboardexperience.infra.storage.dtos.LinkForm;
 import br.com.harvest.onboardexperience.infra.storage.dtos.UploadForm;
 import br.com.harvest.onboardexperience.infra.storage.enumerators.Storage;
+import br.com.harvest.onboardexperience.infra.storage.filters.HarvestLibraryFilter;
 import br.com.harvest.onboardexperience.infra.storage.interfaces.StorageService;
 import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,12 +30,10 @@ public class StorageAdapter {
     private String token;
 
     public StorageAdapter setForm(LinkForm link, MultipartFile file, MultipartFile previewFile, List<Long> authorizedClients,
-                                  String description, String name, @NonNull String token){
+                                  String description, String name, Storage storage, @NonNull String token){
 
         this.form = new UploadForm(file, previewFile, link, authorizedClients, description, name);
         this.token = token;
-
-        Storage storage = Objects.nonNull(form.getLink()) ? Storage.LINK : Storage.HARVEST_FILE;
 
         return setStorage(storage);
     }
@@ -47,6 +46,9 @@ public class StorageAdapter {
             case HARVEST_FILE:
                 this.storageService = this.context.getBean(HarvestLibraryStorageService.class);
                 break;
+            case SCORM:
+                this.storageService = this.context.getBean(ScormStorageService.class);
+                break;
             default:
                 this.storageService = null;
         }
@@ -58,9 +60,9 @@ public class StorageAdapter {
         this.storageService.save(this.form, this.token);
     }
 
-    public Page<?> findAll(@NonNull String token, Pageable pageable){
+    public Page<?> findAll(@NonNull String token, HarvestLibraryFilter filter, Pageable pageable){
         validate();
-        return this.storageService.findAll(token, pageable);
+        return this.storageService.findAll(token, filter, pageable);
     }
 
     public void update(@NonNull Long id) throws Exception {

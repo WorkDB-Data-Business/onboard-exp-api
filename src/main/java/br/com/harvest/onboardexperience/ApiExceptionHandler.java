@@ -57,6 +57,14 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 		return ResponseEntity.status(HttpStatus.FORBIDDEN).contentType(MediaType.APPLICATION_JSON).body(e);
 	}
 
+	@ExceptionHandler({
+			IllegalAccessException.class
+	})
+	public ResponseEntity<?> handleMethodNotAllowedException(Exception e){
+		logger.error(e);
+		return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).contentType(MediaType.APPLICATION_JSON).body(e);
+	}
+
 	@ExceptionHandler(Exception.class)
 	public ResponseEntity<?> handleException(Exception e){
 		logger.error(e);

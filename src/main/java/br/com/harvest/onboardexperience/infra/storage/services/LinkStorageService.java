@@ -9,6 +9,7 @@ import br.com.harvest.onboardexperience.infra.storage.dtos.LinkSimpleDto;
 import br.com.harvest.onboardexperience.infra.storage.dtos.UploadForm;
 import br.com.harvest.onboardexperience.infra.storage.entities.Link;
 import br.com.harvest.onboardexperience.infra.storage.enumerators.Storage;
+import br.com.harvest.onboardexperience.infra.storage.filters.HarvestLibraryFilter;
 import br.com.harvest.onboardexperience.infra.storage.interfaces.StorageService;
 import br.com.harvest.onboardexperience.infra.storage.mappers.LinkMapper;
 import br.com.harvest.onboardexperience.infra.storage.repositories.LinkRepository;
@@ -88,7 +89,7 @@ public class LinkStorageService implements StorageService {
     }
 
     @Override
-    public Page<?> findAll(@NonNull String token, Pageable pageable) {
+    public Page<?> findAll(@NonNull String token, HarvestLibraryFilter filter, Pageable pageable) {
         Client client = tenantService.fetchClientByTenantFromToken(token);
         return repository.findAllByAuthorizedClients(client, pageable)
                 .map(LinkMapper.INSTANCE::toLinkSimpleDto)

@@ -59,33 +59,8 @@ public class ScormService {
     @Autowired
     private UserService userService;
 
-    public Page<ScormDto> findAll(Pageable pageable, @NonNull ScormCourseFilter filter, @NonNull String token){
-        return courseRepository
-                .findAll(buildFilterParams(filter, token), buildCustomPageable(pageable, filter))
-                .map(ScormMapper.INSTANCE::toDto);
-    }
-
-    private Specification<Scorm> buildFilterParams(@NonNull ScormCourseFilter filter, @NonNull String token){
-        Specification<Scorm> filterParams = Specification.where(
-                ScormRepository.byClient(tenantService.fetchClientByTenantFromToken(token))
-        );
-
-        if(ObjectUtils.isNotEmpty(filter.getSince()) || ObjectUtils.isNotEmpty(filter.getUntil())){
-            filterParams.and(ScormRepository.betweenSinceAndUntil(filter.getSince().toLocalDateTime(),
-                    filter.getUntil().toLocalDateTime()));
-        }
-        return filterParams;
-    }
-
-    private Pageable buildCustomPageable(Pageable pageable, @NonNull ScormCourseFilter filter){
-        if(ObjectUtils.isNotEmpty(filter.getOrderBy())){
-            return PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(filter.getOrderBy()).ascending());
-        }
-        return pageable;
-    }
-
-    public ScormDto importScormCourse(@NonNull MultipartFile file, @NonNull String token) throws IOException, ApiException {
-        return ScormMapper.INSTANCE.toDto(save(createScormCourse(uploadScormToScormCloud(file), token)));
+    public Scorm importScormCourse(@NonNull MultipartFile file) throws IOException, ApiException {
+        return createScormCourse(uploadScormToScormCloud(file));
     }
 
     private CourseSchema uploadScormToScormCloud(@NonNull MultipartFile file) throws IOException, ApiException {
@@ -93,14 +68,8 @@ public class ScormService {
         return scormAPI.createCourse(courseID, createTempFile(file, courseID));
     }
 
-    public void deleteScormCourse(@NonNull String scormId, @NonNull String token) throws ApiException {
-        Scorm scorm = findByIdAndToken(scormId, token);
-        scormAPI.deleteCourse(scorm.getId());
-        courseRepository.delete(scorm);
-    }
-
-    private Scorm save(@NonNull Scorm scorm){
-        return courseRepository.save(scorm);
+    public void deleteScormCourse(@NonNull String scormId) throws ApiException {
+        scormAPI.deleteCourse(scormId);
     }
 
     private File createTempFile(MultipartFile file, String courseID) throws IOException {
@@ -158,14 +127,8 @@ public class ScormService {
         return courseRepository.findByIdAndClient(scormID, client).orElseThrow(() -> new ScormCourseNotFoundException("ID", scormID));
     }
 
-    private Scorm createScormCourse(@NonNull CourseSchema schema, @NonNull String token){
-        Scorm scorm = ScormMapper.INSTANCE.fromCourseSchemaToEntity(schema);
-        setClientOnScormCourse(scorm, token);
-        return scorm;
-    }
-
-    private void setClientOnScormCourse(@NonNull Scorm scorm, @NonNull String token){
-        scorm.setClient(tenantService.fetchClientByTenantFromToken(token));
+    private Scorm createScormCourse(@NonNull CourseSchema schema){
+        return ScormMapper.INSTANCE.fromCourseSchemaToEntity(schema);
     }
 
     private void uploadRegistrationToScormCloud(@NonNull ScormRegistration scormRegistration) throws ApiException {

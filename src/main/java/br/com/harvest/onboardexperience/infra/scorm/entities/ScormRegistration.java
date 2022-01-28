@@ -2,7 +2,11 @@ package br.com.harvest.onboardexperience.infra.scorm.entities;
 
 import br.com.harvest.onboardexperience.domain.entities.BaseEntityAudit;
 import br.com.harvest.onboardexperience.domain.entities.User;
+import br.com.harvest.onboardexperience.utils.SQLQueryUtils;
 import lombok.*;
+import org.hibernate.annotations.ResultCheckStyle;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
 
 import javax.persistence.*;
 import java.util.Objects;
@@ -12,6 +16,8 @@ import java.util.Objects;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity(name = "tbscorm_registration")
+@SQLDelete(sql = SQLQueryUtils.SOFT_DELETE_SCORM, check = ResultCheckStyle.COUNT)
+@Where(clause = SQLQueryUtils.IS_ACTIVE_FILTER)
 public class ScormRegistration extends BaseEntityAudit {
 
     @Id

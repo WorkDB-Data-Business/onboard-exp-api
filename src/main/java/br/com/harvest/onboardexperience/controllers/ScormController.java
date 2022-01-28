@@ -30,30 +30,30 @@ public class ScormController {
     @Autowired
     private ScormService service;
 
-    @Operation(description = "Faz upload do curso SCORM.")
-    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MASTER')")
-    @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ScormDto> uploadCourse(@NonNull @RequestParam("file") MultipartFile file,
-                                           @RequestHeader("Authorization") String token) throws IOException, ApiException {
-        return ResponseEntity.ok(service.importScormCourse(file, token));
-    }
+//    @Operation(description = "Faz upload do curso SCORM.")
+//    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MASTER')")
+//    @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+//    public ResponseEntity<ScormDto> uploadCourse(@NonNull @RequestParam("file") MultipartFile file,
+//                                           @RequestHeader("Authorization") String token) throws IOException, ApiException {
+//        return ResponseEntity.ok(service.importScormCourse(file, token));
+//    }
 
-    @Operation(description = "Retorna todos os cursos SCORM.")
-    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MASTER')")
-    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Page<ScormDto>> findAll(Pageable pageable,
-                                                  @Valid ScormCourseFilter filter,
-                                                  @RequestHeader("Authorization") String token) throws IOException, ApiException {
-        return ResponseEntity.ok(service.findAll(pageable, filter, token));
-    }
+//    @Operation(description = "Retorna todos os cursos SCORM.")
+//    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MASTER')")
+//    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+//    public ResponseEntity<Page<ScormDto>> findAll(Pageable pageable,
+//                                                  @Valid ScormCourseFilter filter,
+//                                                  @RequestHeader("Authorization") String token) throws IOException, ApiException {
+//        return ResponseEntity.ok(service.findAll(pageable, filter, token));
+//    }
 
-    @Operation(description = "Deleta o curso SCORM.")
-    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MASTER')")
-    @DeleteMapping(value = "/{scormID}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public void deleteCourse(@PathVariable String scormID,
-                                                 @RequestHeader("Authorization") String token) throws ScormCourseNotFoundException, ApiException {
-        service.deleteScormCourse(scormID, token);
-    }
+//    @Operation(description = "Deleta o curso SCORM.")
+//    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MASTER')")
+//    @DeleteMapping(value = "/{scormID}", produces = MediaType.APPLICATION_JSON_VALUE)
+//    public void deleteCourse(@PathVariable String scormID,
+//                                                 @RequestHeader("Authorization") String token) throws ScormCourseNotFoundException, ApiException {
+//        service.deleteScormCourse(scormID, token);
+//    }
 
     @Operation(description = "Realiza o registro do usuário com o curso.")
     @PostMapping(value = "/{scormID}", produces = MediaType.APPLICATION_JSON_VALUE)

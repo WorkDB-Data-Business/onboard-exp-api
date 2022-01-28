@@ -1,13 +1,12 @@
 package br.com.harvest.onboardexperience.infra.scorm.dtos;
 
-import br.com.harvest.onboardexperience.infra.scorm.entities.ScormRegistration;
+import br.com.harvest.onboardexperience.infra.storage.enumerators.Storage;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.rusticisoftware.cloud.v2.client.model.CourseSchema;
 import lombok.*;
 import org.apache.commons.lang3.ObjectUtils;
 
-import javax.persistence.OneToMany;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Set;
@@ -42,6 +41,12 @@ public class ScormDto {
 
     @JsonProperty("tags")
     private List<String> tags;
+
+    @JsonProperty("authorizedClientsId")
+    private List<Long> authorizedClientsId;
+
+    @JsonProperty("storage")
+    private Storage storage;
 
     @JsonIgnore
     private Set<ScormRegistrationDto> registrations;
