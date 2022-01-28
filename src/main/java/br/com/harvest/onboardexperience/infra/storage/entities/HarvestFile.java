@@ -24,6 +24,9 @@ public class HarvestFile extends BaseEntityAudit {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "file_name")
+    private String fileName;
+
     @Column(name = "name")
     private String name;
 

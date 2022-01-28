@@ -41,9 +41,10 @@ public class HarvestLibraryController {
     public void upload(@ModelAttribute LinkForm dto,
                        @RequestParam(value = "authorizedClients", required = false) List<Long> authorizedClients,
                        @RequestParam(value = "description", required = false) String description,
+                       @RequestParam(value = "name", required = false) String name,
                        @RequestParam(value = "file", required = false) MultipartFile file,
                        @RequestHeader("Authorization") String token) {
-        storageAdapter.setForm(dto, file, authorizedClients, description, token).save();
+        storageAdapter.setForm(dto, file, authorizedClients, description, name, token).save();
     }
 
     @ResponseStatus(HttpStatus.OK)
@@ -52,10 +53,11 @@ public class HarvestLibraryController {
                        @ModelAttribute LinkForm dto,
                        @RequestParam(value = "authorizedClients", required = false) List<Long> authorizedClients,
                        @RequestParam(value = "description", required = false) String description,
+                       @RequestParam(value = "name", required = false) String name,
                        @RequestParam(value = "file", required = false) MultipartFile file,
                        @RequestHeader("Authorization") String token)
             throws Exception {
-        storageAdapter.setForm(dto, file, authorizedClients, description, token).update(id);
+        storageAdapter.setForm(dto, file, authorizedClients, description, name, token).update(id);
     }
 
     @DeleteMapping("/{id}/{type}")
