@@ -17,6 +17,8 @@ public interface FileRepository extends JpaRepository<HarvestFile, Long> {
 
     Optional<HarvestFile> findByContentPath(String contentPath);
 
+    Boolean existsByName(String name);
+
     Page<HarvestFile> findAllByAuthorizedClients(Client client, Pageable pageable);
 
     Optional<HarvestFile> findByIdAndAuthorizedClients(Long id, Client client);
