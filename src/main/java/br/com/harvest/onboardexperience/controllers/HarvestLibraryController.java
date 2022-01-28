@@ -43,8 +43,9 @@ public class HarvestLibraryController {
                        @RequestParam(value = "description", required = false) String description,
                        @RequestParam(value = "name", required = false) String name,
                        @RequestParam(value = "file", required = false) MultipartFile file,
+                       @RequestParam(value = "previewImage") MultipartFile previewImage,
                        @RequestHeader("Authorization") String token) {
-        storageAdapter.setForm(dto, file, authorizedClients, description, name, token).save();
+        storageAdapter.setForm(dto, file, previewImage, authorizedClients, description, name, token).save();
     }
 
     @ResponseStatus(HttpStatus.OK)
@@ -55,9 +56,10 @@ public class HarvestLibraryController {
                        @RequestParam(value = "description", required = false) String description,
                        @RequestParam(value = "name", required = false) String name,
                        @RequestParam(value = "file", required = false) MultipartFile file,
+                       @RequestParam(value = "previewImage") MultipartFile previewImage,
                        @RequestHeader("Authorization") String token)
             throws Exception {
-        storageAdapter.setForm(dto, file, authorizedClients, description, name, token).update(id);
+        storageAdapter.setForm(dto, file, previewImage, authorizedClients, description, name, token).update(id);
     }
 
     @DeleteMapping("/{id}/{type}")
