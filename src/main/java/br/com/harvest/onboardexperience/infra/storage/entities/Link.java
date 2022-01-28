@@ -36,6 +36,9 @@ public class Link extends BaseEntityAudit {
     @Column(name = "link")
     private String link;
 
+    @Column(name = "preview_image_path")
+    private String previewImagePath;
+
     @ManyToOne
     @JoinColumn(name = "author")
     private User author;

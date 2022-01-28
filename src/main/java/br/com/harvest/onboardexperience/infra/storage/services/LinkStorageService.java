@@ -2,6 +2,7 @@ package br.com.harvest.onboardexperience.infra.storage.services;
 
 import br.com.harvest.onboardexperience.domain.entities.Client;
 import br.com.harvest.onboardexperience.domain.entities.User;
+import br.com.harvest.onboardexperience.domain.enumerators.FileTypeEnum;
 import br.com.harvest.onboardexperience.domain.exceptions.LinkNotFoundException;
 import br.com.harvest.onboardexperience.infra.storage.dtos.LinkDto;
 import br.com.harvest.onboardexperience.infra.storage.dtos.LinkSimpleDto;
@@ -44,6 +45,9 @@ public class LinkStorageService implements StorageService {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private ImageStorageService imageStorageService;
+
     private final Function<LinkSimpleDto, LinkSimpleDto> SET_STORAGE = linkSimpleDto -> {
         linkSimpleDto.setStorage(Storage.LINK);
         return linkSimpleDto;
@@ -63,7 +67,17 @@ public class LinkStorageService implements StorageService {
 
         BeanUtils.copyProperties(form.getLink(), link);
 
+        uploadImage(link, form);
+
         repository.save(link);
+    }
+
+    public void uploadImage(@NonNull Link link, @NonNull UploadForm form){
+        link.setPreviewImagePath(
+                imageStorageService.uploadImage(form.getPreviewImage(),
+                        link.getAuthor().getClient().getCnpj(),
+                        GenericUtils.generateUUID() + "_preview",
+                        FileTypeEnum.IMAGE, link.getAuthor()));
     }
 
     @Override
@@ -89,6 +103,8 @@ public class LinkStorageService implements StorageService {
         link.setAuthorizedClients(generateAuthorizedClients(form.getAuthorizedClients(), link.getAuthor()));
 
         BeanUtils.copyProperties(form.getLink(), link, "id", "author", "createdBy", "createdAt");
+
+        uploadImage(link, form);
 
         repository.save(link);
     }
