@@ -14,7 +14,7 @@ import java.util.Objects;
 @NoArgsConstructor
 public class UploadForm {
 
-    public UploadForm(MultipartFile file, LinkForm link, List<Long> authorizedClients, String description) {
+    public UploadForm(MultipartFile file, LinkForm link, List<Long> authorizedClients, String description, String name) {
         if(Objects.isNull(file)){
             this.link = link;
         } else {
@@ -22,6 +22,7 @@ public class UploadForm {
         }
         this.authorizedClients = authorizedClients;
         this.description = description;
+        this.name = name;
     }
 
     private MultipartFile file;
@@ -32,5 +33,6 @@ public class UploadForm {
 
     private String description;
 
-
+    private String name;
+    
 }

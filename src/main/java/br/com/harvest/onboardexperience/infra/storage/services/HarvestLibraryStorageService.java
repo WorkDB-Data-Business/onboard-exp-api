@@ -8,7 +8,6 @@ import br.com.harvest.onboardexperience.infra.storage.dtos.FileDto;
 import br.com.harvest.onboardexperience.infra.storage.dtos.FileSimpleDto;
 import br.com.harvest.onboardexperience.infra.storage.dtos.UploadForm;
 import br.com.harvest.onboardexperience.infra.storage.entities.HarvestFile;
-import br.com.harvest.onboardexperience.infra.storage.entities.Link;
 import br.com.harvest.onboardexperience.infra.storage.enumerators.Storage;
 import br.com.harvest.onboardexperience.infra.storage.interfaces.StorageService;
 import br.com.harvest.onboardexperience.infra.storage.mappers.FileMapper;
@@ -172,11 +171,12 @@ public class HarvestLibraryStorageService implements StorageService {
 
         return HarvestFile.builder()
                 .author(user)
+                .name(form.getName())
                 .description(form.getDescription())
                 .authorizedClients(Objects.nonNull(form.getAuthorizedClients()) ? fetchService.fetchClients(form.getAuthorizedClients()) : null)
                 .authorizedClients(generateAuthorizedClients(form.getAuthorizedClients(), user))
                 .contentPath(createFilePath(form.getFile(), user.getClient()))
-                .name(form.getFile().getOriginalFilename())
+                .fileName(form.getFile().getOriginalFilename())
                 .mimeType(form.getFile().getContentType()).build();
     }
 
