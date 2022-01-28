@@ -37,7 +37,7 @@ public class QuestionEventService {
     private QuestionEventRepository  questionEventRepository;
 
 
-    public QuestionEventDto createQuestion(QuestionEventDto dto, MultipartFile file, String token) {
+    public QuestionEventDto createQuestion(QuestionEventDto dto, String token) {
 
         String tenant = jwtUtils.getUserTenant(token);
         QuestionEvent questionEvent = QuestionEventMapper.INSTANCE.toEntity(dto);
@@ -58,7 +58,7 @@ public class QuestionEventService {
     }
 
 
-    public QuestionEventDto optionAnswer(QuestionEventDto dto, MultipartFile file, String token) {
+    public QuestionEventDto optionAnswer(QuestionEventDto dto, String token) {
         String tenant = jwtUtils.getUserTenant(token);
         QuestionEvent questionEvent = QuestionEventMapper.INSTANCE.toEntity(dto);
 
@@ -71,7 +71,7 @@ public class QuestionEventService {
         return QuestionEventMapper.INSTANCE.toDto(questionEvent);
     }
 
-    public QuestionEventDto answerQuestion(QuestionEventDto dto, MultipartFile file, String token) {
+    public QuestionEventDto answerQuestion(QuestionEventDto dto, String token) {
 
         String tenant = jwtUtils.getUserTenant(token);
         QuestionEvent questionEvent = QuestionEventMapper.INSTANCE.toEntity(dto);
@@ -83,7 +83,8 @@ public class QuestionEventService {
         return QuestionEventMapper.INSTANCE.toDto(questionEvent);
     }
 
-    public QuestionEventDto noteQuestion(QuestionEventDto dto, MultipartFile file, String token) {
+
+    public QuestionEventDto noteQuestion(QuestionEventDto dto, String token) {
 
         String tenant = jwtUtils.getUserTenant(token);
         QuestionEvent questionEvent = QuestionEventMapper.INSTANCE.toEntity(dto);
@@ -93,6 +94,20 @@ public class QuestionEventService {
         questionEvent = questionEventRepository.save(questionEvent);
 
         return QuestionEventMapper.INSTANCE.toDto(questionEvent);
+
+    }
+
+    public QuestionEventDto Answercorrect(QuestionEventDto dto, String token) {
+
+        String tenant = jwtUtils.getUserTenant(token);
+        QuestionEvent questionEvent = QuestionEventMapper.INSTANCE.toEntity(dto);
+
+        setClient(questionEvent,token);
+
+        questionEvent = questionEventRepository.save(questionEvent);
+
+        return QuestionEventMapper.INSTANCE.toDto(questionEvent);
+
     }
 
 }

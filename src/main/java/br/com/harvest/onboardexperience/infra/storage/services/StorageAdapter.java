@@ -51,8 +51,12 @@ public class StorageAdapter {
         }
         return this;
     }
+<<<<<<< HEAD
+        public void save(){
+=======
 
     public void save(){
+>>>>>>> c896888945cca12305fdf6c50f9a12fb5f344d7e
         validate();
         this.storageService.save(this.form, this.token);
     }

@@ -77,21 +77,20 @@ CREATE TABLE IF NOT EXISTS public.tbquestion(
 
 );
 
-CREATE TABLE IF NOT EXISTS public.tbclient_file(
-    idfile BIGSERIAL NOT NULL,
-    name CHARACTER VARYING,
-    file_path CHARACTER VARYING,
-    content_id CHARACTER VARYING,
-    content_length BIGINT,
-    author BIGINT NOT NULL,
-    mime_type CHARACTER VARYING,
-    created_by CHARACTER VARYING,
-    updated_by CHARACTER VARYING,
-    created_at TIMESTAMP default now(),
-    updated_at TIMESTAMP,
+CREATE TABLE IF NOT EXISTS public.tbtext(
+	idtext BIGSERIAL NOT NULL,
+	title CHARACTER VARYING NOT NULL,
+	descripton CHARACTER VARYING NOT NULL,
+	text CHARACTER VARYING NOT NULL,
+	is_active BOOLEAN NOT NULL,
+	is_read BOOLEAN NOT NULL,
+	idevent BIGINT NOT NULL,
+	idclient BIGINT NOT NULL,
 
-  	FOREIGN KEY (author) REFERENCES tbuser(iduser),
+	FOREIGN KEY (idevent) REFERENCES tbevent(idevent),
+	FOREIGN KEY (idclient) REFERENCES tbclient(idclient),
 
-    CONSTRAINT tbclient_file_pk PRIMARY KEY (idfile)
+	CONSTRAINT tbtext_pk PRIMARY KEY (idtext)
+
 );
 
