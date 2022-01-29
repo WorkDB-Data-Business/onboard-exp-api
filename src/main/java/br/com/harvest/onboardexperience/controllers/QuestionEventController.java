@@ -42,28 +42,6 @@ public class QuestionEventController {
         return ResponseEntity.ok().body(questionEventService.createQuestion(dto,token));
     }
 
-
-    @Operation(description = "Coloca opções de respotas")
-    @PreAuthorize("hasAuthority('ADMIN')")
-    @PostMapping(path ="/v1/questions/option", produces =  MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<QuestionEventDto> optionAnswer(@Valid @ModelAttribute @NotNull QuestionEventDto dto, @RequestHeader("Authorization") String token) throws RuntimeException{
-        return ResponseEntity.ok().body(questionEventService.optionAnswer(dto,token));
-    }
-
-    @Operation(description = "Se for MultiplaEscolha colocar resposta correta.")
-    @PreAuthorize("hasAuthority('ADMIN')")
-    @PostMapping(path ="/v1/questions/optioncorrect", produces =  MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<QuestionEventDto> Answercorrect(@Valid @ModelAttribute @NotNull QuestionEventDto dto, @RequestHeader("Authorization") String token) throws RuntimeException{
-        return ResponseEntity.ok().body(questionEventService.Answercorrect(dto,token));
-    }
-
-    @Operation(description = "Resposta do usuario ao questionario")
-    @PreAuthorize("hasAuthority('COLABORATOR')")
-    @PostMapping(path ="/v1/questions/answer", produces =  MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<QuestionEventDto> answerQuestion(@Valid @ModelAttribute @NotNull QuestionEventDto dto, @RequestHeader("Authorization") String token) throws RuntimeException{
-        return ResponseEntity.ok().body(questionEventService.answerQuestion(dto,token));
-    }
-
     @Operation(description = "Inserir nota da pergunta ")
     @PreAuthorize("hasAuthority('ADMIN')")
     @PostMapping(path ="/v1/questions/note", produces =  MediaType.APPLICATION_JSON_VALUE)

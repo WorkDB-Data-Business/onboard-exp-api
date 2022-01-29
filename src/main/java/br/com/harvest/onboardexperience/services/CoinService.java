@@ -3,6 +3,8 @@ package br.com.harvest.onboardexperience.services;
 import br.com.harvest.onboardexperience.domain.entities.User;
 import br.com.harvest.onboardexperience.domain.enumerators.FileTypeEnum;
 import br.com.harvest.onboardexperience.domain.exceptions.BusinessException;
+import br.com.harvest.onboardexperience.infra.storage.entities.Image;
+import br.com.harvest.onboardexperience.infra.storage.repositories.ImageRepository;
 import br.com.harvest.onboardexperience.infra.storage.services.ImageStorageService;
 import br.com.harvest.onboardexperience.mappers.ClientMapper;
 import br.com.harvest.onboardexperience.repositories.UserRepository;
@@ -48,6 +50,9 @@ public class CoinService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private ImageRepository imageRepository;
+
     public CoinDto create(@NonNull CoinDto dto, MultipartFile file, String token) {
         String tenant = jwtUtils.getUserTenant(token);
         User user = userRepository.findById(jwtUtils.getUserId(token)).orElseThrow(() -> new RuntimeException("usuário não encontrado")) ;
@@ -62,9 +67,10 @@ public class CoinService {
     }
 
 
-    public CoinDto update(@NonNull Long id, @NonNull CoinDto dto, @NonNull MultipartFile file, @NonNull String token) {
+    public CoinDto update(@NonNull Long id, @NonNull CoinDto dto,MultipartFile file, @NonNull String token) {
         String tenant = jwtUtils.getUserTenant(token);
         User user = userRepository.findById(jwtUtils.getUserId(token)).orElseThrow(() -> new RuntimeException("usuário não encontrado")) ;
+
 
         Coin coin = repository.findByIdAndClient_Tenant(id, tenant).orElseThrow(
                 () -> new CoinNotFoundException(ExceptionMessageFactory.createNotFoundMessage("coin", "ID", id.toString())));
@@ -73,7 +79,7 @@ public class CoinService {
 
         validate(coin, dto, tenant);
 
-        saveImage(file, dto, user);
+        //saveImage(file, dto, user);
 
         BeanUtils.copyProperties(dto, coin, "id", "client", "createdAt", "createdBy", dto.getImagePath() == null ? "imagePath" : "");
 

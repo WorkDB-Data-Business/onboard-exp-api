@@ -22,8 +22,6 @@ public class QuestionEventDto {
     @Builder.Default
     private Boolean isMultipleChoice = false;
 
-    @Builder.Default
-    private Boolean isDescriptive = false;
-    private Event event;
+
 }
 
