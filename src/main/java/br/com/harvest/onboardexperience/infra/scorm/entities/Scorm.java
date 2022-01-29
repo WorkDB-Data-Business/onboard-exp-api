@@ -45,6 +45,10 @@ public class Scorm extends BaseEntityAudit {
     @Column(name = "version")
     private Integer version;
 
+    @Builder.Default
+    @Column(name = "is_active")
+    private Boolean isActive = true;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "course_learning_standard")
     private CourseSchema.CourseLearningStandardEnum courseLearningStandard;

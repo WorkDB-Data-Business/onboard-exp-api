@@ -22,8 +22,10 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -90,14 +92,23 @@ public class LinkStorageService implements StorageService {
 
     @Override
     public Page<?> findAll(@NonNull String token, HarvestLibraryFilter filter, Pageable pageable) {
-        Client client = tenantService.fetchClientByTenantFromToken(token);
-        return repository.findAllByAuthorizedClients(client, pageable)
+        return repository.findAll(createQuery(filter, token), pageable)
                 .map(LinkMapper.INSTANCE::toLinkSimpleDto)
                 .map(SET_STORAGE);
     }
 
+    private Specification<Link> createQuery(@NonNull HarvestLibraryFilter filter, @NonNull String token){
+        Specification<Link> query = Specification.where(LinkRepository.byAuthorizedClients(tenantService.fetchClientByTenantFromToken(token)));
+
+        if(StringUtils.hasText(filter.getCriteriaFilter())){
+            query = query.and(LinkRepository.byCustomFilter(filter.getCriteriaFilter()));
+        }
+
+        return query;
+    }
+
     @Override
-    public void update(@NonNull Long id, @NonNull UploadForm form, @NonNull String token) {
+    public void update(@NonNull String id, @NonNull UploadForm form, @NonNull String token) {
 
         Link link = getLinkByIdAndAuthorizedClient(id, token, true);
 
@@ -121,13 +132,13 @@ public class LinkStorageService implements StorageService {
     }
 
     @Override
-    public void delete(@NonNull Long id, @NonNull String token) {
+    public void delete(@NonNull String id, @NonNull String token) {
         Link link = getLinkByIdAndAuthorizedClient(id, token, true);
         repository.delete(link);
     }
 
     @Override
-    public Optional<LinkDto> find(@NonNull Long id, @NonNull String token) {
+    public Optional<LinkDto> find(@NonNull String id, @NonNull String token) {
 
         Link link = getLinkByIdAndAuthorizedClient(id, token, false);
 
@@ -140,7 +151,7 @@ public class LinkStorageService implements StorageService {
     }
 
     @Override
-    public void updateAuthorizedClients(@NonNull Long id, @NonNull String token, @NonNull List<Long> authorizedClients) {
+    public void updateAuthorizedClients(@NonNull String id, @NonNull String token, @NonNull List<Long> authorizedClients) {
         Link link = getLinkByIdAndAuthorizedClient(id, token, true);
 
         link.setAuthorizedClients(fetchService.fetchClients(authorizedClients));
@@ -148,10 +159,12 @@ public class LinkStorageService implements StorageService {
         repository.save(link);
     }
 
-    private Link getLinkByIdAndAuthorizedClient(@NonNull Long id, @NonNull String token, Boolean validateAuthor){
+    private Link getLinkByIdAndAuthorizedClient(@NonNull String id, @NonNull String token, Boolean validateAuthor){
         User user = userService.findUserByToken(token);
 
-        Link link = repository.findByIdAndAuthorizedClients(id, user.getClient()).or(() -> repository.findByIdAndAuthor(id, user))
+        Link link = repository
+                .findOne(LinkRepository.byIdAsString(id).and(LinkRepository.byAuthorizedClients(user.getClient())))
+                .or(() -> repository.findOne(LinkRepository.byIdAsString(id).and(LinkRepository.byAuthor(user))))
                 .orElseThrow(
                 () -> new LinkNotFoundException("Link not found.", "The requested link doesn't exist or you don't have access to get it.")
         );

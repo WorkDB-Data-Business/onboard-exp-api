@@ -12,7 +12,7 @@ import lombok.*;
 @Setter
 public class HarvestLibraryFilter {
 
-    @JsonProperty("criteriaFilter")
+        @JsonProperty("criteriaFilter")
     private String criteriaFilter;
 
     @JsonProperty("courseLearningStandard")

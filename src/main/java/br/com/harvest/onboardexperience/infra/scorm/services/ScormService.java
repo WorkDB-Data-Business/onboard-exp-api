@@ -124,7 +124,8 @@ public class ScormService {
     }
 
     public Scorm findByIdAndClient(@NonNull String scormID, @NonNull Client client) throws ScormCourseNotFoundException {
-        return courseRepository.findByIdAndClient(scormID, client).orElseThrow(() -> new ScormCourseNotFoundException("ID", scormID));
+        return courseRepository.findOne(ScormRepository.byScormIdEqual(scormID).and(ScormRepository.byAuthorizedClients(client)))
+                .orElseThrow(() -> new ScormCourseNotFoundException("The requested SCORM file doesn't exist or you don't have access to get it."));
     }
 
     private Scorm createScormCourse(@NonNull CourseSchema schema){

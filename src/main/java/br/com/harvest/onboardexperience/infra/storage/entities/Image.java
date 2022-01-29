@@ -3,7 +3,9 @@ package br.com.harvest.onboardexperience.infra.storage.entities;
 
 import br.com.harvest.onboardexperience.domain.entities.BaseEntityAudit;
 import br.com.harvest.onboardexperience.domain.entities.User;
+import br.com.harvest.onboardexperience.utils.SQLQueryUtils;
 import lombok.*;
+import org.hibernate.annotations.Where;
 import org.springframework.content.commons.annotations.ContentId;
 import org.springframework.content.commons.annotations.ContentLength;
 import org.springframework.content.commons.annotations.MimeType;
@@ -17,6 +19,7 @@ import javax.persistence.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = false)
+@Where(clause = SQLQueryUtils.IS_IMAGE_PREVIEW)
 public class Image extends BaseEntityAudit {
 
     @Id
@@ -24,8 +27,8 @@ public class Image extends BaseEntityAudit {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "name")
-    private String name;
+    @Column(name = "file_name")
+    private String fileName;
 
     @ManyToOne
     @JoinColumn(name = "author")
@@ -42,5 +45,9 @@ public class Image extends BaseEntityAudit {
 
     @MimeType
     private String mimeType;
+
+    @Builder.Default
+    @Column(name = "is_image_preview")
+    private Boolean isImagePreview = true;
 
 }

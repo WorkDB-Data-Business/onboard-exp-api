@@ -1,5 +1,6 @@
 package br.com.harvest.onboardexperience.infra.storage.dtos;
 
+import br.com.harvest.onboardexperience.domain.dtos.UserSimpleDto;
 import br.com.harvest.onboardexperience.domain.entities.User;
 import br.com.harvest.onboardexperience.infra.storage.enumerators.Storage;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -18,7 +19,7 @@ public class FileDto {
 
     private String name;
 
-    private User author;
+    private UserSimpleDto author;
 
     private List<Long> authorizedClientsId;
 

@@ -21,10 +21,10 @@ public interface StorageService {
 	void save(@NonNull UploadForm form, @NonNull String token);
 	void validate(@NonNull UploadForm form);
 	Page<?> findAll(@NonNull String token, HarvestLibraryFilter filter, Pageable pageable);
-	void update(@NonNull Long id, @NonNull UploadForm form, @NonNull String token) throws Exception;
-	void delete(@NonNull Long id, @NonNull String token) throws Exception;
-	Optional<?> find(@NonNull Long id, @NonNull String token) throws Exception;
-	void updateAuthorizedClients(@NonNull Long id, @NonNull String token, @NonNull  List<Long> authorizedClients) throws Exception;
+	void update(@NonNull String id, @NonNull UploadForm form, @NonNull String token) throws Exception;
+	void delete(@NonNull String id, @NonNull String token) throws Exception;
+	Optional<?> find(@NonNull String id, @NonNull String token) throws Exception;
+	void updateAuthorizedClients(@NonNull String id, @NonNull String token, @NonNull  List<Long> authorizedClients) throws Exception;
 
 	static void validateAuthor(Object object, Class<?> classToValidate, User user, String messageError){
 		User author = (User) GenericUtils.executeMethodFromGenericClass(classToValidate, "getAuthor", Optional.of(object));

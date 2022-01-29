@@ -12,12 +12,9 @@ import org.springframework.stereotype.Repository;
 
 import javax.persistence.criteria.Join;
 import java.time.LocalDateTime;
-import java.util.Optional;
 
 @Repository
 public interface ScormRepository extends JpaRepository<Scorm, String>, JpaSpecificationExecutor<Scorm> {
-
-    Optional<Scorm> findByIdAndClient(String id, Client client);
 
     static Specification<Scorm> betweenSinceAndUntil(LocalDateTime since, LocalDateTime until) {
         return (scorm, cq, cb) -> cb.between(scorm.get("created"), since, until);
@@ -37,17 +34,18 @@ public interface ScormRepository extends JpaRepository<Scorm, String>, JpaSpecif
 
     static Specification<Scorm> byCustomFilter(@NonNull String customFilter){
         return Specification.where(
-                byScormIdLike(customFilter).or(byScormTitle(customFilter)).or(byAuthor(customFilter))
-        );
+                byScormIdLike(customFilter))
+                .or(byScormTitle(customFilter))
+                .or(byAuthor(customFilter));
     }
 
-    static Specification<Scorm> byAuthor(@NonNull String name) {
+    static Specification<Scorm> byAuthor(@NonNull String criteria) {
         return (scorm, cq, cb) -> cb.or(
-                cb.like(cb.lower(scorm.get("author").get("firstName")), "%" + name.toLowerCase() + "%"),
-                cb.like(cb.lower(scorm.get("author").get("lastName")), "%" + name.toLowerCase() + "%"),
-                cb.like(cb.lower(scorm.get("author").get("nickname")), "%" + name.toLowerCase() + "%"),
-                cb.like(cb.lower(scorm.get("author").get("cpf")),  name.toLowerCase() + "%"),
-                cb.like(cb.lower(scorm.get("author").get("email")), name.toLowerCase() + "%")
+                cb.like(cb.lower(scorm.get("author").get("firstName")), "%" + criteria.toLowerCase() + "%"),
+                cb.like(cb.lower(scorm.get("author").get("lastName")), "%" + criteria.toLowerCase() + "%"),
+                cb.like(cb.lower(scorm.get("author").get("nickname")), "%" + criteria.toLowerCase() + "%"),
+                cb.like(cb.lower(scorm.get("author").get("cpf")),  criteria.toLowerCase() + "%"),
+                cb.like(cb.lower(scorm.get("author").get("email")), criteria.toLowerCase() + "%")
         );
     }
 

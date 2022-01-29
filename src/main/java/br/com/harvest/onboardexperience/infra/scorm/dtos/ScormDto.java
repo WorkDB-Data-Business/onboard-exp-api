@@ -48,6 +48,9 @@ public class ScormDto {
     @JsonProperty("storage")
     private Storage storage;
 
+    @JsonProperty("previewImagePath")
+    private String previewImagePath;
+
     @JsonIgnore
     private Set<ScormRegistrationDto> registrations;
 

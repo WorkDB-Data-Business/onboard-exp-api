@@ -27,8 +27,10 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -91,14 +93,24 @@ public class HarvestLibraryStorageService implements StorageService {
 
     @Override
     public Page<FileSimpleDto> findAll(@NonNull String token, HarvestLibraryFilter filter, Pageable pageable) {
-        Client client = tenantService.fetchClientByTenantFromToken(token);
-        return fileRepository.findAllByAuthorizedClients(client, pageable)
+        return fileRepository.findAll(createQuery(filter, token), pageable)
                 .map(FileMapper.INSTANCE::toFileSimpleDto)
                 .map(setStorage);
     }
 
+    private Specification<HarvestFile> createQuery(@NonNull HarvestLibraryFilter filter, @NonNull String token){
+        Specification<HarvestFile> query = Specification.where(
+                FileRepository.byAuthorizedClients(tenantService.fetchClientByTenantFromToken(token)));
+
+        if(StringUtils.hasText(filter.getCriteriaFilter())) {
+            query = query.and(FileRepository.byCustomFilter(filter.getCriteriaFilter()));
+        }
+
+        return query;
+    }
+
     @Override
-    public void update(@NonNull Long id, @NonNull UploadForm form, @NonNull String token) throws Exception {
+    public void update(@NonNull String id, @NonNull UploadForm form, @NonNull String token) throws Exception {
 
         HarvestFile harvestFile = getFileByIdAndAuthorizedClient(id, token, true);
 
@@ -112,7 +124,7 @@ public class HarvestLibraryStorageService implements StorageService {
     }
 
     @Override
-    public void delete(@NonNull Long id, @NonNull String token) throws Exception {
+    public void delete(@NonNull String id, @NonNull String token) throws Exception {
         HarvestFile harvestFile = getFileByIdAndAuthorizedClient(id, token, true);
 
         fileContentStore.unsetContent(harvestFile);
@@ -121,7 +133,7 @@ public class HarvestLibraryStorageService implements StorageService {
     }
 
     @Override
-    public Optional<FileDto> find(@NonNull Long id, @NonNull String token) throws Exception {
+    public Optional<FileDto> find(@NonNull String id, @NonNull String token) throws Exception {
         HarvestFile harvestFile = getFileByIdAndAuthorizedClient(id, token, false);
 
         FileDto dto = FileMapper.INSTANCE.toDto(harvestFile);
@@ -134,7 +146,7 @@ public class HarvestLibraryStorageService implements StorageService {
     }
 
     @Override
-    public void updateAuthorizedClients(@NonNull Long id, @NonNull String token, @NonNull List<Long> authorizedClients) throws Exception {
+    public void updateAuthorizedClients(@NonNull String id, @NonNull String token, @NonNull List<Long> authorizedClients) throws Exception {
         HarvestFile file = getFileByIdAndAuthorizedClient(id, token, true);
 
         file.setAuthorizedClients(fetchService.fetchClients(authorizedClients));
@@ -142,12 +154,12 @@ public class HarvestLibraryStorageService implements StorageService {
         fileRepository.save(file);
     }
 
-    private HarvestFile getFileByIdAndAuthorizedClient(@NonNull Long id, @NonNull String token, Boolean validateAuthor) throws Exception {
+    private HarvestFile getFileByIdAndAuthorizedClient(@NonNull String id, @NonNull String token, Boolean validateAuthor) throws Exception {
 
         User user = userService.findUserByToken(token);
 
-        HarvestFile harvestFile = fileRepository.findByIdAndAuthorizedClients(id, user.getClient())
-                .or(() -> fileRepository.findByIdAndAuthor(id, user))
+        HarvestFile harvestFile = fileRepository.findOne(FileRepository.byIdAsString(id).and(FileRepository.byAuthorizedClients(user.getClient())))
+                .or(() -> fileRepository.findOne(FileRepository.byIdAsString(id).and(FileRepository.byAuthor(user))))
                 .orElseThrow(
                 () -> new FileNotFoundException("The requested file doesn't exist or you don't have access to get it."));
 

@@ -32,7 +32,7 @@ public class ImageStorageService {
 
         Image image = Image.builder()
                 .contentPath(createFilePath(file, folder, fileName, imageDomain))
-                .name(fileName)
+                .fileName(fileName)
                 .mimeType(file.getContentType())
                 .author(author)
                 .build();

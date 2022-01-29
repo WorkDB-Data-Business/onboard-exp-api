@@ -3,7 +3,9 @@ package br.com.harvest.onboardexperience.infra.storage.entities;
 import br.com.harvest.onboardexperience.domain.entities.BaseEntityAudit;
 import br.com.harvest.onboardexperience.domain.entities.Client;
 import br.com.harvest.onboardexperience.domain.entities.User;
+import br.com.harvest.onboardexperience.utils.SQLQueryUtils;
 import lombok.*;
+import org.hibernate.annotations.Where;
 import org.springframework.content.commons.annotations.ContentId;
 import org.springframework.content.commons.annotations.ContentLength;
 import org.springframework.content.commons.annotations.MimeType;
@@ -17,6 +19,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = false)
+@Where(clause = SQLQueryUtils.IS_NOT_IMAGE_PREVIEW)
 public class HarvestFile extends BaseEntityAudit {
 
     @Id
@@ -58,5 +61,9 @@ public class HarvestFile extends BaseEntityAudit {
 
     @MimeType
     private String mimeType;
+
+    @Builder.Default
+    @Column(name = "is_image_preview")
+    private Boolean isImagePreview = false;
 
 }

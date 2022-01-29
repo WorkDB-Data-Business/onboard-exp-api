@@ -35,7 +35,7 @@ public class HarvestLibraryController {
 
     @ResponseStatus(HttpStatus.OK)
     @Operation(description = "Faz upload de arquivos e links na biblioteca da Harvest.")
-    @PostMapping(value = "/{id}/{type}")
+    @PostMapping(value = "/{type}")
     public void upload(@PathVariable Storage type,
                        @ModelAttribute LinkForm dto,
                        @RequestParam(value = "authorizedClients", required = false) List<Long> authorizedClients,
@@ -50,7 +50,7 @@ public class HarvestLibraryController {
     @ResponseStatus(HttpStatus.OK)
     @PutMapping(value="/{id}/{type}")
     public void upload(@PathVariable Storage type,
-                       @PathVariable  @Pattern(regexp = RegexUtils.ONLY_NUMBERS) Long id,
+                       @PathVariable String id,
                        @ModelAttribute LinkForm dto,
                        @RequestParam(value = "authorizedClients", required = false) List<Long> authorizedClients,
                        @RequestParam(value = "description", required = false) String description,
@@ -63,14 +63,14 @@ public class HarvestLibraryController {
     }
 
     @DeleteMapping("/{id}/{type}")
-    public void delete(@PathVariable  @Pattern(regexp = RegexUtils.ONLY_NUMBERS) Long id,
+    public void delete(@PathVariable String id,
                        @PathVariable Storage type,
                        @RequestHeader("Authorization") String token) throws Exception {
         storageAdapter.setStorage(type).delete(id, token);
     }
 
     @GetMapping("/{id}/{type}")
-    public ResponseEntity<?> find(@PathVariable  @Pattern(regexp = RegexUtils.ONLY_NUMBERS) Long id,
+    public ResponseEntity<?> find(@PathVariable String id,
                                   @PathVariable  Storage type,
                                   @RequestHeader("Authorization") String token) throws Exception {
 
@@ -86,7 +86,7 @@ public class HarvestLibraryController {
     }
 
     @PatchMapping(value="/authorize/{id}/{type}")
-    public void updateAuthorizedClients(@PathVariable  @Pattern(regexp = RegexUtils.ONLY_NUMBERS) Long id,
+    public void updateAuthorizedClients(@PathVariable  String id,
                                         @PathVariable  Storage type,
                        @RequestParam(value = "authorizedClients") List<Long> authorizedClients,
                        @RequestHeader("Authorization") String token)
@@ -116,7 +116,7 @@ public class HarvestLibraryController {
         }
     }
 
-    private ResponseEntity<?> findByIdAndType(@NonNull Long id, @NonNull Storage type, @NonNull String token) throws Exception {
+    private ResponseEntity<?> findByIdAndType(@NonNull String id, @NonNull Storage type, @NonNull String token) throws Exception {
         switch (type) {
             case HARVEST_FILE: {
                 Optional<?> file = this.storageAdapter.setStorage(Storage.HARVEST_FILE).find(id, token);

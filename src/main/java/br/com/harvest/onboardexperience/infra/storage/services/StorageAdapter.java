@@ -65,22 +65,22 @@ public class StorageAdapter {
         return this.storageService.findAll(token, filter, pageable);
     }
 
-    public void update(@NonNull Long id) throws Exception {
+    public void update(@NonNull String id) throws Exception {
         validate();
         this.storageService.update(id, this.form, this.token);
     }
 
-    public void delete(@NonNull Long id, @NonNull String token) throws Exception {
+    public void delete(@NonNull String id, @NonNull String token) throws Exception {
         validate();
         this.storageService.delete(id, token);
     }
 
-    public void updateAuthorizedClients(@NonNull Long id, @NonNull String token, @NonNull  List<Long> authorizedClients) throws Exception {
+    public void updateAuthorizedClients(@NonNull String id, @NonNull String token, @NonNull  List<Long> authorizedClients) throws Exception {
         validate();
         this.storageService.updateAuthorizedClients(id, token, authorizedClients);
     }
 
-    public Optional<?> find(@NonNull Long id, @NonNull String token) throws Exception {
+    public Optional<?> find(@NonNull String id, @NonNull String token) throws Exception {
         validate();
         return  this.storageService.find(id, token);
     }
