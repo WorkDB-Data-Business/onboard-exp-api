@@ -3,12 +3,12 @@ package br.com.harvest.onboardexperience.infra.storage.services;
 
 import br.com.harvest.onboardexperience.domain.entities.Client;
 import br.com.harvest.onboardexperience.domain.entities.User;
+import br.com.harvest.onboardexperience.domain.enumerators.FileTypeEnum;
 import br.com.harvest.onboardexperience.domain.exceptions.GenericUploadException;
 import br.com.harvest.onboardexperience.infra.storage.dtos.FileDto;
 import br.com.harvest.onboardexperience.infra.storage.dtos.FileSimpleDto;
 import br.com.harvest.onboardexperience.infra.storage.dtos.UploadForm;
 import br.com.harvest.onboardexperience.infra.storage.entities.HarvestFile;
-import br.com.harvest.onboardexperience.infra.storage.entities.Link;
 import br.com.harvest.onboardexperience.infra.storage.enumerators.Storage;
 import br.com.harvest.onboardexperience.infra.storage.interfaces.StorageService;
 import br.com.harvest.onboardexperience.infra.storage.mappers.FileMapper;
@@ -21,6 +21,7 @@ import br.com.harvest.onboardexperience.services.UserService;
 import br.com.harvest.onboardexperience.utils.GenericUtils;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FilenameUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -59,6 +60,9 @@ public class HarvestLibraryStorageService implements StorageService {
 
     @Autowired
     private FetchService fetchService;
+
+    @Autowired
+    private ImageStorageService imageStorageService;
 
     private final Function<FileSimpleDto, FileSimpleDto> setStorage = fileSimpleDto -> {
         fileSimpleDto.setStorage(Storage.HARVEST_FILE);
@@ -157,26 +161,32 @@ public class HarvestLibraryStorageService implements StorageService {
     private void uploadFile(@NonNull HarvestFile harvestFile, @NonNull UploadForm form) {
         try {
             fileContentStore.setContent(harvestFile, form.getFile().getInputStream());
+            harvestFile.setPreviewImagePath(
+                    imageStorageService.uploadImage(form.getPreviewImage(),
+                            harvestFile.getAuthor().getClient().getCnpj(),
+                            harvestFile.getName() + "_preview",
+                            FileTypeEnum.IMAGE, harvestFile.getAuthor()));
         } catch (IOException e) {
             log.error("An error occurs while uploading the file", e);
             throw new GenericUploadException(e.getMessage(), e.getCause());
         }
     }
 
-    private String createFilePath(MultipartFile file, Client client) {
-        return MessageFormat.format("{0}/{1}/{2}", FILE_FOLDER, client.getCnpj(), file.getOriginalFilename());
+    private String createFilePath(String fileName, Client client) {
+        return MessageFormat.format("{0}/{1}/{2}", FILE_FOLDER, client.getCnpj(), fileName);
     }
 
     private HarvestFile convertFormToFile(@NonNull UploadForm form, @NonNull String token) {
         User user = userService.findUserByToken(token);
+        String fileName = form.getName() + "." + FilenameUtils.getExtension(form.getFile().getOriginalFilename());
 
         return HarvestFile.builder()
                 .author(user)
+                .name(form.getName())
                 .description(form.getDescription())
-                .authorizedClients(Objects.nonNull(form.getAuthorizedClients()) ? fetchService.fetchClients(form.getAuthorizedClients()) : null)
                 .authorizedClients(generateAuthorizedClients(form.getAuthorizedClients(), user))
-                .contentPath(createFilePath(form.getFile(), user.getClient()))
-                .name(form.getFile().getOriginalFilename())
+                .fileName(fileName)
+                .contentPath(createFilePath(fileName, user.getClient()))
                 .mimeType(form.getFile().getContentType()).build();
     }
 

@@ -28,9 +28,10 @@ public class StorageAdapter {
 
     private String token;
 
-    public StorageAdapter setForm(LinkForm link, MultipartFile file, List<Long> authorizedClients, String description, @NonNull String token){
+    public StorageAdapter setForm(LinkForm link, MultipartFile file, MultipartFile previewFile, List<Long> authorizedClients,
+                                  String description, String name, @NonNull String token){
 
-        this.form = new UploadForm(file, link, authorizedClients, description);
+        this.form = new UploadForm(file, previewFile, link, authorizedClients, description, name);
         this.token = token;
 
         Storage storage = Objects.nonNull(form.getLink()) ? Storage.LINK : Storage.HARVEST_FILE;
@@ -53,6 +54,7 @@ public class StorageAdapter {
     }
 
     public void save(){
+
         this.storageService.save(this.form, this.token);
     }
 

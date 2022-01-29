@@ -24,7 +24,9 @@ import br.com.harvest.onboardexperience.utils.GenericUtils;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -106,6 +108,12 @@ public class ClientService {
 
     public Page<ClientDto> findAll(Pageable pageable) {
         return repository.findAll(pageable).map(mapper::toDto);
+    }
+
+    public List<ClientDto> findAll() {
+        return repository.findAll().stream().filter(
+                client -> !client.getId().equals(Constants.Harvest.Client.ID)
+        ).map(mapper::toDto).collect(Collectors.toList());
     }
 
     @Transactional
