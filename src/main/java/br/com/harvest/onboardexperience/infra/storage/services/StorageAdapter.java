@@ -54,7 +54,7 @@ public class StorageAdapter {
     }
 
     public void save(){
-        validate();
+
         this.storageService.save(this.form, this.token);
     }
 

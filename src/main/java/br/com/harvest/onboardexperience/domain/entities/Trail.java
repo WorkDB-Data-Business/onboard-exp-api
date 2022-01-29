@@ -49,5 +49,4 @@ public class Trail extends BaseEntityAudit{
             inverseJoinColumns = @JoinColumn(name = "idstage"))
     private List<Stage> stages;
 
-
 }

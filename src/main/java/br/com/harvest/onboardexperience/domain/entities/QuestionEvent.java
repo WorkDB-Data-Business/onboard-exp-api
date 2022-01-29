@@ -7,6 +7,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.util.List;
 
 @Data
 @EqualsAndHashCode
@@ -17,7 +18,7 @@ import javax.persistence.*;
 public class QuestionEvent {
 
     @Id
-    @Column(name = "idquestion")
+    @Column(name = "id_question")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
@@ -36,16 +37,15 @@ public class QuestionEvent {
     @Column(name = "is_multiplechoice")
     private Boolean isMultipleChoice;
 
-    @Column(name = "is_descriptive")
-    private Boolean isDescriptive;
-
-    @ManyToOne
-    @JoinColumn(name = "idevent")
-    private Event event;
-
     @ManyToOne
     @JoinColumn(name = "idclient")
     private Client client;
 
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "tbanswer_question",
+            joinColumns = @JoinColumn(name = "id_question"),
+            inverseJoinColumns = @JoinColumn(name = "id_answer"))
+    private List<AnswerQuestion> answers;
 
 }

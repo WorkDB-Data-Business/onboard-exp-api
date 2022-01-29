@@ -34,7 +34,7 @@ CREATE TABLE IF NOT EXISTS public.tbtrail(
     FOREIGN KEY (iduser) REFERENCES tbuser(iduser),
     FOREIGN KEY (idcoin) REFERENCES tbcoin(idcoin),
 
-	CONSTRAINT idtrail_pk PRIMARY KEY (idtrail)
+	CONSTRAINT tbtrail_pk PRIMARY KEY (idtrail)
 );
 
 CREATE TABLE IF NOT EXISTS public.tbtrail_stage(
@@ -60,7 +60,7 @@ CREATE TABLE IF NOT EXISTS public.tbevent(
 );
 
 CREATE TABLE IF NOT EXISTS public.tbquestion(
-	idquestion BIGSERIAL NOT NULL,
+	id_question BIGSERIAL NOT NULL,
 	name CHARACTER VARYING NOT NULL,
 	descripton CHARACTER VARYING NOT NULL,
 	note_question BIGINT NOT NULL,
@@ -73,7 +73,7 @@ CREATE TABLE IF NOT EXISTS public.tbquestion(
 	FOREIGN KEY (idevent) REFERENCES tbevent(idevent),
 	FOREIGN KEY (idclient) REFERENCES tbclient(idclient),
 
-	CONSTRAINT tbquestion_pk PRIMARY KEY (idquestion)
+	CONSTRAINT tbquestion_pk PRIMARY KEY (id_question)
 
 );
 
