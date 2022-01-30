@@ -8,10 +8,10 @@ import lombok.*;
 @EqualsAndHashCode
 @AllArgsConstructor
 @NoArgsConstructor
-    @Builder
-    public class AnswerQuestionDto {
+@Builder
+public class AnswerQuestionDto {
 
-        private Long id;
+    private Long id;
 
-        private String answer;
+    private String answer;
 }

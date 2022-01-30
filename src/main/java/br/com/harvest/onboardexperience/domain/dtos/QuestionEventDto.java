@@ -3,6 +3,8 @@ package br.com.harvest.onboardexperience.domain.dtos;
 import br.com.harvest.onboardexperience.domain.entities.Event;
 import lombok.*;
 
+import java.util.List;
+
 @Data
 @EqualsAndHashCode
 @AllArgsConstructor
@@ -22,6 +24,7 @@ public class QuestionEventDto {
     @Builder.Default
     private Boolean isMultipleChoice = false;
 
+    private List<AnswerQuestionDto> answers;
 
 }
 

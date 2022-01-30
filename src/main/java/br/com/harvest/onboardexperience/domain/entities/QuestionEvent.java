@@ -1,12 +1,10 @@
 package br.com.harvest.onboardexperience.domain.entities;
 
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -14,6 +12,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
+@Builder
 @Table(name = "tbquestion", schema = "public")
 public class QuestionEvent {
 
@@ -41,11 +40,8 @@ public class QuestionEvent {
     @JoinColumn(name = "idclient")
     private Client client;
 
-    @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(
-            name = "tbanswer_question",
-            joinColumns = @JoinColumn(name = "id_question"),
-            inverseJoinColumns = @JoinColumn(name = "id_answer"))
-    private List<AnswerQuestion> answers;
+    @Builder.Default
+    @OneToMany(mappedBy = "questionEvent", cascade = CascadeType.ALL)
+    private List<AnswerQuestion> answers = new ArrayList<>();
 
 }

@@ -24,15 +24,10 @@ public class AnswerQuestion {
     @Column(name = "answer")
     private String answer;
 
+    @ManyToOne
+    @JoinColumn(name = "id_question")
+    private QuestionEvent questionEvent;
+
     @Column(name = "is_correct")
     private Boolean iscorrect;
-
-
-
-
-
-
-
-
-
 }
