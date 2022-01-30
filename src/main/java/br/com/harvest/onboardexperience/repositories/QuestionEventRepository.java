@@ -17,5 +17,5 @@ import java.util.Optional;
 public interface QuestionEventRepository extends JpaRepository<QuestionEvent,Long> {
 
 
-    List<QuestionEvent> findByClient_Id(Long id);
+    Page<QuestionEvent> findByClient_Id(Long id, Pageable pageable);
 }

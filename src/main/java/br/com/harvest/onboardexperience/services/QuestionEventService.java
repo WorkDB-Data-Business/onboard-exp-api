@@ -114,9 +114,9 @@ public class QuestionEventService { //TODO: essa classe não precisa existir
         return question;
     }
 
-    public List<QuestionEventDto> findAll(String token) {
+    public Page<QuestionEventDto> findAll(String token, Pageable pageable) {
         User user = userRepository.findById(jwtUtils.getUserId(token)).orElseThrow(() -> new NotFoundException());
-        return questionEventRepository.findByClient_Id(user.getClient().getId()).stream().map(QuestionEventMapper.INSTANCE::toDto).collect(Collectors.toList());
+        return questionEventRepository.findByClient_Id(user.getClient().getId(), pageable).map(QuestionEventMapper.INSTANCE::toDto);
     }
 
     public QuestionEventDto findById(Long id) {

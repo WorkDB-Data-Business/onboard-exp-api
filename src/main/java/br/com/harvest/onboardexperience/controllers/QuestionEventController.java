@@ -47,9 +47,9 @@ public class QuestionEventController {
 
     @Operation(description = "Retorna a listagem de questionários")
     @PreAuthorize("hasAuthority('ADMIN')")
-    @GetMapping()
-    public ResponseEntity<List<QuestionEventDto>> findAll(@Valid @RequestBody @NotNull QuestionEventFormDto dto, @RequestHeader("Authorization") String token) throws RuntimeException{
-        return ResponseEntity.ok().body(questionEventService.findAll(token));
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Page<QuestionEventDto>> findAll(@RequestHeader("Authorization") String token, Pageable pageable) throws RuntimeException{
+        return ResponseEntity.ok().body(questionEventService.findAll(token, pageable    ));
     }
 
     @Operation(description = "Retorna o questionário por ID")
