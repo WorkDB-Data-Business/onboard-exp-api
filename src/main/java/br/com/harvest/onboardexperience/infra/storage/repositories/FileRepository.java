@@ -4,7 +4,6 @@ package br.com.harvest.onboardexperience.infra.storage.repositories;
 import br.com.harvest.onboardexperience.domain.entities.Client;
 import br.com.harvest.onboardexperience.domain.entities.User;
 import br.com.harvest.onboardexperience.infra.storage.entities.HarvestFile;
-import br.com.harvest.onboardexperience.infra.storage.entities.Link;
 import lombok.NonNull;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -36,6 +35,10 @@ public interface FileRepository extends JpaRepository<HarvestFile, Long>, JpaSpe
 
     static Specification<HarvestFile> byIdAsString(@NonNull String id) {
         return (file, cq, cb) -> cb.equal(file.get("id").as(String.class), id);
+    }
+
+    static Specification<HarvestFile> byIsNotImagePreview() {
+        return (file, cq, cb) -> cb.equal(file.get("isImagePreview"), false);
     }
 
     static Specification<HarvestFile> byCustomFilter(@NonNull String customFilter){

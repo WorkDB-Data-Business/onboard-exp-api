@@ -19,7 +19,6 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = false)
-@Where(clause = SQLQueryUtils.IS_NOT_IMAGE_PREVIEW)
 public class HarvestFile extends BaseEntityAudit {
 
     @Id

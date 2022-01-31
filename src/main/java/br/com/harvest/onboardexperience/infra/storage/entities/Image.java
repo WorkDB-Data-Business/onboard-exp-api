@@ -19,7 +19,6 @@ import javax.persistence.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = false)
-@Where(clause = SQLQueryUtils.IS_IMAGE_PREVIEW)
 public class Image extends BaseEntityAudit {
 
     @Id
