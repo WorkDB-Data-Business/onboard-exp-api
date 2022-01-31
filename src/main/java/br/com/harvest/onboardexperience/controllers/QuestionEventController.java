@@ -79,11 +79,20 @@ public class QuestionEventController {
         return ResponseEntity.ok().body(questionEventService.answerQuestion(dto,token));
     }
 
-    @Operation(description = "Realiza alteração de uma pergunta.")
+    @Operation(description = "Realiza alteração do questionario.")
     @PreAuthorize("hasAuthority('ADMIN')")
     @PutMapping(path = "/{id}",produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<QuestionEventDto> updateQuestionEvent(@PathVariable @Pattern(regexp = RegexUtils.PASSWORD_VALIDATION)Long id, @Valid @RequestBody @NotNull QuestionEventFormDto dto, @RequestHeader("Authorization") String token) throws RuntimeException{
+    public ResponseEntity<QuestionEventDto> updateQuestionEvent(@PathVariable @Pattern(regexp = RegexUtils.PASSWORD_VALIDATION)Long id,
+                                                                @Valid @RequestBody @NotNull QuestionEventFormDto dto,
+                                                                @RequestHeader("Authorization") String token) throws RuntimeException{
         return ResponseEntity.ok().body(questionEventService.updateQuestionEvent(id,dto,token));
+    }
+
+    @Operation(description = "Realiza Exclusão do questionario.")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @DeleteMapping(path = "/{id}",produces = MediaType.APPLICATION_JSON_VALUE)
+    public void delete(@PathVariable @Pattern(regexp = RegexUtils.PASSWORD_VALIDATION)Long id, @Valid @RequestBody @NotNull QuestionEventFormDto dto, @RequestHeader("Authorization") String token) throws RuntimeException{
+         questionEventService.delete(id,dto,token);
     }
 
 }

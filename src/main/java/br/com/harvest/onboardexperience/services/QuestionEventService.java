@@ -142,7 +142,6 @@ public class QuestionEventService { //TODO: essa classe não precisa existir
         throw new BusinessException("Erro no parametro from, não é igual aos permitidos(trilha/bilioeteca, e sim igual a "+from);
     }
 
-
     public AnswerQuestionDto optionAnswer(AnswerQuestionDto dto, String token) {
 
         String tenant = jwtUtils.getUserTenant(token);
@@ -184,6 +183,17 @@ public class QuestionEventService { //TODO: essa classe não precisa existir
         questionEvent = questionEventRepository.save(questionEvent);
         log.info("The Question of event" + dto.getDescripton()+ "Was update sucessful");
         return QuestionEventMapper.INSTANCE.toDto(questionEvent);
+    }
+
+
+    public void delete(Long id, QuestionEventFormDto dto, String token) {
+        String tenant = jwtUtils.getUserTenant(token);
+
+        QuestionEvent questionEvent = questionEventRepository.findByIdAndClient_Tenant(id,token).orElseThrow(
+                () ->  new EventNotFoundExecption(ExceptionMessageFactory.createNotFoundMessage("Question", "Id", id.toString())));
+        BeanUtils.copyProperties(dto,questionEvent, "id");
+
+        questionEventRepository.delete(questionEvent);
     }
 }
 
