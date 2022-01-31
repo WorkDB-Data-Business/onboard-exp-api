@@ -83,7 +83,7 @@ public class QuestionEventController {
     @PreAuthorize("hasAuthority('ADMIN')")
     @PutMapping(path = "/{id}",produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<QuestionEventDto> updateQuestionEvent(@PathVariable @Pattern(regexp = RegexUtils.PASSWORD_VALIDATION)Long id, @Valid @RequestBody @NotNull QuestionEventFormDto dto, @RequestHeader("Authorization") String token) throws RuntimeException{
-        return ResponseEntity.ok().body(questionEventService.update(id,dto,token));
+        return ResponseEntity.ok().body(questionEventService.updateQuestionEvent(id,dto,token));
     }
 
 }
