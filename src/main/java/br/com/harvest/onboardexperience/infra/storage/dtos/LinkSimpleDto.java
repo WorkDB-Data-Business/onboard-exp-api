@@ -19,6 +19,8 @@ public class LinkSimpleDto {
 
     private String link;
 
+    private String previewImagePath;
+
     private ContentType contentType;
 
     private Boolean isActive;
