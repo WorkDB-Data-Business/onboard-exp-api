@@ -81,22 +81,27 @@ public class ScormService {
 
     public String registerOnScormCourse(@NonNull String scormID, @NonNull String token) throws ApiException, ScormCourseNotFoundException {
         Scorm scorm = findByIdAndToken(scormID, token);
+
+        ScormRegistration registroJaExistente = findScormRegistrationByIdAndToken(scorm.getId(), token);
+
+        if(Objects.nonNull(registroJaExistente)){
+            return registroJaExistente.getId();
+        }
+
         ScormRegistration registration = createScormCourseRegistration(scorm, token);
         uploadRegistrationToScormCloud(registration);
         return registrationRepository.save(registration).getId();
     }
 
-    public ScormRegistration findScormRegistrationByIdAndToken(@NonNull String courseId, @NonNull String registrationId, @NonNull String token){
+    public ScormRegistration findScormRegistrationByIdAndToken(@NonNull String courseId, @NonNull String token){
         User user = userService.findUserById(tokenUtils.getUserId(token));
         Scorm scorm = findByIdAndToken(courseId, token);
 
-        return registrationRepository.findByUserAndScormAndIsActive(user, scorm, true).orElseThrow(
-                () -> new RegistrationNotFoundException("The user has no register in this course.")
-        );
+        return registrationRepository.findByUserAndScormAndIsActive(user, scorm, true).orElse(null);
     }
 
-    public String generateScormExecutionLink(@NonNull String courseId, @NonNull String registrationId, @NonNull String token) throws ApiException {
-        return scormAPI.buildLaunchLink(findScormRegistrationByIdAndToken(courseId, registrationId, token).getId());
+    public String generateScormExecutionLink(@NonNull String courseId, @NonNull String token) throws ApiException {
+        return scormAPI.buildLaunchLink(findScormRegistrationByIdAndToken(courseId, token).getId());
     }
 
     public void deleteRegistration(@NonNull String scormId, @NonNull Long userId) throws ApiException {
