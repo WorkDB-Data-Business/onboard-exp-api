@@ -32,8 +32,8 @@ public class QuestionEventController {
     private QuestionEventService questionEventService;
 
     @Operation(description = "Criar pergunta no questionario")
-//    @PreAuthorize("hasAuthority('ADMIN')")
-    @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @PostMapping(path ="/create", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<QuestionEventDto> createQuestion(@Valid @RequestBody @NotNull QuestionEventDto dto, @RequestHeader("Authorization") String token) throws RuntimeException{
         return ResponseEntity.ok().body(questionEventService.createQuestion(dto,token));
     }
@@ -81,8 +81,17 @@ public class QuestionEventController {
     @Operation(description = "Realiza alteração de uma pergunta.")
 //    @PreAuthorize("hasAuthority('ADMIN')")
     @PutMapping(path = "/{id}",produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<QuestionEventDto> updateQuestionEvent(@PathVariable @Pattern(regexp = RegexUtils.PASSWORD_VALIDATION)Long id, @Valid @RequestBody @NotNull QuestionEventDto dto, @RequestHeader("Authorization") String token) throws RuntimeException{
+    public ResponseEntity<QuestionEventDto> updateQuestionEvent(@PathVariable @Pattern(regexp = RegexUtils.PASSWORD_VALIDATION)Long id,
+                                                                @Valid @RequestBody @NotNull QuestionEventDto dto,
+                                                                @RequestHeader("Authorization") String token) throws RuntimeException{
         return ResponseEntity.ok().body(questionEventService.updateQuestionEvent(id,dto,token));
+    }
+
+    @Operation(description = "Realiza Exclusão do questionario.")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @DeleteMapping(path = "/{id}",produces = MediaType.APPLICATION_JSON_VALUE)
+    public void delete(@PathVariable @Pattern(regexp = RegexUtils.PASSWORD_VALIDATION)Long id, @Valid @RequestBody @NotNull QuestionEventDto dto, @RequestHeader("Authorization") String token) throws RuntimeException{
+         questionEventService.delete(id,dto,token);
     }
 
 }

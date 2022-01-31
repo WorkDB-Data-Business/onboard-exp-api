@@ -48,6 +48,7 @@ public class QuestionEventService { //TODO: essa classe não precisa existir
     private AnswerQuiestionRepository repository;
 
 
+    //cria um pergunta no questionario
     @Transactional
     public QuestionEventDto createQuestion(QuestionEventDto dto, String token) {
         QuestionEvent questionEvent = dtoToEntity(dto,token);
@@ -99,27 +100,6 @@ public class QuestionEventService { //TODO: essa classe não precisa existir
         return QuestionEventMapper.INSTANCE.toDto(questionEvent);
 
     }
-//
-//    private QuestionEvent quenstionFormToQuestionEntity(QuestionEventFormDto formDto){
-//        var question = new QuestionEvent();
-//        question.setId(null);
-//        question.setName(formDto.getName());
-//        question.setDescripton(formDto.getDescripton());
-//        question.setNoteQuestion(formDto.getNoteQuestion());
-//        question.setIsActive(true);
-//
-//        if(formDto.getAnswares() != null && formDto.getAnswares().stream().count() > 0){
-//            question.setIsMultipleChoice(true);
-//            for(AnswerQuestionFormDto ans : formDto.getAnswares()){
-//                AnswerQuestion answare = new AnswerQuestion(null, ans.getAnswer(), question, ans.getIscorrect());
-//                question.getAnswers().add(answare);
-//            }
-//        }else{
-//            question.setIsMultipleChoice(false);
-//        }
-//
-//        return question;
-//    }
 
     public Page<QuestionEventDto> findAll(String token, Pageable pageable) {
         User user = userRepository.findById(jwtUtils.getUserId(token)).orElseThrow(() -> new NotFoundException());
@@ -140,7 +120,6 @@ public class QuestionEventService { //TODO: essa classe não precisa existir
         }
         throw new BusinessException("Erro no parametro from, não é igual aos permitidos(trilha/bilioeteca, e sim igual a "+from);
     }
-
 
     public AnswerQuestionDto optionAnswer(AnswerQuestionDto dto, String token) {
 
@@ -179,18 +158,8 @@ public class QuestionEventService { //TODO: essa classe não precisa existir
         return QuestionEventMapper.INSTANCE.toDto(questionEvent);
     }
 
-    private QuestionEvent dtoToEntity(QuestionEventDto dto,String token){
-//        List<AnswerQuestion> answers = new ArrayList<>();
-//        dto.getAnswers().forEach(
-//                answerQuestionDto -> {
-//                    answers.add(AnswerQuestionMapper.INSTANCE.toEntity(answerQuestionDto));
-//                }
-//        );
-//        answers.forEach(
-//                answerQuestion -> {
-//                    answerQuestion.setQuestionEvent(QuestionEventMapper.INSTANCE.toEntity(dto));
-//                }
-//        );
+    private QuestionEvent dtoToEntity(QuestionEventDto dto,String token) {
+
         return QuestionEvent
                 .builder()
                 .name(dto.getName())
@@ -199,8 +168,17 @@ public class QuestionEventService { //TODO: essa classe não precisa existir
                 .isMultipleChoice(dto.getAnswers().size() > 0)
                 .noteQuestion(dto.getNoteQuestion())
                 .client(tenantService.fetchClientByTenantFromToken(token))
-//                .answers(answers)
                 .build();
+    }
+
+    public void delete(Long id, QuestionEventDto dto, String token) {
+        String tenant = jwtUtils.getUserTenant(token);
+
+        QuestionEvent questionEvent = questionEventRepository.findByIdAndClient_Tenant(id,token).orElseThrow(
+                () ->  new EventNotFoundExecption(ExceptionMessageFactory.createNotFoundMessage("Question", "Id", id.toString())));
+        BeanUtils.copyProperties(dto,questionEvent, "id");
+
+        questionEventRepository.delete(questionEvent);
     }
 }
 
