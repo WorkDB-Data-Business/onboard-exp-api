@@ -100,7 +100,8 @@ public class HarvestLibraryStorageService implements StorageService {
 
     private Specification<HarvestFile> createQuery(@NonNull HarvestLibraryFilter filter, @NonNull String token){
         Specification<HarvestFile> query = Specification.where(
-                FileRepository.byAuthorizedClients(tenantService.fetchClientByTenantFromToken(token)));
+                FileRepository.byAuthorizedClients(tenantService.fetchClientByTenantFromToken(token)))
+                .and(FileRepository.byIsNotImagePreview());
 
         if(StringUtils.hasText(filter.getCriteriaFilter())) {
             query = query.and(FileRepository.byCustomFilter(filter.getCriteriaFilter()));
