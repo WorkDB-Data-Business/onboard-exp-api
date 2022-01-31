@@ -56,6 +56,7 @@ public class QuestionEventService { //TODO: essa classe não precisa existir
     private AnswerQuiestionRepository repository;
 
 
+    //cria um pergunta no questionario
     @Transactional
     public QuestionEventDto createQuestion(QuestionEventFormDto dto, String token) {
 

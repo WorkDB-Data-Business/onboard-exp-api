@@ -34,7 +34,7 @@ public class QuestionEventController {
 
     @Operation(description = "Criar pergunta no questionario")
     @PreAuthorize("hasAuthority('ADMIN')")
-    @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(path ="/create", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<QuestionEventDto> createQuestion(@Valid @RequestBody @NotNull QuestionEventFormDto dto, @RequestHeader("Authorization") String token) throws RuntimeException{
         return ResponseEntity.ok().body(questionEventService.createQuestion(dto,token));
     }
