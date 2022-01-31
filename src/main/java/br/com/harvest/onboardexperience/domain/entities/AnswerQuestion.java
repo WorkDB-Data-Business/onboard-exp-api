@@ -29,5 +29,5 @@ public class AnswerQuestion {
     private QuestionEvent questionEvent;
 
     @Column(name = "is_correct")
-    private Boolean iscorrect;
+    private Boolean isCorrect;
 }

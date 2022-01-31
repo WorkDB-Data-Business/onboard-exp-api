@@ -3,7 +3,6 @@ package br.com.harvest.onboardexperience.controllers;
 
 import br.com.harvest.onboardexperience.domain.dtos.AnswerQuestionDto;
 import br.com.harvest.onboardexperience.domain.dtos.QuestionEventDto;
-import br.com.harvest.onboardexperience.domain.dtos.forms.QuestionEventFormDto;
 import br.com.harvest.onboardexperience.services.EventService;
 import br.com.harvest.onboardexperience.services.QuestionEventService;
 import br.com.harvest.onboardexperience.utils.RegexUtils;
@@ -33,21 +32,21 @@ public class QuestionEventController {
     private QuestionEventService questionEventService;
 
     @Operation(description = "Criar pergunta no questionario")
-    @PreAuthorize("hasAuthority('ADMIN')")
+//    @PreAuthorize("hasAuthority('ADMIN')")
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<QuestionEventDto> createQuestion(@Valid @RequestBody @NotNull QuestionEventFormDto dto, @RequestHeader("Authorization") String token) throws RuntimeException{
+    public ResponseEntity<QuestionEventDto> createQuestion(@Valid @RequestBody @NotNull QuestionEventDto dto, @RequestHeader("Authorization") String token) throws RuntimeException{
         return ResponseEntity.ok().body(questionEventService.createQuestion(dto,token));
     }
 
     @Operation(description = "Retorna a listagem de questionários")
-    @PreAuthorize("hasAuthority('ADMIN')")
+//    @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Page<QuestionEventDto>> findAll(@RequestHeader("Authorization") String token, Pageable pageable) throws RuntimeException{
         return ResponseEntity.ok().body(questionEventService.findAll(token, pageable    ));
     }
 
     @Operation(description = "Retorna o questionário por ID")
-    @PreAuthorize("hasAuthority('ADMIN')")
+//    @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping("/{id}/{from}")
     public ResponseEntity<QuestionEventDto> findById(@PathVariable(name = "from")String from,@PathVariable(name = "id") Long id,
                                                      @RequestHeader("Authorization") String token) throws RuntimeException{
@@ -55,14 +54,14 @@ public class QuestionEventController {
     }
 
     @Operation(description = "Inserir nota da pergunta ")
-    @PreAuthorize("hasAuthority('ADMIN')")
+//    @PreAuthorize("hasAuthority('ADMIN')")
     @PostMapping(path ="/note", produces =  MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<QuestionEventDto> noteQuestion(@NotNull QuestionEventDto dto, @RequestHeader("Authorization") String token) throws RuntimeException{
         return ResponseEntity.ok().body(questionEventService.noteQuestion(dto,token));
     }
 
     @Operation(description = "Coloca opções de respotas")
-    @PreAuthorize("hasAuthority('ADMIN')")
+//    @PreAuthorize("hasAuthority('ADMIN')")
     @PostMapping(path ="/option/idQuestion", produces =  MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<AnswerQuestionDto> optionAnswer(@PathVariable(name = "idQuestion")Long idQuestion,
                                                           @Valid @ModelAttribute @NotNull AnswerQuestionDto dto,
@@ -71,18 +70,18 @@ public class QuestionEventController {
     }
 
     @Operation(description = "Resposta do colaborador.")
-    @PreAuthorize("hasAuthority('COLABORATOR')")
+//    @PreAuthorize("hasAuthority('COLABORATOR')")
     @PostMapping(path ="/answerquestion/{idQuestion}", produces =  MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<AnswerQuestionDto> answerQuestion(@PathVariable(name="idQuestion")Long idQuestion,
                                                             @Valid @ModelAttribute @NotNull AnswerQuestionDto dto,
                                                             @RequestHeader("Authorization") String token) throws RuntimeException{
-        return ResponseEntity.ok().body(questionEventService.answerQuestion(dto,token));
+        return ResponseEntity.ok().body(questionEventService.answerQuestion(idQuestion,dto,token));
     }
 
     @Operation(description = "Realiza alteração de uma pergunta.")
-    @PreAuthorize("hasAuthority('ADMIN')")
+//    @PreAuthorize("hasAuthority('ADMIN')")
     @PutMapping(path = "/{id}",produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<QuestionEventDto> updateQuestionEvent(@PathVariable @Pattern(regexp = RegexUtils.PASSWORD_VALIDATION)Long id, @Valid @RequestBody @NotNull QuestionEventFormDto dto, @RequestHeader("Authorization") String token) throws RuntimeException{
+    public ResponseEntity<QuestionEventDto> updateQuestionEvent(@PathVariable @Pattern(regexp = RegexUtils.PASSWORD_VALIDATION)Long id, @Valid @RequestBody @NotNull QuestionEventDto dto, @RequestHeader("Authorization") String token) throws RuntimeException{
         return ResponseEntity.ok().body(questionEventService.updateQuestionEvent(id,dto,token));
     }
 

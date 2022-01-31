@@ -2,35 +2,27 @@ package br.com.harvest.onboardexperience.services;
 
 
 import br.com.harvest.onboardexperience.domain.dtos.AnswerQuestionDto;
-import br.com.harvest.onboardexperience.domain.dtos.EventDto;
 import br.com.harvest.onboardexperience.domain.dtos.QuestionEventDto;
-import br.com.harvest.onboardexperience.domain.dtos.forms.AnswerQuestionFormDto;
-import br.com.harvest.onboardexperience.domain.dtos.forms.QuestionEventFormDto;
 import br.com.harvest.onboardexperience.domain.entities.*;
 import br.com.harvest.onboardexperience.domain.exceptions.BusinessException;
 import br.com.harvest.onboardexperience.domain.exceptions.EventNotFoundExecption;
-import br.com.harvest.onboardexperience.domain.exceptions.StageNotFoundExecption;
 import br.com.harvest.onboardexperience.domain.factories.ExceptionMessageFactory;
 import br.com.harvest.onboardexperience.mappers.AnswerQuestionMapper;
-import br.com.harvest.onboardexperience.mappers.EventMapper;
 import br.com.harvest.onboardexperience.mappers.QuestionEventMapper;
 import br.com.harvest.onboardexperience.repositories.AnswerQuiestionRepository;
-import br.com.harvest.onboardexperience.repositories.EventRepository;
 import br.com.harvest.onboardexperience.repositories.QuestionEventRepository;
 import br.com.harvest.onboardexperience.repositories.UserRepository;
 import br.com.harvest.onboardexperience.utils.JwtTokenUtils;
-import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.NotImplementedException;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 import javax.transaction.Transactional;
 import javax.ws.rs.NotFoundException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -57,17 +49,24 @@ public class QuestionEventService { //TODO: essa classe não precisa existir
 
 
     @Transactional
-    public QuestionEventDto createQuestion(QuestionEventFormDto dto, String token) {
-
-        QuestionEvent questionEvent = quenstionFormToQuestionEntity(dto);
-
-        setClient(questionEvent,token);
-
-        questionEvent = questionEventRepository.save(questionEvent);
-
+    public QuestionEventDto createQuestion(QuestionEventDto dto, String token) {
+        QuestionEvent questionEvent = dtoToEntity(dto,token);
+        QuestionEventDto questionEventFinal = QuestionEventMapper.INSTANCE.toDto(questionEventRepository.save(questionEvent));
         log.info("The Question" + questionEvent.getName() + "was created sucessful");
+        List<AnswerQuestion> respostas = new ArrayList<>();
 
-        return QuestionEventMapper.INSTANCE.toDto(questionEvent);
+        dto.getAnswers().forEach(
+                answerQuestionDto -> {
+                    respostas.add(AnswerQuestionMapper.INSTANCE.toEntity(answerQuestionDto));
+                }
+        );
+        respostas.forEach(
+                answerQuestion -> {
+                    answerQuestion.setQuestionEvent(questionEvent);
+                    this.repository.save(answerQuestion);
+                }
+        );
+        return questionEventFinal;
     }
 
     private void setClient(QuestionEvent questionEvent, String token) {
@@ -100,27 +99,27 @@ public class QuestionEventService { //TODO: essa classe não precisa existir
         return QuestionEventMapper.INSTANCE.toDto(questionEvent);
 
     }
-
-    private QuestionEvent quenstionFormToQuestionEntity(QuestionEventFormDto formDto){
-        var question = new QuestionEvent();
-        question.setId(null);
-        question.setName(formDto.getName());
-        question.setDescripton(formDto.getDescripton());
-        question.setNoteQuestion(formDto.getNoteQuestion());
-        question.setIsActive(true);
-
-        if(formDto.getAnswares() != null && formDto.getAnswares().stream().count() > 0){
-            question.setIsMultipleChoice(true);
-            for(AnswerQuestionFormDto ans : formDto.getAnswares()){
-                AnswerQuestion answare = new AnswerQuestion(null, ans.getAnswer(), question, ans.getIscorrect());
-                question.getAnswers().add(answare);
-            }
-        }else{
-            question.setIsMultipleChoice(false);
-        }
-
-        return question;
-    }
+//
+//    private QuestionEvent quenstionFormToQuestionEntity(QuestionEventFormDto formDto){
+//        var question = new QuestionEvent();
+//        question.setId(null);
+//        question.setName(formDto.getName());
+//        question.setDescripton(formDto.getDescripton());
+//        question.setNoteQuestion(formDto.getNoteQuestion());
+//        question.setIsActive(true);
+//
+//        if(formDto.getAnswares() != null && formDto.getAnswares().stream().count() > 0){
+//            question.setIsMultipleChoice(true);
+//            for(AnswerQuestionFormDto ans : formDto.getAnswares()){
+//                AnswerQuestion answare = new AnswerQuestion(null, ans.getAnswer(), question, ans.getIscorrect());
+//                question.getAnswers().add(answare);
+//            }
+//        }else{
+//            question.setIsMultipleChoice(false);
+//        }
+//
+//        return question;
+//    }
 
     public Page<QuestionEventDto> findAll(String token, Pageable pageable) {
         User user = userRepository.findById(jwtUtils.getUserId(token)).orElseThrow(() -> new NotFoundException());
@@ -133,7 +132,7 @@ public class QuestionEventService { //TODO: essa classe não precisa existir
         question.getAnswers().forEach(
                 answerQuestion -> {
                     if(from.equalsIgnoreCase("trilha")){
-                        answerQuestion.setIscorrect(null);
+                        answerQuestion.setIsCorrect(null);
                     }
                 }
         );
@@ -155,35 +154,53 @@ public class QuestionEventService { //TODO: essa classe não precisa existir
         return AnswerQuestionMapper.INSTANCE.toDto(answerQuestion);
     }
 
-    public AnswerQuestionDto answerQuestion(AnswerQuestionDto dto, String token) {
+    public AnswerQuestionDto answerQuestion(Long idQuestion,AnswerQuestionDto dto, String token) {
 
-        this.findById(dto.getIdQuestion(),"biblioteca").getAnswers().forEach(
+        this.findById(idQuestion,"biblioteca").getAnswers().forEach(
                 answerQuestionDto -> {
-                    if(dto.getAnswer().equalsIgnoreCase(answerQuestionDto.getAnswer())){
+                    if(answerQuestionDto.getAnswer().equalsIgnoreCase(dto.getAnswer())&&answerQuestionDto.getIsCorrect()){
                         dto.setIsCorrect(true);
                     }
                 }
         );
+        ;
 
-        String tenant = jwtUtils.getUserTenant(token);
-        AnswerQuestion answerQuestion = AnswerQuestionMapper.INSTANCE.toEntity(dto);
-
-        answerQuestion = repository.save(answerQuestion);
-
-        log.info("The Question" + answerQuestion.getAnswer() + "was created sucessful");
-
-        return AnswerQuestionMapper.INSTANCE.toDto(answerQuestion);
+        return dto;
 
     }
 
-    public QuestionEventDto updateQuestionEvent (Long id, QuestionEventFormDto dto, String token) {
+    public QuestionEventDto updateQuestionEvent (Long id, QuestionEventDto dto, String token) {
         String tenant = jwtUtils.getUserTenant(token);
         QuestionEvent questionEvent = questionEventRepository.findByIdAndClient_Tenant(id,token).orElseThrow(
                 () ->  new EventNotFoundExecption(ExceptionMessageFactory.createNotFoundMessage("Question", "Id", id.toString())));
         BeanUtils.copyProperties(dto,questionEvent, "id");
         questionEvent = questionEventRepository.save(questionEvent);
-        log.info("The Question of event" + dto.getDescripton()+ "Was update sucessful");
+        log.info("The Question of event" + dto.getDescription()+ "Was update sucessful");
         return QuestionEventMapper.INSTANCE.toDto(questionEvent);
+    }
+
+    private QuestionEvent dtoToEntity(QuestionEventDto dto,String token){
+//        List<AnswerQuestion> answers = new ArrayList<>();
+//        dto.getAnswers().forEach(
+//                answerQuestionDto -> {
+//                    answers.add(AnswerQuestionMapper.INSTANCE.toEntity(answerQuestionDto));
+//                }
+//        );
+//        answers.forEach(
+//                answerQuestion -> {
+//                    answerQuestion.setQuestionEvent(QuestionEventMapper.INSTANCE.toEntity(dto));
+//                }
+//        );
+        return QuestionEvent
+                .builder()
+                .name(dto.getName())
+                .descripton(dto.getDescription())
+                .isActive(dto.getIsActive())
+                .isMultipleChoice(dto.getAnswers().size() > 0)
+                .noteQuestion(dto.getNoteQuestion())
+                .client(tenantService.fetchClientByTenantFromToken(token))
+//                .answers(answers)
+                .build();
     }
 }
 
