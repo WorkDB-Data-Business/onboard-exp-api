@@ -18,4 +18,8 @@ public interface QuestionEventRepository extends JpaRepository<QuestionEvent,Lon
 
 
     Page<QuestionEvent> findByClient_Id(Long id, Pageable pageable);
+
+    Optional<QuestionEvent> findByIdAndClient_Tenant(Long id, String tenant);
+
+
 }

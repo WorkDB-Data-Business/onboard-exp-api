@@ -14,4 +14,8 @@ public class AnswerQuestionDto {
     private Long id;
 
     private String answer;
+
+    private Boolean isCorrect = false;
+
+    private Long idQuestion;
 }

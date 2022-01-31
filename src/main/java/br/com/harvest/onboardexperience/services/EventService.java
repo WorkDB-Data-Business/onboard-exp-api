@@ -2,6 +2,7 @@ package br.com.harvest.onboardexperience.services;
 
 
 import br.com.harvest.onboardexperience.domain.dtos.EventDto;
+import br.com.harvest.onboardexperience.domain.dtos.QuestionEventDto;
 import br.com.harvest.onboardexperience.domain.dtos.StageDto;
 import br.com.harvest.onboardexperience.domain.dtos.TrailDTO;
 import br.com.harvest.onboardexperience.domain.entities.Event;
@@ -24,6 +25,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.w3c.dom.events.EventException;
+
+import java.util.Objects;
 
 @Slf4j
 @Service
@@ -93,6 +96,7 @@ public class EventService {
 
         repository.delete(event);
     }
+
 
 }
 

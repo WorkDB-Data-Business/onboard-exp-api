@@ -23,6 +23,6 @@ public class QuestionEventFormDto {
 
     private Long noteQuestion;
 
-    List<AnswerQuestionFormDto> answares;
+    private List<AnswerQuestionFormDto> answares;
 }
 

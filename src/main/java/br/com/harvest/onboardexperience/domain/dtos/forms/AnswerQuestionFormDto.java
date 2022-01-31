@@ -14,5 +14,5 @@ public class AnswerQuestionFormDto {
 
     private String answer;
 
-    private Boolean iscorrect;
+    private Boolean iscorrect = false;
 }

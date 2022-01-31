@@ -7,11 +7,14 @@ import br.com.harvest.onboardexperience.domain.dtos.QuestionEventDto;
 import br.com.harvest.onboardexperience.domain.dtos.forms.AnswerQuestionFormDto;
 import br.com.harvest.onboardexperience.domain.dtos.forms.QuestionEventFormDto;
 import br.com.harvest.onboardexperience.domain.entities.*;
+import br.com.harvest.onboardexperience.domain.exceptions.BusinessException;
 import br.com.harvest.onboardexperience.domain.exceptions.EventNotFoundExecption;
 import br.com.harvest.onboardexperience.domain.exceptions.StageNotFoundExecption;
 import br.com.harvest.onboardexperience.domain.factories.ExceptionMessageFactory;
+import br.com.harvest.onboardexperience.mappers.AnswerQuestionMapper;
 import br.com.harvest.onboardexperience.mappers.EventMapper;
 import br.com.harvest.onboardexperience.mappers.QuestionEventMapper;
+import br.com.harvest.onboardexperience.repositories.AnswerQuiestionRepository;
 import br.com.harvest.onboardexperience.repositories.EventRepository;
 import br.com.harvest.onboardexperience.repositories.QuestionEventRepository;
 import br.com.harvest.onboardexperience.repositories.UserRepository;
@@ -29,6 +32,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.transaction.Transactional;
 import javax.ws.rs.NotFoundException;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -47,6 +51,10 @@ public class QuestionEventService { //TODO: essa classe não precisa existir
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private AnswerQuiestionRepository repository;
+
 
     @Transactional
     public QuestionEventDto createQuestion(QuestionEventFormDto dto, String token) {
@@ -119,9 +127,63 @@ public class QuestionEventService { //TODO: essa classe não precisa existir
         return questionEventRepository.findByClient_Id(user.getClient().getId(), pageable).map(QuestionEventMapper.INSTANCE::toDto);
     }
 
-    public QuestionEventDto findById(Long id) {
-        QuestionEvent question = questionEventRepository.findById(id).orElseThrow(() -> new NotFoundException());
-        return QuestionEventMapper.INSTANCE.toDto(question);
+    public QuestionEventDto findById(Long id,String from) {
+        if(Objects.nonNull(from)&&Objects.equals(from,"trilha")||Objects.equals(from,"biblioteca")){
+        QuestionEvent question = questionEventRepository.findById(id).orElseThrow(() -> new NotFoundException(("Não encontrado")));
+        question.getAnswers().forEach(
+                answerQuestion -> {
+                    if(from.equalsIgnoreCase("trilha")){
+                        answerQuestion.setIscorrect(null);
+                    }
+                }
+        );
+            return QuestionEventMapper.INSTANCE.toDto(question);
+        }
+        throw new BusinessException("Erro no parametro from, não é igual aos permitidos(trilha/bilioeteca, e sim igual a "+from);
+    }
+
+
+    public AnswerQuestionDto optionAnswer(AnswerQuestionDto dto, String token) {
+
+        String tenant = jwtUtils.getUserTenant(token);
+        AnswerQuestion answerQuestion = AnswerQuestionMapper.INSTANCE.toEntity(dto);
+
+        answerQuestion = repository.save(answerQuestion);
+
+        log.info("The Question" + answerQuestion.getAnswer() + "was created sucessful");
+
+        return AnswerQuestionMapper.INSTANCE.toDto(answerQuestion);
+    }
+
+    public AnswerQuestionDto answerQuestion(AnswerQuestionDto dto, String token) {
+
+        this.findById(dto.getIdQuestion(),"biblioteca").getAnswers().forEach(
+                answerQuestionDto -> {
+                    if(dto.getAnswer().equalsIgnoreCase(answerQuestionDto.getAnswer())){
+                        dto.setIsCorrect(true);
+                    }
+                }
+        );
+
+        String tenant = jwtUtils.getUserTenant(token);
+        AnswerQuestion answerQuestion = AnswerQuestionMapper.INSTANCE.toEntity(dto);
+
+        answerQuestion = repository.save(answerQuestion);
+
+        log.info("The Question" + answerQuestion.getAnswer() + "was created sucessful");
+
+        return AnswerQuestionMapper.INSTANCE.toDto(answerQuestion);
+
+    }
+
+    public QuestionEventDto updateQuestionEvent (Long id, QuestionEventFormDto dto, String token) {
+        String tenant = jwtUtils.getUserTenant(token);
+        QuestionEvent questionEvent = questionEventRepository.findByIdAndClient_Tenant(id,token).orElseThrow(
+                () ->  new EventNotFoundExecption(ExceptionMessageFactory.createNotFoundMessage("Question", "Id", id.toString())));
+        BeanUtils.copyProperties(dto,questionEvent, "id");
+        questionEvent = questionEventRepository.save(questionEvent);
+        log.info("The Question of event" + dto.getDescripton()+ "Was update sucessful");
+        return QuestionEventMapper.INSTANCE.toDto(questionEvent);
     }
 }
 
