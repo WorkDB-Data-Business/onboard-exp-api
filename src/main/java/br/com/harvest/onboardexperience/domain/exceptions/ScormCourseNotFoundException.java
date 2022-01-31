@@ -10,6 +10,10 @@ public class ScormCourseNotFoundException extends RuntimeException {
         super(MessageFormat.format("Scorm Course with {0} {1} not found.", field, value));
     }
 
+    public ScormCourseNotFoundException(String field) {
+        super(field);
+    }
+
     public ScormCourseNotFoundException(String message, Throwable cause) {
         super(message, cause);
     }
