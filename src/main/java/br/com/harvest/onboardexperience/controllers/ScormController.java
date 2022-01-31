@@ -31,11 +31,10 @@ public class ScormController {
     }
 
     @Operation(description = "Realiza a geração do link de execução do usuário com o curso.")
-    @GetMapping(value = "/courses/{courseId}/registrations/{registrationID}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/courses/{courseId}/launch", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> buildExecutionLinkCourse(@PathVariable("courseId") String courseId,
-                                                           @PathVariable("registrationID") String registrationID,
                                                  @NonNull @RequestHeader("Authorization") String token) throws ApiException, ScormCourseNotFoundException {
-        return ResponseEntity.ok(service.generateScormExecutionLink(courseId, registrationID, token));
+        return ResponseEntity.ok(service.generateScormExecutionLink(courseId, token));
     }
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
