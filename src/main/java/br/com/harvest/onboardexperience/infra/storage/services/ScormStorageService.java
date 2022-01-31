@@ -104,8 +104,8 @@ public class ScormStorageService implements StorageService {
                 tenantService.fetchClientByTenantFromToken(token)
         ));
 
-        if(StringUtils.hasText(filter.getCriteriaFilter())){
-            query = query.and(ScormRepository.byCustomFilter(filter.getCriteriaFilter()));
+        if(StringUtils.hasText(filter.getCustomFilter())){
+            query = query.and(ScormRepository.byCustomFilter(filter.getCustomFilter()));
         }
 
         if(Objects.nonNull(filter.getCourseLearningStandard())){

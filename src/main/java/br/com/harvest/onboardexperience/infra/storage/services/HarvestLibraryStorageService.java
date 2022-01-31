@@ -102,8 +102,8 @@ public class HarvestLibraryStorageService implements StorageService {
         Specification<HarvestFile> query = Specification.where(
                 FileRepository.byAuthorizedClients(tenantService.fetchClientByTenantFromToken(token)));
 
-        if(StringUtils.hasText(filter.getCriteriaFilter())) {
-            query = query.and(FileRepository.byCustomFilter(filter.getCriteriaFilter()));
+        if(StringUtils.hasText(filter.getCustomFilter())) {
+            query = query.and(FileRepository.byCustomFilter(filter.getCustomFilter()));
         }
 
         return query;

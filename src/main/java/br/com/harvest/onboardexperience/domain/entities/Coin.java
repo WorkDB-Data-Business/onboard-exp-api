@@ -2,7 +2,6 @@ package br.com.harvest.onboardexperience.domain.entities;
 
 import javax.persistence.*;
 
-import br.com.harvest.onboardexperience.infra.storage.entities.Image;
 import org.hibernate.annotations.ResultCheckStyle;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Where;

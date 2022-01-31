@@ -6,6 +6,7 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonProperty.Access;
 
@@ -26,8 +27,8 @@ public class CompanyRoleDto implements Serializable {
 	@NotBlank
 	@Min(ValidationUtils.MIN_SIZE_ROLE)
 	private String name;
-	
-	@JsonProperty(access = Access.WRITE_ONLY)
+
+	@JsonIgnore
 	private ClientDto client;
 	
 	@Builder.Default

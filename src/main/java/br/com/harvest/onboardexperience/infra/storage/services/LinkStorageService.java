@@ -100,8 +100,8 @@ public class LinkStorageService implements StorageService {
     private Specification<Link> createQuery(@NonNull HarvestLibraryFilter filter, @NonNull String token){
         Specification<Link> query = Specification.where(LinkRepository.byAuthorizedClients(tenantService.fetchClientByTenantFromToken(token)));
 
-        if(StringUtils.hasText(filter.getCriteriaFilter())){
-            query = query.and(LinkRepository.byCustomFilter(filter.getCriteriaFilter()));
+        if(StringUtils.hasText(filter.getCustomFilter())){
+            query = query.and(LinkRepository.byCustomFilter(filter.getCustomFilter()));
         }
 
         return query;
