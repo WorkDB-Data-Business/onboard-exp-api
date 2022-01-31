@@ -67,7 +67,7 @@ public class CoinService {
     }
 
 
-    public CoinDto update(@NonNull Long id, @NonNull CoinDto dto,MultipartFile file, @NonNull String token) {
+    public CoinDto update(@NonNull Long id, @NonNull CoinDto dto, MultipartFile file, @NonNull String token) {
         String tenant = jwtUtils.getUserTenant(token);
         User user = userRepository.findById(jwtUtils.getUserId(token)).orElseThrow(() -> new RuntimeException("usuário não encontrado")) ;
 
@@ -79,9 +79,9 @@ public class CoinService {
 
         validate(coin, dto, tenant);
 
-        //saveImage(file, dto, user);
+        saveImage(file, dto, user);
 
-        BeanUtils.copyProperties(dto, coin, "id", "client", "createdAt", "createdBy", dto.getImagePath() == null ? "imagePath" : "");
+        BeanUtils.copyProperties(dto, coin, "id", "client", "createdAt", "createdBy");
 
         coin = repository.save(coin);
 

@@ -7,8 +7,10 @@ import br.com.harvest.onboardexperience.domain.entities.Group;
 import br.com.harvest.onboardexperience.domain.entities.User;
 import br.com.harvest.onboardexperience.domain.exceptions.GroupNotFoundException;
 import br.com.harvest.onboardexperience.domain.factories.ExceptionMessageFactory;
+import br.com.harvest.onboardexperience.infra.storage.filters.CustomFilter;
 import br.com.harvest.onboardexperience.mappers.ClientMapper;
 import br.com.harvest.onboardexperience.mappers.GroupMapper;
+import br.com.harvest.onboardexperience.mappers.UserMapper;
 import br.com.harvest.onboardexperience.repositories.GroupRepository;
 import br.com.harvest.onboardexperience.utils.JwtTokenUtils;
 import lombok.NonNull;
@@ -16,7 +18,9 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,20 +48,11 @@ public class GroupService {
     private FetchService fetchService;
 
     public GroupDto create(@NonNull GroupForm dto, @NonNull final String token) {
-
-        GroupDto groupDto = convertFormToGroupDto(dto, token);
-
-        Group group = repository.save(GroupMapper.INSTANCE.toEntity(groupDto));
-        return GroupMapper.INSTANCE.toDto(group);
+        return GroupMapper.INSTANCE.toDto(repository.save(GroupMapper.INSTANCE.toEntity(convertFormToGroupDto(dto, token))));
     }
 
     public GroupDto update(@NonNull final Long id, @NonNull GroupForm dto, @NonNull final String token) {
-        String tenant = jwtTokenUtils.getUserTenant(token);
-
-        Group group = repository.findByIdAndClient_Tenant(id, tenant).orElseThrow(
-                () -> new GroupNotFoundException(ExceptionMessageFactory.createNotFoundMessage("group",
-                        "ID", id.toString())));
-
+        Group group = findByIdAndClientTenant(id, token);
 
         GroupDto updatedGroup = convertFormToGroupDto(dto, token);
 
@@ -69,30 +64,36 @@ public class GroupService {
     }
 
     public GroupForm findByIdAndTenant(@NonNull final Long id, @NonNull final String token) {
-        String tenant = jwtTokenUtils.getUserTenant(token);
 
-        Group group = repository.findByIdAndClient_Tenant(id, tenant).orElseThrow(
-                () -> new GroupNotFoundException(ExceptionMessageFactory.createNotFoundMessage("group",
-                        "ID", id.toString())));
+        Group group = findByIdAndClientTenant(id, token);
 
         return convertGroupToFormDto(group);
     }
 
-    public Page<GroupSimpleDto> findAllByTenant(Pageable pageable, @NonNull final String token) {
-        String tenant = jwtTokenUtils.getUserTenant(token);
-        return repository.findAllByClient_Tenant(tenant, pageable).map(GroupMapper.INSTANCE::toGroupSimpleDto);
+    public Page<GroupSimpleDto> findAllByTenant(Pageable pageable, @NonNull CustomFilter filter, @NonNull final String token) {
+        return repository.findAll(createQuery(filter, token), pageable).map(GroupMapper.INSTANCE::toGroupSimpleDto);
+    }
+
+    private Specification<Group> createQuery(@NonNull CustomFilter filter, @NonNull String token){
+        Specification<Group> query = Specification.where(GroupRepository.byClient(tenantService.fetchClientByTenantFromToken(token)));
+
+        if(StringUtils.hasText(filter.getCustomFilter())){
+            query = query.and(GroupRepository.byCustomFilter(filter.getCustomFilter()));
+        }
+
+        return query;
     }
 
     public void delete(@NonNull final Long id, @NonNull final String token) {
-        String tenant = jwtTokenUtils.getUserTenant(token);
-        Group group = repository.findByIdAndClient_Tenant(id, tenant).orElseThrow(
-                () -> new GroupNotFoundException(ExceptionMessageFactory.createNotFoundMessage("group",
-                        "ID", id.toString())));
-
+        Group group = findByIdAndClientTenant(id, token);
         repository.delete(group);
     }
 
-
+    private Group findByIdAndClientTenant(@NonNull final Long id, @NonNull final String token){
+        return repository.findByIdAndClient_Tenant(id, jwtTokenUtils.getUserTenant(token)).orElseThrow(
+                () -> new GroupNotFoundException(ExceptionMessageFactory.createNotFoundMessage("group",
+                        "ID", id.toString())));
+    }
 
     private GroupDto convertFormToGroupDto(@NonNull GroupForm form, String token){
         ClientDto client = ClientMapper.INSTANCE.toDto(tenantService.fetchClientByTenantFromToken(token));
@@ -101,7 +102,7 @@ public class GroupService {
                 .name(form.getName())
                 .companyRoles(fetchService.fetchCompanyRoles(form.getCompanyRoles(), token))
                 .isActive(form.getIsActive())
-                .users(fetchService.fetchUsers(form.getUsers(), token))
+                .users(fetchService.fetchUsers(form.getUsers()).stream().map(UserMapper.INSTANCE::toUserSimpleDto).collect(Collectors.toList()))
                 .build();
     }
 

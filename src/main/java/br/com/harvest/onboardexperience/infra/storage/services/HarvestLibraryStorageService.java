@@ -103,8 +103,8 @@ public class HarvestLibraryStorageService implements StorageService {
                 FileRepository.byAuthorizedClients(tenantService.fetchClientByTenantFromToken(token)))
                 .and(FileRepository.byIsNotImagePreview());
 
-        if(StringUtils.hasText(filter.getCriteriaFilter())) {
-            query = query.and(FileRepository.byCustomFilter(filter.getCriteriaFilter()));
+        if(StringUtils.hasText(filter.getCustomFilter())) {
+            query = query.and(FileRepository.byCustomFilter(filter.getCustomFilter()));
         }
 
         return query;
