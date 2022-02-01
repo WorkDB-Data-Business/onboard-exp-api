@@ -34,6 +34,7 @@ import org.springframework.util.StringUtils;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.FileAlreadyExistsException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -110,10 +111,20 @@ public class HarvestLibraryStorageService implements StorageService {
         return query;
     }
 
+    private void validateIfAlreadyExists(HarvestFile harvestFile, @NonNull UploadForm form) throws FileAlreadyExistsException {
+        if(!harvestFile.getName().equalsIgnoreCase(form.getName())){
+            if(fileRepository.existsByName(form.getName())){
+                throw new FileAlreadyExistsException(form.getName() + " already exists.");
+            }
+        }
+    }
+
     @Override
     public void update(@NonNull String id, @NonNull UploadForm form, @NonNull String token) throws Exception {
 
         HarvestFile harvestFile = getFileByIdAndAuthorizedClient(id, token, true);
+
+        validateIfAlreadyExists(harvestFile, form);
 
         HarvestFile updatedHarvestFile = convertFormToFile(form, token);
 
@@ -191,26 +202,18 @@ public class HarvestLibraryStorageService implements StorageService {
 
     private HarvestFile convertFormToFile(@NonNull UploadForm form, @NonNull String token) {
         User user = userService.findUserByToken(token);
-        String fileName = form.getName() + "." + FilenameUtils.getExtension(form.getFile().getOriginalFilename());
+
+        String fileName = MessageFormat.format("{0}-{1}.{2}", form.getName(), GenericUtils.generateUUID(),
+                FilenameUtils.getExtension(form.getFile().getOriginalFilename()));
 
         return HarvestFile.builder()
                 .author(user)
                 .name(form.getName())
                 .description(form.getDescription())
-                .authorizedClients(generateAuthorizedClients(form.getAuthorizedClients(), user))
+                .authorizedClients(fetchService.generateAuthorizedClients(form.getAuthorizedClients(), user))
                 .fileName(fileName)
                 .contentPath(createFilePath(fileName, user.getClient()))
                 .mimeType(form.getFile().getContentType()).build();
-    }
-
-    private List<Client> generateAuthorizedClients(List<Long> clientsId, @NonNull User user){
-        if(ObjectUtils.isEmpty(clientsId)){
-            clientsId = new ArrayList<>();
-        }
-
-        clientsId.add(user.getClient().getId());
-
-        return fetchService.fetchClients(clientsId);
     }
 
 }

@@ -82,7 +82,7 @@ public class ScormStorageService implements StorageService {
     private Scorm convertFormToScorm(Scorm scorm, UploadForm form, @NonNull String token){
         User author = userService.findUserByToken(token);
         scorm.setAuthor(author);
-        scorm.setAuthorizedClients(generateAuthorizedClients(form.getAuthorizedClients(), author));
+        scorm.setAuthorizedClients(fetchService.generateAuthorizedClients(form.getAuthorizedClients(), author));
         return scorm;
     }
 
@@ -180,15 +180,5 @@ public class ScormStorageService implements StorageService {
         scorm.setAuthorizedClients(fetchService.fetchClients(authorizedClients));
 
         repository.save(scorm);
-    }
-
-    private List<Client> generateAuthorizedClients(List<Long> clientsId, @NonNull User user){
-        if(ObjectUtils.isEmpty(clientsId)){
-            clientsId = new ArrayList<>();
-        }
-
-        clientsId.add(user.getClient().getId());
-
-        return fetchService.fetchClients(clientsId);
     }
 }
