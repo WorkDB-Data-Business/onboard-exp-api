@@ -1,14 +1,12 @@
 package br.com.harvest.onboardexperience.domain.entities;
 
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.*;
 
 @Data
+@Builder
 @EqualsAndHashCode
 @AllArgsConstructor
 @NoArgsConstructor

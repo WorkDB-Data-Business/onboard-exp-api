@@ -21,19 +21,20 @@ public class QuestionDto {
     @JsonProperty("description")
     private String description;
 
-    @JsonProperty("noteQuestion")
-    private Long noteQuestion;
+    @JsonProperty("scoreQuestion")
+    private Long scoreQuestion;
 
-    @Builder.Default
     @JsonProperty("isActive")
-    private Boolean isActive = true;
+    private Boolean isActive ;
 
-    @Builder.Default
     @JsonProperty("isMultipleChoice")
-    private Boolean isMultipleChoice = false;
+    private Boolean isMultipleChoice;
 
     @JsonProperty("answers")
-    private List<AnswerQuestionDto> answers;
+    private List<AnswerQuestionDto> answersQuestions;
+
+    @JsonProperty("authorizedClients")
+    private List<Long> authorizedClientsId;
 
 }
 
