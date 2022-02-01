@@ -107,7 +107,7 @@ public class FetchService {
     }
 
     public Reward fetchReward(@NonNull Long id, @NonNull String token){
-        return rewardService.findRewardByIdAndTenant(id, token);
+        return rewardService.findRewardByIdAndToken(id, token);
     }
     public Stage fetchStage(@NonNull Long id, @NonNull String token){
         return stageService.findRewardByIdAndTenant(id, token);

@@ -29,6 +29,8 @@ import br.com.harvest.onboardexperience.utils.JwtTokenUtils;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.Objects;
+
 @Slf4j
 @Service
 public class RewardService {
@@ -56,12 +58,12 @@ public class RewardService {
 	private FetchService fetchService;
 
 	@Autowired
-	private UserRepository userRepository;
+	private UserService userService;
 
 	
 	public RewardDto create(@NonNull RewardForm form, MultipartFile file , @NonNull final String token) {
 		Client client = tenantService.fetchClientByTenantFromToken(token);
-		User user = userRepository.findById(jwtUtils.getUserId(token)).orElseThrow(() -> new RuntimeException("usuário não encontrado")) ;
+		User user = userService.findUserByToken(token);
 
 		RewardDto dto = convertFormToRewardDto(form, token);
 
@@ -84,17 +86,22 @@ public class RewardService {
 	
 	public RewardDto update(@NonNull Long id, @NonNull RewardForm form, MultipartFile file, @NonNull final String token) {
 		Client client = tenantService.fetchClientByTenantFromToken(token);
-		User user = userRepository.findById(jwtUtils.getUserId(token)).orElseThrow(() -> new RuntimeException("usuário não encontrado")) ;
+		User user = userService.findUserByToken(token);
 
-		Reward reward = repository.findByIdAndClient(id, client).orElseThrow(
-				() -> new RewardNotFoundException(ExceptionMessageFactory.createNotFoundMessage("reward", "ID", id.toString())));
+		Reward reward = findRewardByIdAndToken(id, token);
+
+		Boolean needToImagePreview = Objects.nonNull(file);
 
 		RewardDto dto = convertFormToRewardDto(form, token);
 
 		validate(reward, dto, client);
-		saveImage(file, dto, user);
 
-		BeanUtils.copyProperties(dto, reward, "id", "client", "createdAt", "createdBy");
+		if(needToImagePreview){
+			saveImage(file, dto, user);
+		}
+
+		BeanUtils.copyProperties(dto, reward, "id", "client", "createdAt", "createdBy",
+				!needToImagePreview ? "imagePath" : "");
 
 		reward = repository.save(reward);
 
@@ -105,12 +112,12 @@ public class RewardService {
 
 	
 	public RewardDto findRewardDtoByIdAndTenant(@NonNull Long id, @NonNull final String token) {
-		String tenant = jwtUtils.getUserTenant(token);
+		return RewardMapper.INSTANCE.toDto(findRewardByIdAndToken(id, token));
+	}
 
-		Reward reward = repository.findByIdAndClient_Tenant(id, tenant).orElseThrow(
+	public Reward findRewardByIdAndToken(@NonNull Long id, @NonNull String token){
+		return repository.findByIdAndClient_Tenant(id, jwtUtils.getUserTenant(token)).orElseThrow(
 				() -> new RewardNotFoundException(ExceptionMessageFactory.createNotFoundMessage("reward", "ID", id.toString())));
-
-		return RewardMapper.INSTANCE.toDto(reward);
 	}
 
 	public Page<RewardDto> findByCriteria(String criteria, final Pageable pageable, final String token) {
@@ -128,19 +135,12 @@ public class RewardService {
 
 	
 	public void delete(@NonNull Long id, @NonNull final String token) {
-		String tenant = jwtUtils.getUserTenant(token);
-
-		Reward reward = repository.findByIdAndClient_Tenant(id, tenant).orElseThrow(
-				() -> new RewardNotFoundException(ExceptionMessageFactory.createNotFoundMessage("reward", "ID", id.toString())));
-
-		repository.delete(reward);
+		repository.delete(findRewardByIdAndToken(id, token));
 	}
 
 	@Transactional
 	public void disableReward(@NonNull final Long id, @NonNull final String token) {
-		String tenant = jwtUtils.getUserTenant(token);
-			Reward reward = repository.findByIdAndClient_Tenant(id, tenant).orElseThrow(
-					() -> new RewardNotFoundException(ExceptionMessageFactory.createNotFoundMessage("reward", "ID", id.toString())));
+			Reward reward = findRewardByIdAndToken(id, token);
 
 			reward.setIsActive(!reward.getIsActive());
 			repository.save(reward);
@@ -162,12 +162,7 @@ public class RewardService {
 	}
 
 	private Boolean checkIfIsSameReward(@NonNull Reward reward, @NonNull RewardDto rewardsDto) {
-		Boolean sameName = reward.getName().equalsIgnoreCase(rewardsDto.getName());
-
-		if(sameName) {
-			return true;
-		}
-		return false;
+		return reward.getName().equalsIgnoreCase(rewardsDto.getName());
 	}
 
 	private void checkIfRewardAlreadyExists(@NonNull RewardDto dto, @NonNull final Client client) {
@@ -192,12 +187,6 @@ public class RewardService {
 				.price(form.getPrice())
 				.coin(CoinMapper.INSTANCE.toDto(fetchService.fetchCoin(form.getCoinId(), token)))
 				.build();
-	}
-
-	public Reward findRewardByIdAndTenant(@NonNull Long id, @NonNull String token){
-		String tenant = jwtUtils.getUserTenant(token);
-		return repository.findByIdAndClient_Tenant(id, tenant).orElseThrow(
-				() -> new RewardNotFoundException(ExceptionMessageFactory.createNotFoundMessage("reward", "ID", id.toString())));
 	}
 
 }
