@@ -56,7 +56,7 @@ public class HarvestLibraryController {
                        @RequestParam(value = "description", required = false) String description,
                        @RequestParam(value = "name", required = false) String name,
                        @RequestParam(value = "file", required = false) MultipartFile file,
-                       @RequestParam(value = "previewImage") MultipartFile previewImage,
+                       @RequestParam(value = "previewImage", required = false) MultipartFile previewImage,
                        @RequestHeader("Authorization") String token)
             throws Exception {
         storageAdapter.setForm(dto, file, previewImage, authorizedClients, description, name, type, token).update(id);
