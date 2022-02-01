@@ -3,6 +3,7 @@ package br.com.harvest.onboardexperience.infra.storage.services;
 import br.com.harvest.onboardexperience.domain.entities.Client;
 import br.com.harvest.onboardexperience.domain.entities.User;
 import br.com.harvest.onboardexperience.domain.enumerators.FileTypeEnum;
+import br.com.harvest.onboardexperience.domain.exceptions.GenericUploadException;
 import br.com.harvest.onboardexperience.domain.exceptions.LinkNotFoundException;
 import br.com.harvest.onboardexperience.infra.storage.dtos.LinkDto;
 import br.com.harvest.onboardexperience.infra.storage.dtos.LinkSimpleDto;
@@ -61,6 +62,7 @@ public class LinkStorageService implements StorageService {
         validate(form);
 
         User author = userService.findUserByToken(token);
+
         Link link = Link
                 .builder()
                 .description(form.getDescription())
@@ -86,7 +88,11 @@ public class LinkStorageService implements StorageService {
     @Override
     public void validate(@NonNull UploadForm form) {
         if(Objects.isNull(form.getLink())){
-            throw new NullPointerException("The link cannot be null.");
+            throw new GenericUploadException("The link cannot be null.");
+        }
+
+        if(Objects.isNull(form.getPreviewImage())){
+            throw new GenericUploadException("The preview image cannot be null.");
         }
     }
 
@@ -112,11 +118,19 @@ public class LinkStorageService implements StorageService {
 
         Link link = getLinkByIdAndAuthorizedClient(id, token, true);
 
+        Boolean needToImagePreview = Objects.nonNull(form.getPreviewImage());
+
         link.setAuthorizedClients(fetchService.generateAuthorizedClients(form.getAuthorizedClients(), link.getAuthor()));
 
-        BeanUtils.copyProperties(form.getLink(), link, "id", "author", "createdBy", "createdAt");
+        BeanUtils.copyProperties(form, link, "id", "author", "createdBy", "createdAt",
+                !needToImagePreview ? "previewImagePath" : null);
 
-        uploadImage(link, form);
+        BeanUtils.copyProperties(form.getLink(), link, "id", "author", "createdBy", "createdAt",
+                !needToImagePreview ? "previewImagePath" : null);
+
+        if(needToImagePreview){
+            uploadImage(link, form);
+        }
 
         repository.save(link);
     }
