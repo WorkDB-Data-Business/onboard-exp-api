@@ -2,17 +2,11 @@ package br.com.harvest.onboardexperience.services;
 
 
 import br.com.harvest.onboardexperience.domain.dtos.EventDto;
-import br.com.harvest.onboardexperience.domain.dtos.QuestionEventDto;
-import br.com.harvest.onboardexperience.domain.dtos.StageDto;
-import br.com.harvest.onboardexperience.domain.dtos.TrailDTO;
 import br.com.harvest.onboardexperience.domain.entities.Event;
-import br.com.harvest.onboardexperience.domain.entities.Stage;
 import br.com.harvest.onboardexperience.domain.exceptions.EventNotFoundExecption;
 import br.com.harvest.onboardexperience.domain.exceptions.StageNotFoundExecption;
 import br.com.harvest.onboardexperience.domain.factories.ExceptionMessageFactory;
 import br.com.harvest.onboardexperience.mappers.EventMapper;
-import br.com.harvest.onboardexperience.mappers.StageMapper;
-import br.com.harvest.onboardexperience.mappers.TrailMapper;
 import br.com.harvest.onboardexperience.repositories.EventRepository;
 import br.com.harvest.onboardexperience.utils.JwtTokenUtils;
 import lombok.NonNull;
@@ -21,12 +15,8 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import org.w3c.dom.events.EventException;
-
-import java.util.Objects;
 
 @Slf4j
 @Service

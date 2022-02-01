@@ -26,3 +26,11 @@ ALTER TABLE tbscorm
 
 ALTER TABLE tbfile
     ADD is_image_preview BOOLEAN NOT NULL;
+
+CREATE TABLE IF NOT EXISTS public.tbharvest_question_answer(
+     id_question BIGINT,
+     idclient  BIGINT,
+
+      CONSTRAINT tbharvest_question_answer_pk PRIMARY KEY (id_question, idclient)
+
+);

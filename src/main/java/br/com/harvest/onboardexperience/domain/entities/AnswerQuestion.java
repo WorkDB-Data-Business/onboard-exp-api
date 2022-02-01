@@ -24,9 +24,9 @@ public class AnswerQuestion {
     @Column(name = "answer")
     private String answer;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.PERSIST)
     @JoinColumn(name = "id_question")
-    private QuestionEvent questionEvent;
+    private Question question;
 
     @Column(name = "is_correct")
     private Boolean isCorrect;

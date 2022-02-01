@@ -1,7 +1,6 @@
 package br.com.harvest.onboardexperience.domain.dtos;
 
 
-import br.com.harvest.onboardexperience.domain.entities.Client;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
@@ -12,6 +11,7 @@ import lombok.*;
 @Builder
 public class AnswerQuestionDto {
 
+    @JsonProperty("id")
     private Long id;
 
     @JsonProperty("answer")
@@ -21,6 +21,6 @@ public class AnswerQuestionDto {
     @Builder.Default
     private Boolean isCorrect = false;
 
-
+    @JsonProperty("idQuestion")
     private Long idQuestion;
 }

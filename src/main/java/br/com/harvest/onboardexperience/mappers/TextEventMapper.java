@@ -1,8 +1,6 @@
 package br.com.harvest.onboardexperience.mappers;
 
-import br.com.harvest.onboardexperience.domain.dtos.QuestionEventDto;
 import br.com.harvest.onboardexperience.domain.dtos.TextEventDto;
-import br.com.harvest.onboardexperience.domain.entities.QuestionEvent;
 import br.com.harvest.onboardexperience.domain.entities.TextEvent;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;

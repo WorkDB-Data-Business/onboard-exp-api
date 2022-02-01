@@ -1,6 +1,5 @@
 package br.com.harvest.onboardexperience.domain.dtos;
 
-import br.com.harvest.onboardexperience.domain.entities.Event;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
@@ -11,8 +10,9 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class QuestionEventDto {
+public class QuestionDto {
 
+    @JsonProperty("id")
     private Long id;
 
     @JsonProperty("name")
