@@ -32,5 +32,4 @@ CREATE TABLE IF NOT EXISTS public.tbharvest_question_answer(
      idclient  BIGINT,
 
       CONSTRAINT tbharvest_question_answer_pk PRIMARY KEY (id_question, idclient)
-
 );
