@@ -64,7 +64,7 @@ public class LinkStorageService implements StorageService {
         Link link = Link
                 .builder()
                 .description(form.getDescription())
-                .authorizedClients(generateAuthorizedClients(form.getAuthorizedClients(), author))
+                .authorizedClients(fetchService.generateAuthorizedClients(form.getAuthorizedClients(), author))
                 .author(author)
                 .build();
 
@@ -112,23 +112,13 @@ public class LinkStorageService implements StorageService {
 
         Link link = getLinkByIdAndAuthorizedClient(id, token, true);
 
-        link.setAuthorizedClients(generateAuthorizedClients(form.getAuthorizedClients(), link.getAuthor()));
+        link.setAuthorizedClients(fetchService.generateAuthorizedClients(form.getAuthorizedClients(), link.getAuthor()));
 
         BeanUtils.copyProperties(form.getLink(), link, "id", "author", "createdBy", "createdAt");
 
         uploadImage(link, form);
 
         repository.save(link);
-    }
-
-    private List<Client> generateAuthorizedClients(List<Long> clientsId, @NonNull User user){
-        if(ObjectUtils.isEmpty(clientsId)){
-            clientsId = new ArrayList<>();
-        }
-
-        clientsId.add(user.getClient().getId());
-
-        return fetchService.fetchClients(clientsId);
     }
 
     @Override

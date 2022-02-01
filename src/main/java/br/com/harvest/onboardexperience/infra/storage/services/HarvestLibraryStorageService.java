@@ -211,20 +211,10 @@ public class HarvestLibraryStorageService implements StorageService {
                 .author(user)
                 .name(form.getName())
                 .description(form.getDescription())
-                .authorizedClients(generateAuthorizedClients(form.getAuthorizedClients(), user))
+                .authorizedClients(fetchService.generateAuthorizedClients(form.getAuthorizedClients(), user))
                 .fileName(fileName)
                 .contentPath(createFilePath(fileName, user.getClient()))
                 .mimeType(form.getFile().getContentType()).build();
-    }
-
-    private List<Client> generateAuthorizedClients(List<Long> clientsId, @NonNull User user){
-        if(ObjectUtils.isEmpty(clientsId)){
-            clientsId = new ArrayList<>();
-        }
-
-        clientsId.add(user.getClient().getId());
-
-        return fetchService.fetchClients(clientsId);
     }
 
 }
