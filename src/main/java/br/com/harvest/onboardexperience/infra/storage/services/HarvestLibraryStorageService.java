@@ -123,7 +123,6 @@ public class HarvestLibraryStorageService implements StorageService {
     public void update(@NonNull String id, @NonNull UploadForm form, @NonNull String token) throws Exception {
 
         HarvestFile harvestFile = getFileByIdAndAuthorizedClient(id, token, true);
-        harvestFile.getAuthorizedClients().clear();
 
         validateIfAlreadyExists(harvestFile, form);
 
