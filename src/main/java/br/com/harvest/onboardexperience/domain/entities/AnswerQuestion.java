@@ -13,11 +13,11 @@ import javax.persistence.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "tbanswerquestion", schema = "public")
+@Table(name = "tbanswer_question", schema = "public")
 public class AnswerQuestion {
 
     @Id
-    @Column(name = "id_answer")
+    @Column(name = "idanswer")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
@@ -25,8 +25,12 @@ public class AnswerQuestion {
     private String answer;
 
     @ManyToOne(cascade = CascadeType.PERSIST)
-    @JoinColumn(name = "id_question")
+    @JoinColumn(name = "idquestion")
     private Question question;
+
+    @ManyToOne
+    @JoinColumn(name = "author")
+    private User author;
 
     @Column(name = "is_correct")
     private Boolean isCorrect;

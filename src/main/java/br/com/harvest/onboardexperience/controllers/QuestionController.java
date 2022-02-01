@@ -83,14 +83,14 @@ public class QuestionController {
     @PutMapping(path = "/{id}",produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<QuestionDto> updateQuestionEvent(@PathVariable @Pattern(regexp = RegexUtils.PASSWORD_VALIDATION)Long id,
                                                            @Valid @RequestBody @NotNull QuestionDto dto,
-                                                           @RequestHeader("Authorization") String token) throws RuntimeException{
+                                                           @RequestHeader("Authorization") String token) throws Exception {
         return ResponseEntity.ok().body(questionService.updateQuestionEvent(id,dto,token));
     }
 
     @Operation(description = "Realiza Exclusão da pergunta no questionario.")
     @PreAuthorize("hasAuthority('ADMIN')")
     @DeleteMapping(path = "/{id}",produces = MediaType.APPLICATION_JSON_VALUE)
-    public void delete(@PathVariable @Pattern(regexp = RegexUtils.PASSWORD_VALIDATION)Long id, @Valid @RequestBody @NotNull QuestionDto dto, @RequestHeader("Authorization") String token) throws RuntimeException{
+    public void delete(@PathVariable @Pattern(regexp = RegexUtils.PASSWORD_VALIDATION)Long id, @Valid @RequestBody @NotNull QuestionDto dto, @RequestHeader("Authorization") String token) throws Exception {
          questionService.delete(id,dto,token);
     }
 

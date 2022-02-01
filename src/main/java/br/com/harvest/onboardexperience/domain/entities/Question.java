@@ -20,7 +20,7 @@ import java.util.Objects;
 public class Question {
 
     @Id
-    @Column(name = "id_question")
+    @Column(name = "idquestion")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
@@ -29,11 +29,11 @@ public class Question {
     private String name;
 
     @NotNull
-    @Column(name = "descripton")
-    private String descripton;
+    @Column(name = "description")
+    private String description;
 
-    @Column(name = "note_question")
-    private Long noteQuestion;
+    @Column(name = "score_question")
+    private Long scoreQuestion;
 
     @Column(name = "is_active")
     private Boolean isActive;
@@ -42,21 +42,17 @@ public class Question {
     private Boolean isMultipleChoice;
 
     @ManyToOne
-    @JoinColumn(name = "idclient")
-    private Client client;
-
-    @ManyToOne
     @JoinColumn(name = "author")
     private User author;
 
     @Builder.Default
     @OneToMany(mappedBy = "question", cascade = CascadeType.ALL)
-    private List<AnswerQuestion> answers = new ArrayList<>();
+    private List<AnswerQuestion> answersQuestions = new ArrayList<>();
 
     @ManyToMany
     @JoinTable(
-            name = "tbharvest_question_answer",
-            joinColumns = @JoinColumn(name = "id_question"),
+            name = "tbquestion_client",
+            joinColumns = @JoinColumn(name = "idquestion"),
             inverseJoinColumns = @JoinColumn(name = "idclient"))
     private List<Client>authorizedClients;
 

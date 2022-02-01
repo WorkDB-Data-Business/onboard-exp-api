@@ -13,6 +13,7 @@ import br.com.harvest.onboardexperience.repositories.AnswerQuestionRepository;
 import br.com.harvest.onboardexperience.repositories.QuestionRepository;
 import br.com.harvest.onboardexperience.repositories.UserRepository;
 import br.com.harvest.onboardexperience.utils.JwtTokenUtils;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,7 +43,10 @@ public class QuestionService { //TODO: essa classe não precisa existir
     private UserRepository userRepository;
 
     @Autowired
-    private AnswerQuestionRepository repository;
+    private AnswerQuestionRepository answerQuestionRepository;
+
+    @Autowired
+    private UserService userService;
 
     public QuestionDto createQuestion(QuestionDto dto, String token) {
         Question question = dtoToEntity(dto,token);
@@ -52,21 +56,21 @@ public class QuestionService { //TODO: essa classe não precisa existir
                 answerQuestionDto -> {
                     AnswerQuestion answer = AnswerQuestionMapper.INSTANCE.toEntity(answerQuestionDto);
                     answer.setQuestion(question);
-                    this.repository.save(answer);
+                    this.answerQuestionRepository.save(answer);
                 }
         );
         return questionEventFinal;
     }
 
-    private void setClient(Question question, String token) {
-        question.setClient(tenantService.fetchClientByTenantFromToken(token));
+    private void setAuthor(Question question, String token) {
+        question.setAuthor(userService.findUserById(jwtUtils.getUserId(token)));
     }
 
     public QuestionDto optionAnswer(QuestionDto dto, String token) {
         String tenant = jwtUtils.getUserTenant(token);
         Question question = QuestionMapper.INSTANCE.toEntity(dto);
 
-        setClient(question,token);
+        setAuthor(question,token);
 
         question = questionRepository.save(question);
 
@@ -80,7 +84,7 @@ public class QuestionService { //TODO: essa classe não precisa existir
         String tenant = jwtUtils.getUserTenant(token);
         Question question = QuestionMapper.INSTANCE.toEntity(dto);
 
-        setClient(question,token);
+        setAuthor(question,token);
 
         question = questionRepository.save(question);
 
@@ -90,13 +94,13 @@ public class QuestionService { //TODO: essa classe não precisa existir
 
     public Page<QuestionDto> findAll(String token, Pageable pageable) {
         User user = userRepository.findById(jwtUtils.getUserId(token)).orElseThrow(() -> new NotFoundException());
-        return questionRepository.findByClient_Id(user.getClient().getId(), pageable).map(QuestionMapper.INSTANCE::toDto);
+        return questionRepository.findAll(QuestionRepository.byAuthorizedClients(user.getClient()), pageable).map(QuestionMapper.INSTANCE::toDto);
     }
 
     public QuestionDto findById(Long id, String from) {
         if(Objects.nonNull(from)&&Objects.equals(from,"trilha")||Objects.equals(from,"biblioteca")){
         Question question = questionRepository.findById(id).orElseThrow(() -> new NotFoundException(("Não encontrado")));
-        question.getAnswers().forEach(
+        question.getAnswersQuestions().forEach(
                 answerQuestion -> {
                     if(from.equalsIgnoreCase("trilha")){
                         answerQuestion.setIsCorrect(null);
@@ -113,7 +117,7 @@ public class QuestionService { //TODO: essa classe não precisa existir
         String tenant = jwtUtils.getUserTenant(token);
         AnswerQuestion answerQuestion = AnswerQuestionMapper.INSTANCE.toEntity(dto);
 
-        answerQuestion = repository.save(answerQuestion);
+        answerQuestion = answerQuestionRepository.save(answerQuestion);
 
         log.info("The Question" + answerQuestion.getAnswer() + "was created sucessful");
 
@@ -133,14 +137,23 @@ public class QuestionService { //TODO: essa classe não precisa existir
         return dto;
     }
 
-    public QuestionDto updateQuestionEvent (Long id, QuestionDto dto, String token) {
+    public QuestionDto updateQuestionEvent (Long id, QuestionDto dto, String token) throws Exception {
         String tenant = jwtUtils.getUserTenant(token);
-        Question question = questionRepository.findByIdAndClient_Tenant(id,token).orElseThrow(
-                () ->  new EventNotFoundExecption(ExceptionMessageFactory.createNotFoundMessage("Question", "Id", id.toString())));
+        Question question = findQuestionByIdAndToken(id, token);
         BeanUtils.copyProperties(dto, question, "id");
         question = questionRepository.save(question);
-        log.info("The Question of event" + dto.getDescription()+ "Was update sucessful");
+        log.info("The Question of event " + dto.getDescription()+ " was update sucessful");
         return QuestionMapper.INSTANCE.toDto(question);
+    }
+
+    private Question findQuestionByIdAndToken(@NonNull Long id, @NonNull String token) throws Exception {
+        User user = userService.findUserByToken(token);
+        return questionRepository
+                .findOne(QuestionRepository.byId(id).and(QuestionRepository.byAuthorizedClients(user.getClient())))
+                .or(() -> questionRepository.findOne(QuestionRepository.byId(id).and(QuestionRepository.byAuthor(user))))
+                .orElseThrow(
+                        () -> new Exception("Question not found")
+                );
     }
 
     private Question dtoToEntity(QuestionDto dto, String token) {
@@ -148,21 +161,20 @@ public class QuestionService { //TODO: essa classe não precisa existir
         return Question
                 .builder()
                 .name(dto.getName())
-                .descripton(dto.getDescription())
-                .answers(dto.getAnswers().stream().map(AnswerQuestionMapper.INSTANCE::toEntity)
+                .description(dto.getDescription())
+                .answersQuestions(dto.getAnswers().stream().map(AnswerQuestionMapper.INSTANCE::toEntity)
                         .collect(Collectors.toList()))
                 .isActive(dto.getIsActive())
                 .isMultipleChoice(dto.getAnswers().size() > 0)
-                .noteQuestion(dto.getNoteQuestion())
-                .client(tenantService.fetchClientByTenantFromToken(token))
+                .scoreQuestion(dto.getNoteQuestion())
+                .author(userService.findUserById(jwtUtils.getUserId(token)))
                 .build();
     }
 
-    public void delete(Long id, QuestionDto dto, String token) {
+    public void delete(Long id, QuestionDto dto, String token) throws Exception {
         String tenant = jwtUtils.getUserTenant(token);
 
-        Question question = questionRepository.findByIdAndClient_Tenant(id,token).orElseThrow(
-                () ->  new EventNotFoundExecption(ExceptionMessageFactory.createNotFoundMessage("Question", "Id", id.toString())));
+        Question question = findQuestionByIdAndToken(id, token);
         BeanUtils.copyProperties(dto, question, "id");
 
         questionRepository.delete(question);

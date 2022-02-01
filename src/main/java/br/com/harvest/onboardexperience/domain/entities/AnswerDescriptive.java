@@ -1,15 +1,12 @@
 package br.com.harvest.onboardexperience.domain.entities;
 
 
-import br.com.harvest.onboardexperience.domain.dtos.AnswerQuestionDto;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
-import java.util.List;
 
 @Data
 @EqualsAndHashCode
@@ -20,17 +17,17 @@ import java.util.List;
 public class AnswerDescriptive {
 
     @Id
-    @Column(name = "id_answer_descriptive")
+    @Column(name = "idanswer_descriptive")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "id_question")
+    @JoinColumn(name = "idquestion")
     private Question idQuestion;
 
     @ManyToOne
-    @JoinColumn(name = "iduser")
-    private User iduser;
+    @JoinColumn(name = "author")
+    private User author;
 
     @Column(name = "answer_descriptive")
     private String answerDescriptive;
