@@ -11,7 +11,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface CoinRepository extends JpaRepository<Coin, Long>{
+public interface CoinRepository extends JpaRepository<Coin, Long> {
 	
 	Optional<Coin> findByIdAndClient_Tenant(Long id, String tenant);
 	Optional<Coin> findByNameContainingIgnoreCaseAndClient_Tenant(String name, String tenant);

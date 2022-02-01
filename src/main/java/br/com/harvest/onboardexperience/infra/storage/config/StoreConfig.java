@@ -1,6 +1,5 @@
 package br.com.harvest.onboardexperience.infra.storage.config;
 
-import br.com.harvest.onboardexperience.infra.storage.config.events.FileStorageEvent;
 import org.springframework.content.fs.config.FilesystemStoreConfigurer;
 import org.springframework.content.fs.io.FileSystemResourceLoader;
 import org.springframework.context.annotation.Bean;
@@ -36,10 +35,5 @@ public class StoreConfig {
     @Bean
     public FileSystemResourceLoader fileSystemResourceLoader() {
         return new FileSystemResourceLoader(filesystemRoot().getAbsolutePath());
-    }
-
-    @Bean
-    public FileStorageEvent registerEvent(){
-        return new FileStorageEvent();
     }
 }

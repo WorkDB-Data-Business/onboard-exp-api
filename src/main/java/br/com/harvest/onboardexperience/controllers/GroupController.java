@@ -3,6 +3,7 @@ package br.com.harvest.onboardexperience.controllers;
 import br.com.harvest.onboardexperience.domain.dtos.GroupDto;
 import br.com.harvest.onboardexperience.domain.dtos.forms.GroupForm;
 import br.com.harvest.onboardexperience.domain.dtos.GroupSimpleDto;
+import br.com.harvest.onboardexperience.infra.storage.filters.CustomFilter;
 import br.com.harvest.onboardexperience.services.GroupService;
 import br.com.harvest.onboardexperience.utils.RegexUtils;
 import io.swagger.v3.oas.annotations.Operation;
@@ -32,8 +33,8 @@ public class GroupController {
     @Operation(description = "Retorna os grupos cadastrados.")
     @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Page<GroupSimpleDto>> findAll(Pageable pageable, @RequestHeader("Authorization") String token) {
-        return ResponseEntity.ok(service.findAllByTenant(pageable, token));
+    public ResponseEntity<Page<GroupSimpleDto>> findAll(Pageable pageable, @Valid CustomFilter filter, @RequestHeader("Authorization") String token) {
+        return ResponseEntity.ok(service.findAllByTenant(pageable, filter, token));
     }
 
     @Operation(description = "Retorna o grupo cadastrado pelo ID.")

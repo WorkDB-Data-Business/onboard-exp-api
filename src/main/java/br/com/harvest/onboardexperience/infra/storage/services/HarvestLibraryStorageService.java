@@ -29,16 +29,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
-import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.FileAlreadyExistsException;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Function;
 
 @Service
@@ -80,6 +77,7 @@ public class HarvestLibraryStorageService implements StorageService {
         HarvestFile harvestFile = convertFormToFile(form, token);
 
         uploadFile(harvestFile, form);
+        uploadPreviewImage(harvestFile, form);
 
         fileRepository.save(harvestFile);
     }
@@ -87,7 +85,11 @@ public class HarvestLibraryStorageService implements StorageService {
     @Override
     public void validate(UploadForm form) {
         if (Objects.isNull(form.getFile())) {
-            throw new NullPointerException("The file cannot be null.");
+            throw new GenericUploadException("The file cannot be null.");
+        }
+
+        if(Objects.isNull(form.getPreviewImage())){
+            throw new GenericUploadException("The preview image cannot be null.");
         }
     }
 
@@ -100,13 +102,22 @@ public class HarvestLibraryStorageService implements StorageService {
 
     private Specification<HarvestFile> createQuery(@NonNull HarvestLibraryFilter filter, @NonNull String token){
         Specification<HarvestFile> query = Specification.where(
-                FileRepository.byAuthorizedClients(tenantService.fetchClientByTenantFromToken(token)));
+                FileRepository.byAuthorizedClients(tenantService.fetchClientByTenantFromToken(token)))
+                .and(FileRepository.byIsNotImagePreview());
 
-        if(StringUtils.hasText(filter.getCriteriaFilter())) {
-            query = query.and(FileRepository.byCustomFilter(filter.getCriteriaFilter()));
+        if(StringUtils.hasText(filter.getCustomFilter())) {
+            query = query.and(FileRepository.byCustomFilter(filter.getCustomFilter()));
         }
 
         return query;
+    }
+
+    private void validateIfAlreadyExists(HarvestFile harvestFile, @NonNull UploadForm form) throws FileAlreadyExistsException {
+        if(!harvestFile.getName().equalsIgnoreCase(form.getName())){
+            if(fileRepository.existsByName(form.getName())){
+                throw new FileAlreadyExistsException(form.getName() + " already exists.");
+            }
+        }
     }
 
     @Override
@@ -114,11 +125,32 @@ public class HarvestLibraryStorageService implements StorageService {
 
         HarvestFile harvestFile = getFileByIdAndAuthorizedClient(id, token, true);
 
+        Boolean needToUploadFile = Objects.nonNull(form.getFile());
+        Boolean needToUploadPreview = Objects.nonNull(form.getPreviewImage());
+
+
+        if(needToUploadFile){
+            validateIfAlreadyExists(harvestFile, form);
+        }
+
         HarvestFile updatedHarvestFile = convertFormToFile(form, token);
 
-        BeanUtils.copyProperties(updatedHarvestFile, harvestFile, "id", "author", "createdAt", "createdBy");
+        BeanUtils.copyProperties(updatedHarvestFile, harvestFile, "id", "author", "createdAt", "createdBy",
+                !needToUploadFile ? "mimeType" : "",
+                !needToUploadFile ? "contentId" : "",
+                !needToUploadFile ? "contentLength" : "",
+                !needToUploadFile ? "contentPath" : "",
+                !needToUploadFile ? "fileName" : "",
+                !needToUploadPreview ? "previewImagePath" : "");
 
-        uploadFile(harvestFile, form);
+
+        if(needToUploadFile){
+            uploadFile(harvestFile, form);
+        }
+
+        if(needToUploadPreview){
+            uploadPreviewImage(harvestFile, form);
+        }
 
         fileRepository.save(harvestFile);
     }
@@ -173,15 +205,18 @@ public class HarvestLibraryStorageService implements StorageService {
     private void uploadFile(@NonNull HarvestFile harvestFile, @NonNull UploadForm form) {
         try {
             fileContentStore.setContent(harvestFile, form.getFile().getInputStream());
-            harvestFile.setPreviewImagePath(
-                    imageStorageService.uploadImage(form.getPreviewImage(),
-                            harvestFile.getAuthor().getClient().getCnpj(),
-                            harvestFile.getName() + "_preview",
-                            FileTypeEnum.IMAGE, harvestFile.getAuthor()));
         } catch (IOException e) {
             log.error("An error occurs while uploading the file", e);
             throw new GenericUploadException(e.getMessage(), e.getCause());
         }
+    }
+
+    private void uploadPreviewImage(@NonNull HarvestFile harvestFile, @NonNull UploadForm form){
+        harvestFile.setPreviewImagePath(
+                imageStorageService.uploadImage(form.getPreviewImage(),
+                        harvestFile.getAuthor().getClient().getCnpj(),
+                        harvestFile.getName() + "_preview",
+                        FileTypeEnum.IMAGE, harvestFile.getAuthor()));
     }
 
     private String createFilePath(String fileName, Client client) {
@@ -190,27 +225,21 @@ public class HarvestLibraryStorageService implements StorageService {
 
     private HarvestFile convertFormToFile(@NonNull UploadForm form, @NonNull String token) {
         User user = userService.findUserByToken(token);
-        String fileName = form.getName() + "." + FilenameUtils.getExtension(form.getFile().getOriginalFilename());
+
+        String fileName = Objects.nonNull(form.getFile()) ?
+                MessageFormat.format("{0}-{1}.{2}", form.getName(), GenericUtils.generateUUID(),
+                        FilenameUtils.getExtension(form.getFile().getOriginalFilename())) : null;
+
+        String mimeType = Objects.nonNull(form.getFile()) ? form.getFile().getContentType() : null;
 
         return HarvestFile.builder()
                 .author(user)
                 .name(form.getName())
                 .description(form.getDescription())
-                .authorizedClients(generateAuthorizedClients(form.getAuthorizedClients(), user))
+                .authorizedClients(fetchService.generateAuthorizedClients(form.getAuthorizedClients(), user))
                 .fileName(fileName)
                 .contentPath(createFilePath(fileName, user.getClient()))
-                .mimeType(form.getFile().getContentType()).build();
-    }
-
-    private List<Client> generateAuthorizedClients(List<Long> clientsId, @NonNull User user){
-        if(ObjectUtils.isEmpty(clientsId)){
-            clientsId = new ArrayList<>();
-        }
-
-        clientsId.add(user.getClient().getId());
-
-        return fetchService.fetchClients(clientsId);
+                .mimeType(mimeType).build();
     }
 
 }
-

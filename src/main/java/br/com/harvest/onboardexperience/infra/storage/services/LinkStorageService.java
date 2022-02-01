@@ -3,6 +3,7 @@ package br.com.harvest.onboardexperience.infra.storage.services;
 import br.com.harvest.onboardexperience.domain.entities.Client;
 import br.com.harvest.onboardexperience.domain.entities.User;
 import br.com.harvest.onboardexperience.domain.enumerators.FileTypeEnum;
+import br.com.harvest.onboardexperience.domain.exceptions.GenericUploadException;
 import br.com.harvest.onboardexperience.domain.exceptions.LinkNotFoundException;
 import br.com.harvest.onboardexperience.infra.storage.dtos.LinkDto;
 import br.com.harvest.onboardexperience.infra.storage.dtos.LinkSimpleDto;
@@ -61,10 +62,11 @@ public class LinkStorageService implements StorageService {
         validate(form);
 
         User author = userService.findUserByToken(token);
+
         Link link = Link
                 .builder()
                 .description(form.getDescription())
-                .authorizedClients(generateAuthorizedClients(form.getAuthorizedClients(), author))
+                .authorizedClients(fetchService.generateAuthorizedClients(form.getAuthorizedClients(), author))
                 .author(author)
                 .build();
 
@@ -86,7 +88,11 @@ public class LinkStorageService implements StorageService {
     @Override
     public void validate(@NonNull UploadForm form) {
         if(Objects.isNull(form.getLink())){
-            throw new NullPointerException("The link cannot be null.");
+            throw new GenericUploadException("The link cannot be null.");
+        }
+
+        if(Objects.isNull(form.getPreviewImage())){
+            throw new GenericUploadException("The preview image cannot be null.");
         }
     }
 
@@ -100,8 +106,8 @@ public class LinkStorageService implements StorageService {
     private Specification<Link> createQuery(@NonNull HarvestLibraryFilter filter, @NonNull String token){
         Specification<Link> query = Specification.where(LinkRepository.byAuthorizedClients(tenantService.fetchClientByTenantFromToken(token)));
 
-        if(StringUtils.hasText(filter.getCriteriaFilter())){
-            query = query.and(LinkRepository.byCustomFilter(filter.getCriteriaFilter()));
+        if(StringUtils.hasText(filter.getCustomFilter())){
+            query = query.and(LinkRepository.byCustomFilter(filter.getCustomFilter()));
         }
 
         return query;
@@ -112,23 +118,21 @@ public class LinkStorageService implements StorageService {
 
         Link link = getLinkByIdAndAuthorizedClient(id, token, true);
 
-        link.setAuthorizedClients(generateAuthorizedClients(form.getAuthorizedClients(), link.getAuthor()));
+        Boolean needToImagePreview = Objects.nonNull(form.getPreviewImage());
 
-        BeanUtils.copyProperties(form.getLink(), link, "id", "author", "createdBy", "createdAt");
+        link.setAuthorizedClients(fetchService.generateAuthorizedClients(form.getAuthorizedClients(), link.getAuthor()));
 
-        uploadImage(link, form);
+        BeanUtils.copyProperties(form, link, "id", "author", "createdBy", "createdAt",
+                !needToImagePreview ? "previewImagePath" : null);
 
-        repository.save(link);
-    }
+        BeanUtils.copyProperties(form.getLink(), link, "id", "author", "createdBy", "createdAt",
+                !needToImagePreview ? "previewImagePath" : null);
 
-    private List<Client> generateAuthorizedClients(List<Long> clientsId, @NonNull User user){
-        if(ObjectUtils.isEmpty(clientsId)){
-            clientsId = new ArrayList<>();
+        if(needToImagePreview){
+            uploadImage(link, form);
         }
 
-        clientsId.add(user.getClient().getId());
-
-        return fetchService.fetchClients(clientsId);
+        repository.save(link);
     }
 
     @Override

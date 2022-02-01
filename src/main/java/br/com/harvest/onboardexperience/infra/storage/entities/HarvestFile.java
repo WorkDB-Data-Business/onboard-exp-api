@@ -19,7 +19,6 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = false)
-@Where(clause = SQLQueryUtils.IS_NOT_IMAGE_PREVIEW)
 public class HarvestFile extends BaseEntityAudit {
 
     @Id
@@ -46,7 +45,7 @@ public class HarvestFile extends BaseEntityAudit {
     @Column(name = "file_path")
     private String contentPath;
 
-    @ManyToMany
+    @ManyToMany(cascade = CascadeType.MERGE)
     @JoinTable(
             name = "tbharvest_library_file",
             joinColumns = @JoinColumn(name = "idfile"),

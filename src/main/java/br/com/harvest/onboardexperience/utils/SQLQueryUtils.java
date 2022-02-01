@@ -3,8 +3,6 @@ package br.com.harvest.onboardexperience.utils;
 public class SQLQueryUtils {
 	
 	public static final String IS_ACTIVE_FILTER   		  		= "is_active = true";
-	public static final String IS_IMAGE_PREVIEW   		  		= "is_image_preview = true";
-	public static final String IS_NOT_IMAGE_PREVIEW   		  	= "is_image_preview = false";
 	public static final String SOFT_DELETE_REWARD 		 		= "UPDATE tbreward SET is_active = false WHERE idreward = ?";
 	public static final String SOFT_DELETE_CLIENT		 		= "UPDATE tbclient SET is_active = false WHERE idclient = ?";
 	public static final String SOFT_DELETE_COIN   		 		= "UPDATE tbcoin SET is_active = false WHERE idcoin = ?";

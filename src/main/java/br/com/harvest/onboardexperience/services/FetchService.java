@@ -74,6 +74,18 @@ public class FetchService {
         return fetchClientById(HARVEST_CLIENT);
     }
 
+    public List<Client> generateAuthorizedClients(List<Long> clientsId, @NonNull User user){
+        if(org.springframework.util.ObjectUtils.isEmpty(clientsId)){
+            clientsId = new ArrayList<>();
+        }
+
+        if(!clientsId.contains(user.getClient().getId())){
+            clientsId.add(user.getClient().getId());
+        }
+
+        return fetchClients(clientsId);
+    }
+
     public List<Client> fetchClients(List<Long> clientsId) {
         if(ObjectUtils.isNotEmpty(clientsId)){
             return clientsId.stream().map(clientService::findById)

@@ -3,6 +3,7 @@ package br.com.harvest.onboardexperience.infra.storage.services;
 import br.com.harvest.onboardexperience.domain.entities.Client;
 import br.com.harvest.onboardexperience.domain.entities.User;
 import br.com.harvest.onboardexperience.domain.enumerators.FileTypeEnum;
+import br.com.harvest.onboardexperience.domain.exceptions.GenericUploadException;
 import br.com.harvest.onboardexperience.domain.exceptions.ScormCourseNotFoundException;
 import br.com.harvest.onboardexperience.infra.scorm.dtos.ScormDto;
 import br.com.harvest.onboardexperience.infra.scorm.entities.Scorm;
@@ -82,7 +83,7 @@ public class ScormStorageService implements StorageService {
     private Scorm convertFormToScorm(Scorm scorm, UploadForm form, @NonNull String token){
         User author = userService.findUserByToken(token);
         scorm.setAuthor(author);
-        scorm.setAuthorizedClients(generateAuthorizedClients(form.getAuthorizedClients(), author));
+        scorm.setAuthorizedClients(fetchService.generateAuthorizedClients(form.getAuthorizedClients(), author));
         return scorm;
     }
 
@@ -90,7 +91,11 @@ public class ScormStorageService implements StorageService {
     @Override
     public void validate(@NonNull UploadForm form) {
         if(Objects.isNull(form.getFile())){
-            throw new NullPointerException("The Scorm ZIP cannot be null.");
+            throw new GenericUploadException("The Scorm ZIP cannot be null.");
+        }
+
+        if(Objects.isNull(form.getPreviewImage())){
+            throw new GenericUploadException("The image preview cannot be null.");
         }
     }
 
@@ -104,8 +109,8 @@ public class ScormStorageService implements StorageService {
                 tenantService.fetchClientByTenantFromToken(token)
         ));
 
-        if(StringUtils.hasText(filter.getCriteriaFilter())){
-            query = query.and(ScormRepository.byCustomFilter(filter.getCriteriaFilter()));
+        if(StringUtils.hasText(filter.getCustomFilter())){
+            query = query.and(ScormRepository.byCustomFilter(filter.getCustomFilter()));
         }
 
         if(Objects.nonNull(filter.getCourseLearningStandard())){
@@ -126,7 +131,11 @@ public class ScormStorageService implements StorageService {
     @Override
     public void update(@NonNull String id, @NonNull UploadForm form, @NonNull String token) throws Exception {
         Scorm scorm = find(id, token, true);
-        uploadImage(scorm, form);
+
+        if(Objects.nonNull(form.getPreviewImage())){
+            uploadImage(scorm, form);
+        }
+
         repository.save(scorm);
     }
 
@@ -180,15 +189,5 @@ public class ScormStorageService implements StorageService {
         scorm.setAuthorizedClients(fetchService.fetchClients(authorizedClients));
 
         repository.save(scorm);
-    }
-
-    private List<Client> generateAuthorizedClients(List<Long> clientsId, @NonNull User user){
-        if(ObjectUtils.isEmpty(clientsId)){
-            clientsId = new ArrayList<>();
-        }
-
-        clientsId.add(user.getClient().getId());
-
-        return fetchService.fetchClients(clientsId);
     }
 }
