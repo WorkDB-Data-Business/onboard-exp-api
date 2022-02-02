@@ -6,9 +6,6 @@ CREATE TABLE public.tbanswer_question (
   answer VARCHAR(255),
   idquestion BIGINT,
   is_correct BOOLEAN,
-  author BIGINT,
-
-  FOREIGN KEY(author) references tbuser(iduser),
   CONSTRAINT pk_tbanswer_question PRIMARY KEY (idanswer)
 );
 

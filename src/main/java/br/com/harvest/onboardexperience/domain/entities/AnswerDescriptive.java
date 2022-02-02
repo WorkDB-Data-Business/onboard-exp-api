@@ -1,10 +1,7 @@
 package br.com.harvest.onboardexperience.domain.entities;
 
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.*;
 
@@ -12,6 +9,7 @@ import javax.persistence.*;
 @EqualsAndHashCode
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 @Entity
 @Table(name = "tbanswer_descriptive", schema = "public")
 public class AnswerDescriptive {

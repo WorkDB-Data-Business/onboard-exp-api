@@ -22,13 +22,10 @@ public class AnswerQuestion {
     @Column(name = "answer")
     private String answer;
 
-    @ManyToOne(cascade = CascadeType.PERSIST)
+    @ManyToOne()
     @JoinColumn(name = "idquestion")
     private Question question;
 
-    @ManyToOne
-    @JoinColumn(name = "author")
-    private User author;
 
     @Column(name = "is_correct")
     private Boolean isCorrect;

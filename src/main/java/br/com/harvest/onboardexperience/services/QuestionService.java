@@ -1,12 +1,15 @@
 package br.com.harvest.onboardexperience.services;
 
 
+import br.com.harvest.onboardexperience.domain.dtos.AnswerDescriptiveDto;
 import br.com.harvest.onboardexperience.domain.dtos.AnswerQuestionDto;
 import br.com.harvest.onboardexperience.domain.dtos.QuestionDto;
 import br.com.harvest.onboardexperience.domain.entities.*;
 import br.com.harvest.onboardexperience.domain.enumerators.QuestionFrom;
+import br.com.harvest.onboardexperience.mappers.AnswerDescriptiveMapper;
 import br.com.harvest.onboardexperience.mappers.AnswerQuestionMapper;
 import br.com.harvest.onboardexperience.mappers.QuestionMapper;
+import br.com.harvest.onboardexperience.repositories.AnswerDescriptiveRepository;
 import br.com.harvest.onboardexperience.repositories.AnswerQuestionRepository;
 import br.com.harvest.onboardexperience.repositories.QuestionRepository;
 import br.com.harvest.onboardexperience.repositories.UserRepository;
@@ -27,10 +30,6 @@ import java.util.stream.Collectors;
 @Service
 public class QuestionService {
 
-
-    @Autowired
-    private TenantService tenantService;
-
     @Autowired
     private JwtTokenUtils jwtUtils;
 
@@ -41,49 +40,19 @@ public class QuestionService {
     private UserRepository userRepository;
 
     @Autowired
-    private AnswerQuestionRepository answerQuestionRepository;
+    private UserService userService;
 
     @Autowired
-    private UserService userService;
+    private AnswerQuestionService answerQuestionService;
 
     @Autowired
     private FetchService fetchService;
 
-    public QuestionDto createQuestion(QuestionDto dto, String token) {
-        Question question = dtoToEntity(dto,token);
-        QuestionDto questionEventFinal = QuestionMapper.INSTANCE.toDto(questionRepository.save(question));
-        log.info("The Question" + question.getName() + " was created sucessful");
-        questionEventFinal.getAnswersQuestions().forEach(
-                answerQuestionDto -> {
-                    AnswerQuestion answer = AnswerQuestionMapper.INSTANCE.toEntity(answerQuestionDto);
-                    answer.setQuestion(question);
-                    this.answerQuestionRepository.save(answer);
-                }
-        );
-        questionEventFinal.setAuthorizedClientsId(GenericUtils.extractIDsFromList(question.getAuthorizedClients(), Client.class));
-        return questionEventFinal;
-    }
-
-    private void setAuthor(Question question, String token) {
-        question.setAuthor(userService.findUserByToken(token));
-    }
-
-    public AnswerQuestionDto putQuestionsOptions(Long idQuestion,AnswerQuestionDto dto, String token) throws Exception {
-        return AnswerQuestionMapper.INSTANCE.toDto(this.answerQuestionRepository.save(AnswerQuestion.
-                builder()
-                .answer(dto.getAnswer())
-                .question(findQuestionByIdAndToken(idQuestion,token))
-                .author(userService.findUserById(jwtUtils.getUserId(token)))
-                .isCorrect(dto.getIsCorrect())
-                .build()));
-    }
-
-
-    public Page<QuestionDto> findAll(String token, Pageable pageable) {
+    public Page<QuestionDto> findAllQuestions(String token, Pageable pageable) {
         return questionRepository.findAll(QuestionRepository.byAuthorizedClients(userService.findUserByToken(token).getClient()), pageable).map(QuestionMapper.INSTANCE::toDto);
     }
 
-    public QuestionDto findById(Long id, QuestionFrom from) {
+    public QuestionDto findQuestionById(Long id, QuestionFrom from) {
         Question question = questionRepository.findById(id).orElseThrow(() -> new NotFoundException(("Não encontrado")));
         question.getAnswersQuestions().forEach(
                 answerQuestion -> {
@@ -92,20 +61,17 @@ public class QuestionService {
                     }
                 }
         );
-            return QuestionMapper.INSTANCE.toDto(question);
+        return QuestionMapper.INSTANCE.toDto(question);
     }
 
-    public AnswerQuestionDto answerQuestion(Long idQuestion,AnswerQuestionDto dto, String token) {
-        this.findById(idQuestion,null).getAnswersQuestions().forEach(
-                answerQuestionDto -> {
-                    if(answerQuestionDto.getAnswer().equalsIgnoreCase(dto.getAnswer()) && answerQuestionDto.getIsCorrect()){
-                        dto.setIsCorrect(true);
-                    }
-                }
-        );
-        return dto;
+    public QuestionDto createQuestion(QuestionDto dto, String token) {
+        Question question = dtoToEntity(dto,token);
+        QuestionDto questionEventFinal = QuestionMapper.INSTANCE.toDto(questionRepository.save(question));
+        log.info("The Question" + question.getName() + " was created sucessful");
+        this.answerQuestionService.saveAnswersQuestionsByQuestionCreating(questionEventFinal,question);
+        questionEventFinal.setAuthorizedClientsId(GenericUtils.extractIDsFromList(question.getAuthorizedClients(), Client.class));
+        return questionEventFinal;
     }
-
     public QuestionDto updateQuestionEvent (Long id, QuestionDto dto, String token) throws Exception {
         Question question = findQuestionByIdAndToken(id, token);
         BeanUtils.copyProperties(dto, question, "id");
@@ -114,7 +80,7 @@ public class QuestionService {
         return QuestionMapper.INSTANCE.toDto(question);
     }
 
-    private Question findQuestionByIdAndToken(@NonNull Long id, @NonNull String token) throws Exception {
+    public Question findQuestionByIdAndToken(@NonNull Long id, @NonNull String token) throws Exception {
         User user = userService.findUserByToken(token);
         return questionRepository
                 .findOne(QuestionRepository.byId(id).and(QuestionRepository.byAuthorizedClients(user.getClient())))
@@ -141,10 +107,13 @@ public class QuestionService {
 
     }
 
-    public void delete(Long id, QuestionDto dto, String token) throws Exception {
+    public void deleteQuestion(Long id, String token) throws Exception {
         Question question = findQuestionByIdAndToken(id, token);
-        BeanUtils.copyProperties(dto, question, "id");
-        questionRepository.delete(question);
+        questionRepository.deleteById(id);
+    }
+
+    private void setAuthor(Question question, String token) {
+        question.setAuthor(userService.findUserByToken(token));
     }
 }
 
