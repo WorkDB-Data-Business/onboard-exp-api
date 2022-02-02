@@ -6,4 +6,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface TrailRepository extends JpaRepository<Trail,Long> {
+
+    Boolean existsByName(String name);
+
 }

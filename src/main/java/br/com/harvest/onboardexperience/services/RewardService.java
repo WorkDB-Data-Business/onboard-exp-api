@@ -3,9 +3,9 @@ package br.com.harvest.onboardexperience.services;
 import br.com.harvest.onboardexperience.domain.dtos.forms.RewardForm;
 import br.com.harvest.onboardexperience.domain.entities.Client;
 import br.com.harvest.onboardexperience.domain.entities.User;
+import br.com.harvest.onboardexperience.infra.storage.services.AssetStorageService;
 import br.com.harvest.onboardexperience.mappers.ClientMapper;
 import br.com.harvest.onboardexperience.domain.enumerators.FileTypeEnum;
-import br.com.harvest.onboardexperience.infra.storage.services.ImageStorageService;
 import br.com.harvest.onboardexperience.mappers.CoinMapper;
 import br.com.harvest.onboardexperience.repositories.UserRepository;
 import br.com.harvest.onboardexperience.utils.GenericUtils;
@@ -17,7 +17,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import br.com.harvest.onboardexperience.domain.dtos.ClientDto;
 import br.com.harvest.onboardexperience.domain.dtos.RewardDto;
 import br.com.harvest.onboardexperience.domain.entities.Reward;
 import br.com.harvest.onboardexperience.domain.exceptions.RewardAlreadyExistsException;
@@ -46,7 +45,7 @@ public class RewardService {
 	private ClientService clientService;
 	
 	@Autowired
-	private ImageStorageService imageStorageService;
+	private AssetStorageService assetStorageService;
 
 	@Autowired
 	private ClientMapper clientMapper;
@@ -154,7 +153,7 @@ public class RewardService {
 	}
 
 	private void saveImage(MultipartFile file, RewardDto dto, User author) {
-		dto.setImagePath(imageStorageService.uploadImage(file, dto.getClient().getCnpj(), dto.getName(), FileTypeEnum.REWARD, author));
+		dto.setImagePath(assetStorageService.uploadAsset(file, dto.getClient().getCnpj(), dto.getName(), FileTypeEnum.REWARD, author));
 	}
 
 	private void validate(@NonNull Reward reward, @NonNull RewardDto dto, @NonNull final Client client) {

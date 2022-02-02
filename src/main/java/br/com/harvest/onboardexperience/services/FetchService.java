@@ -41,6 +41,9 @@ public class FetchService {
     @Autowired
     private StageService stageService;
 
+    @Autowired
+    private GroupService groupService;
+
     private final Long HARVEST_CLIENT = 1L;
 
     public List<CompanyRoleDto> fetchCompanyRoles(List<Long> companyRolesId, String token){
@@ -90,6 +93,13 @@ public class FetchService {
         if(ObjectUtils.isNotEmpty(clientsId)){
             return clientsId.stream().map(clientService::findById)
                     .map(ClientMapper.INSTANCE::toEntity).collect(Collectors.toList());
+        }
+        return Collections.emptyList();
+    }
+
+    public List<Group> fetchGroups(List<Long> groupsId) {
+        if(ObjectUtils.isNotEmpty(groupsId)){
+            return groupsId.stream().map(groupService::findById).collect(Collectors.toList());
         }
         return Collections.emptyList();
     }

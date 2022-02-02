@@ -62,7 +62,7 @@ public class HarvestFile extends BaseEntityAudit {
     private String mimeType;
 
     @Builder.Default
-    @Column(name = "is_image_preview")
-    private Boolean isImagePreview = false;
+    @Column(name = "is_asset")
+    private Boolean isAsset = false;
 
 }

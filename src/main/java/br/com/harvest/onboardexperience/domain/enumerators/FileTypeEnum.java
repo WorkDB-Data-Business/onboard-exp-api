@@ -7,7 +7,7 @@ public enum FileTypeEnum {
 
 	COIN("coin"),
 	REWARD("reward"),
-	IMAGE("image");
+	ASSET("asset");
 
 	private String name;
 

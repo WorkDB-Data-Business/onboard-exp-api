@@ -2,6 +2,10 @@ package br.com.harvest.onboardexperience.utils;
 
 public class Constants {
 
+    public static class Date {
+        public static final String DATE_PATTERN = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
+    }
+
     public static class Harvest {
 
         public static class User {

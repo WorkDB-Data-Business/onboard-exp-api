@@ -95,6 +95,12 @@ public class GroupService {
                         "ID", id.toString())));
     }
 
+    public Group findById(@NonNull final Long id){
+        return repository.findById(id).orElseThrow(
+                () -> new GroupNotFoundException(ExceptionMessageFactory.createNotFoundMessage("group",
+                        "ID", id.toString())));
+    }
+
     private GroupDto convertFormToGroupDto(@NonNull GroupForm form, String token){
         ClientDto client = ClientMapper.INSTANCE.toDto(tenantService.fetchClientByTenantFromToken(token));
 

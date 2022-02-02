@@ -42,7 +42,7 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 			ClientAlreadyExistsException.class, CompanyRoleAlreadyExistsException.class,
 			InvalidCnpjException.class, InvalidCpfException.class, RewardAlreadyExistsException.class,
 			FileAlreadyExistsException.class, InsufficientCoinException.class, PasswordResetTokenExpiredException.class,
-			BadCredentialsException.class, UserBlockedException.class, UserDisabledException.class
+			BadCredentialsException.class, UserBlockedException.class, UserDisabledException.class, AlreadyExistsException.class
 	})
 	public ResponseEntity<?> handleBadRequestException(Exception e){
 		logger.error(e);

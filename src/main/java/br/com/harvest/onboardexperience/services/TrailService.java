@@ -1,39 +1,30 @@
 package br.com.harvest.onboardexperience.services;
 
-import br.com.harvest.onboardexperience.domain.dtos.StageDto;
 import br.com.harvest.onboardexperience.domain.dtos.TrailDTO;
-import br.com.harvest.onboardexperience.domain.dtos.UserDto;
+import br.com.harvest.onboardexperience.domain.dtos.forms.PositionForm;
 import br.com.harvest.onboardexperience.domain.dtos.forms.TrailForm;
-import br.com.harvest.onboardexperience.domain.entities.Stage;
 import br.com.harvest.onboardexperience.domain.entities.Trail;
-import br.com.harvest.onboardexperience.mappers.StageMapper;
+import br.com.harvest.onboardexperience.domain.enumerators.FileTypeEnum;
+import br.com.harvest.onboardexperience.domain.exceptions.AlreadyExistsException;
+import br.com.harvest.onboardexperience.infra.storage.services.AssetStorageService;
 import br.com.harvest.onboardexperience.mappers.TrailMapper;
-import br.com.harvest.onboardexperience.mappers.UserMapper;
-import br.com.harvest.onboardexperience.repositories.StageRepository;
 import br.com.harvest.onboardexperience.repositories.TrailRepository;
-import br.com.harvest.onboardexperience.repositories.UserRepository;
 import br.com.harvest.onboardexperience.utils.JwtTokenUtils;
 import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.validation.constraints.NotNull;
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Objects;
 
 @Service
 public class TrailService {
 
     @Autowired
-    private TrailRepository trailRepository;
-
-    @Autowired
-    private UserRepository userRepository;
+    private TrailRepository repository;
 
     @Autowired
     private UserService userService;
@@ -42,44 +33,94 @@ public class TrailService {
     private JwtTokenUtils tokenUtils;
 
     @Autowired
-    private  TenantService tenant;
+    private TenantService tenant;
 
     @Autowired
-    private StageRepository stageRepository;
+    private PositionService positionService;
 
-    public List<StageDto> findAllStagesAvailables(StageDto dto, MultipartFile file, String token) {
+    @Autowired
+    private AssetStorageService assetStorageService;
 
-        String tenant = tokenUtils.getUserTenant(token);
+    @Autowired
+    private FetchService fetchService;
 
-        List<Stage> stages = stageRepository.findAllByIsAvailableAndClient_Tenant(true,tenant);
+    public TrailDTO save(@NonNull TrailForm form, List<PositionForm> characterMapPositionPath, @NonNull MultipartFile mapImage, MultipartFile mapMusic, @NonNull String token) throws IOException {
 
-        return  stages.stream().map(StageMapper.INSTANCE::toDto).collect(Collectors.toList());
+        validate(form);
+
+        Trail trail = formToTrail(form, characterMapPositionPath);
+
+        setAuthor(trail, token);
+        setCoin(trail, form, token);
+
+        uploadMapImage(trail, mapImage);
+
+        uploadMapMusicPath(trail, mapMusic);
+
+        trail = repository.save(trail);
+
+        return TrailMapper.INSTANCE.toDto(trail);
     }
 
-    //Busca todas as trilhas.
-    public Page<TrailDTO> searchAllTrals(Pageable pageable, String token) {
-
-        return this.trailRepository.findAll(pageable).map(TrailMapper::toDto);
-
+    private void validate(TrailForm form){
+        validateIfAlreadyExistsByName(form.getName());
     }
 
-    //Salva uma trilha no banco de dados.
-    public TrailDTO saveTrail(MultipartFile file, TrailForm form, String token) throws IOException {
-        UserDto userDTO = UserMapper.INSTANCE.toDto(userService.findUserById(tokenUtils.getUserId(token))) ;
-        return TrailMapper.toDto(this.trailRepository.save(preencherTrilha(form,userDTO,file)));
+    private void setAuthor(@NonNull Trail trail, @NonNull String token){
+        trail.setAuthor(userService.findUserByToken(token));
     }
 
-    // Preenche uma trilha.
-    private Trail preencherTrilha(TrailForm form, UserDto userDTO, MultipartFile file) throws IOException {
+    private void setCoin(@NonNull Trail trail, @NonNull TrailForm form, @NonNull String token){
+        trail.setCoin(fetchService.fetchCoin(form.getCoinId(), token));
+    }
 
+    private void validate(TrailForm form, Trail trail){
+        if(trail.getName().equalsIgnoreCase(form.getName())){
+            validateIfAlreadyExistsByName(form.getName());
+        }
+    }
+
+    private void validateIfAlreadyExistsByName(String name){
+        if(repository.existsByName(name)){
+            throw new AlreadyExistsException("Trail", "name", name);
+        }
+    }
+
+    private Trail formToTrail(TrailForm form, List<PositionForm> characterMapPositionPath) {
         return Trail
                 .builder()
-                .nameTrail(form.getNameTrail())
-                .descriptionTrail(form.getDescricaoTrilha())
-                .arquivoTrilhaNome(file.getOriginalFilename())
-                .arquivoTrilhaBytes(file.getBytes())
-                .userCreatedTrail(UserMapper.INSTANCE.toEntity(userDTO)).build();
+                .name(form.getName())
+                .description(form.getDescription())
+                .conclusionDate(form.getConclusionDate())
+                .isActive(form.getIsActive())
+                .characterMapPositionPath(positionService.getPosition(characterMapPositionPath))
+                .build();
+    }
 
+    private void uploadMapImage(Trail trail, MultipartFile mapImage){
+        if(Objects.nonNull(trail) && Objects.nonNull(mapImage)){
+            trail.setMapImagePath(
+                    assetStorageService.uploadAsset(
+                            mapImage,
+                            trail.getAuthor().getClient().getCnpj(),
+                            MessageFormat.format("{0}_map", trail.getName()),
+                            FileTypeEnum.ASSET, trail.getAuthor()
+                    )
+            );
+        }
+    }
+
+    private void uploadMapMusicPath(Trail trail, MultipartFile mapMusicPath){
+        if(Objects.nonNull(trail) && Objects.nonNull(mapMusicPath)){
+            trail.setMapImagePath(
+                    assetStorageService.uploadAsset(
+                            mapMusicPath,
+                            trail.getAuthor().getClient().getCnpj(),
+                            MessageFormat.format("{0}_music", trail.getName()),
+                            FileTypeEnum.ASSET, trail.getAuthor()
+                    )
+            );
+        }
     }
 
     //busca uma tillha pelo ID.
@@ -89,14 +130,14 @@ public class TrailService {
     }
 
     public TrailDTO findTrilhaById(Long id){
-        return TrailMapper.toDto(this.trailRepository.findById(id)
+        return TrailMapper.INSTANCE.toDto(this.repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Erro ao buscar a trilha")));
     }
 
     //deleta uma trilha do banco de dados.
     public void deleteTrail(Long idTrail) {
         try{
-            this.trailRepository.deleteById(idTrail);
+            this.repository.deleteById(idTrail);
         }catch (Exception e){
             System.out.println("Erro ao deletar"+e.getLocalizedMessage());
         }

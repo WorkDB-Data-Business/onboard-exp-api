@@ -62,7 +62,7 @@ public class ScormStorageService implements StorageService {
     private RegistrationService registrationService;
 
     @Autowired
-    private ImageStorageService imageStorageService;
+    private AssetStorageService assetStorageService;
 
     private final Function<ScormDto, ScormDto> SET_STORAGE = scormDto -> {
         scormDto.setStorage(Storage.SCORM);
@@ -122,10 +122,10 @@ public class ScormStorageService implements StorageService {
 
     private void uploadImage(@NonNull Scorm scorm, @NonNull UploadForm form) {
         scorm.setPreviewImagePath(
-                imageStorageService.uploadImage(form.getPreviewImage(),
+                assetStorageService.uploadAsset(form.getPreviewImage(),
                         scorm.getAuthor().getClient().getCnpj(),
                         MessageFormat.format("{0}_{1}_preview",  scorm.getTitle(), GenericUtils.generateUUID()),
-                        FileTypeEnum.IMAGE, scorm.getAuthor()));
+                        FileTypeEnum.ASSET, scorm.getAuthor()));
     }
 
     @Override

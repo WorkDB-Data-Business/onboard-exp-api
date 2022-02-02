@@ -23,18 +23,42 @@ CREATE TABLE IF NOT EXISTS public.tbstage(
 
 CREATE TABLE IF NOT EXISTS public.tbtrail(
 	idtrail BIGSERIAL NOT NULL,
-	name_trail CHARACTER VARYING NOT NULL,
-	description_trail CHARACTER NOT NULL,
-	iduser BIGINT NOT NULL,
+	name CHARACTER VARYING NOT NULL,
+	description CHARACTER VARYING NOT NULL,
+	author BIGINT NOT NULL,
 	is_active BOOLEAN NOT NULL,
-    is_available BOOLEAN NOT NULL,
     idcoin BIGINT NOT NULL,
-    idstage BIGINT NOT NULL,
+    map_image_path CHARACTER VARYING NOT NULL,
+    map_music_path CHARACTER VARYING,
+    conclusion_date TIMESTAMP NOT NULL,
 
-    FOREIGN KEY (iduser) REFERENCES tbuser(iduser),
+    created_by CHARACTER VARYING,
+    updated_by CHARACTER VARYING,
+    created_at TIMESTAMP default now(),
+    updated_at TIMESTAMP,
+
+    FOREIGN KEY (author) REFERENCES tbuser(iduser),
     FOREIGN KEY (idcoin) REFERENCES tbcoin(idcoin),
 
 	CONSTRAINT tbtrail_pk PRIMARY KEY (idtrail)
+);
+
+CREATE TABLE IF NOT EXISTS public.tbposition(
+	x_axis BIGINT NOT NULL,
+	y_axis BIGINT NOT NULL,
+
+	CONSTRAINT tbposition_pk PRIMARY KEY (x_axis, y_axis)
+);
+
+CREATE TABLE IF NOT EXISTS public.tbtrail_map_position_path(
+	x_axis BIGINT NOT NULL,
+	y_axis BIGINT NOT NULL,
+	idtrail BIGINT NOT NULL,
+
+	FOREIGN KEY (x_axis, y_axis) REFERENCES tbposition(x_axis, y_axis),
+    FOREIGN KEY (idtrail) REFERENCES tbtrail(idtrail),
+
+	CONSTRAINT tbtrail_map_position_path_pk PRIMARY KEY (x_axis, y_axis, idtrail)
 );
 
 CREATE TABLE IF NOT EXISTS public.tbtrail_stage(
@@ -44,6 +68,26 @@ CREATE TABLE IF NOT EXISTS public.tbtrail_stage(
 	FOREIGN KEY (idtrail) REFERENCES tbtrail(idtrail),
 
 	CONSTRAINT tbtrail_stage_pk PRIMARY KEY (idstage, idtrail)
+);
+
+CREATE TABLE IF NOT EXISTS public.tbtrail_group(
+	idtrail bigint NOT NULL,
+	idgroup bigint NOT NULL,
+	FOREIGN KEY (idtrail) REFERENCES tbtrail(idtrail),
+	FOREIGN KEY (idgroup) REFERENCES tbgroup(idgroup),
+
+	CONSTRAINT tbtrail_group_pk PRIMARY KEY (idtrail, idgroup)
+);
+
+CREATE TABLE IF NOT EXISTS public.tbtrail_user_registration(
+	idtrail bigint NOT NULL,
+	iduser bigint NOT NULL,
+	started_trail_date TIMESTAMP,
+	finished_trail_date TIMESTAMP,
+	FOREIGN KEY (idtrail) REFERENCES tbtrail(idtrail),
+	FOREIGN KEY (iduser) REFERENCES tbuser(iduser),
+
+	CONSTRAINT tbtrail_user_registration_pk PRIMARY KEY (idtrail, iduser)
 );
 
 CREATE TABLE IF NOT EXISTS public.tbevent(

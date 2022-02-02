@@ -1,7 +1,13 @@
 package br.com.harvest.onboardexperience.domain.dtos;
 
-import br.com.harvest.onboardexperience.domain.entities.User;
+import br.com.harvest.onboardexperience.domain.dtos.forms.PositionForm;
+import br.com.harvest.onboardexperience.domain.entities.*;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
+
+import javax.persistence.*;
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @Builder
@@ -10,21 +16,38 @@ import lombok.*;
 @EqualsAndHashCode
 public class TrailDTO {
 
+    @JsonProperty("id")
     private Long id;
 
-    private String nameTRail;
+    @JsonProperty("name")
+    private String name;
 
-    private String arquivoTrilhaNome;
+    @JsonProperty("description")
+    private String description;
 
-    private byte[] arquivoTrilhaBytes;
+    @JsonProperty("mapImagePath")
+    private String mapImagePath;
 
-    private String descriotionTrail;
+    @JsonProperty("mapMusicPath")
+    private String mapMusicPath;
 
-    private User userCreatedTrail;
+    @JsonProperty("conclusionDate")
+    private LocalDateTime conclusionDate;
 
+    @JsonProperty("author")
+    private UserSimpleDto author;
+
+    @JsonProperty("isActive")
     @Builder.Default
     private Boolean isActive = true;
 
-    @Builder.Default
-    private Boolean isAvailable = false;
+    @JsonProperty("coin")
+    private CoinSimpleDTO coin;
+
+    @JsonProperty("characterMapPositionPath")
+    private List<PositionForm> characterMapPositionPath;
+
+    @JsonProperty("groups")
+    private List<GroupDto> groups;
+
 }
