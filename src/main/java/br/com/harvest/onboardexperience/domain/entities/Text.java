@@ -14,7 +14,7 @@ import javax.persistence.*;
 @NoArgsConstructor
 @Entity
 @Table(name = "tbtext", schema = "public")
-public class TextEvent {
+public class Text {
 
     @Id
     @Column(name = "idtext")
@@ -24,8 +24,8 @@ public class TextEvent {
     @Column(name = "title")
     private String title;
 
-    @Column(name = "descripton")
-    private String descripton;
+    @Column(name = "description")
+    private String description;
 
     @Column(name = "text")
     private String text;
