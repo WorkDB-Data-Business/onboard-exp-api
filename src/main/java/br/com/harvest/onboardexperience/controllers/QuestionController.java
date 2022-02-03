@@ -40,7 +40,7 @@ public class QuestionController {
     @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Page<QuestionDto>> findAllQuestions(@RequestHeader("Authorization") String token, Pageable pageable) throws RuntimeException{
-        return ResponseEntity.ok().body(questionService.findAllQuestions(token, pageable    ));
+        return ResponseEntity.ok().body(questionService.findAllQuestions(token, pageable));
     }
 
     @Operation(description = "Retorna o questionário por ID")

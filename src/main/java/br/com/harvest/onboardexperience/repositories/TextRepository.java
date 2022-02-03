@@ -1,23 +1,37 @@
 package br.com.harvest.onboardexperience.repositories;
 
-import br.com.harvest.onboardexperience.domain.entities.Question;
-import br.com.harvest.onboardexperience.domain.entities.Stage;
-import br.com.harvest.onboardexperience.domain.entities.Text;
+import br.com.harvest.onboardexperience.domain.entities.*;
+import lombok.NonNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import javax.persistence.criteria.Join;
 import java.util.Optional;
 
 @Repository
-public interface TextRepository extends JpaRepository<Text,Long> {
+public interface TextRepository extends JpaRepository<Text,Long>, JpaSpecificationExecutor<Text> {
 
-    Page<Text> findByClient_Id(Long id, Pageable pageable);
-    Optional<Text> findByIdAndClient_Tenant(Long id, String tenant);
-    Optional<Text> findByTitleAndClient_Tenant(String title, String tenant);
+      static Specification<Text> byAuthorizedClients(@NonNull Client client) {
+        return (text, cq, cb) -> {
+            Join join = text.join("authorizedClients");
 
+            cq.distinct(true);
 
+            return cb.equal(join, client);
+        };
+    }
+
+    static Specification<Text> byAuthor(@NonNull User author) {
+        return (text, cq, cb) -> cb.equal(text.get("author"), author);
+    }
+
+    static Specification<Text> byId(@NonNull Long id) {
+        return (text, cq, cb) -> cb.equal(text.get("id"), id);
+    }
 
 }

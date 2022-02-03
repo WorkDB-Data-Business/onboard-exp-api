@@ -52,7 +52,7 @@ public class TextController {
     @GetMapping(path = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<TextDto> findById(@PathVariable @Pattern(regexp = RegexUtils.ONLY_NUMBERS) Long id,
                                             @RequestHeader("Authorization") String token){
-        return ResponseEntity.ok(this.textService.findById(id,token));
+        return ResponseEntity.ok(this.textService.findById(id));
     }
 
     @Operation(description = "Realiza alteração do texto.")
@@ -60,7 +60,7 @@ public class TextController {
     @PutMapping(path = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<TextDto> update(@PathVariable @Pattern(regexp = RegexUtils.ONLY_NUMBERS) Long id,
                                            @Valid @RequestBody TextDto dto,
-                                           @RequestHeader("Authorization") String token) throws RuntimeException{
+                                           @RequestHeader("Authorization") String token) throws Exception {
         return ResponseEntity.ok().body(textService.update(id,dto,token));
     }
 
@@ -69,7 +69,8 @@ public class TextController {
     @DeleteMapping(path = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public void delete(@PathVariable @Pattern(regexp = RegexUtils.ONLY_NUMBERS) Long id,
                                            @RequestHeader("Authorization") String token) throws RuntimeException{
-         textService.delete(id,token);
+         textService.delete(id);
     }
+
 
 }

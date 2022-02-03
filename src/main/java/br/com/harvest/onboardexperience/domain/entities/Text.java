@@ -7,6 +7,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.util.List;
 
 @Data
 @EqualsAndHashCode
@@ -34,12 +35,19 @@ public class Text {
     private Boolean isActive;
 
     @ManyToOne
+    @JoinColumn(name = "author")
+    private User author;
+
+    @ManyToOne
     @JoinColumn(name = "idevent")
     private Event event;
 
-    @ManyToOne
-    @JoinColumn(name = "idclient")
-    private Client client;
+    @ManyToMany
+    @JoinTable(
+            name = "tbtext_client",
+            joinColumns = @JoinColumn(name = "idtext"),
+            inverseJoinColumns = @JoinColumn(name = "idclient"))
+    private List<Client> authorizedClients;
 
 
 }
