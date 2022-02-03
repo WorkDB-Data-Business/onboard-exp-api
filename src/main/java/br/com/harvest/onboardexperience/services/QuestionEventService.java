@@ -101,9 +101,9 @@ public class QuestionEventService { //TODO: essa classe não precisa existir
         question.setNoteQuestion(formDto.getNoteQuestion());
         question.setIsActive(true);
 
-        if(formDto.getAnswares() != null && formDto.getAnswares().stream().count() > 0){
+        if(formDto.getAnswers() != null && formDto.getAnswers().stream().count() > 0){
             question.setIsMultipleChoice(true);
-            for(AnswerQuestionFormDto ans : formDto.getAnswares()){
+            for(AnswerQuestionFormDto ans : formDto.getAnswers()){
                 AnswerQuestion answare = new AnswerQuestion(null, ans.getAnswer(), question, ans.getIscorrect());
                 question.getAnswers().add(answare);
             }
