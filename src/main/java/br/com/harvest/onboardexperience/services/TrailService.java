@@ -4,8 +4,7 @@ import br.com.harvest.onboardexperience.domain.dtos.TrailDTO;
 import br.com.harvest.onboardexperience.domain.dtos.TrailSimpleDTO;
 import br.com.harvest.onboardexperience.domain.dtos.forms.PositionForm;
 import br.com.harvest.onboardexperience.domain.dtos.forms.TrailForm;
-import br.com.harvest.onboardexperience.domain.entities.Client;
-import br.com.harvest.onboardexperience.domain.entities.Trail;
+import br.com.harvest.onboardexperience.domain.entities.*;
 import br.com.harvest.onboardexperience.domain.enumerators.FileTypeEnum;
 import br.com.harvest.onboardexperience.domain.exceptions.AlreadyExistsException;
 import br.com.harvest.onboardexperience.domain.exceptions.NotFoundException;
@@ -13,6 +12,7 @@ import br.com.harvest.onboardexperience.infra.storage.filters.CustomFilter;
 import br.com.harvest.onboardexperience.infra.storage.services.AssetStorageService;
 import br.com.harvest.onboardexperience.mappers.TrailMapper;
 import br.com.harvest.onboardexperience.repositories.TrailRepository;
+import br.com.harvest.onboardexperience.repositories.UserTrailRegistrationRepository;
 import br.com.harvest.onboardexperience.utils.JwtTokenUtils;
 import lombok.NonNull;
 import org.springframework.beans.BeanUtils;
@@ -26,6 +26,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.text.MessageFormat;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 
@@ -49,6 +50,9 @@ public class TrailService {
 
     @Autowired
     private AssetStorageService assetStorageService;
+
+    @Autowired
+    private UserTrailRegistrationRepository userTrailRegistrationRepository;
 
     @Autowired
     private FetchService fetchService;
@@ -115,18 +119,20 @@ public class TrailService {
         return query;
     }
 
-    public TrailDTO findTrailByIdAndEndUserByTokenAsColaborator(@NonNull Long id, @NonNull String token) {
-        return repository.findOne(TrailRepository.byId(id).and(TrailRepository.byEndUser(userService.findUserByToken(token))))
-                .map(TrailMapper.INSTANCE::toDto)
-                .orElseThrow(() -> new NotFoundException("Trail", "ID", id.toString()));
+    public TrailDTO findTrailByIdAndEndUserByTokenAsDTOAsColaborator(@NonNull Long id, @NonNull String token) {
+        return TrailMapper.INSTANCE.toDto(findTrailByIdAndEndUserByTokenAsColaborator(id, token));
     }
 
-    public TrailDTO findTrailByIdAndEndUserByTokenAsAdmin(@NonNull Long id, @NonNull String token) {
+    public TrailDTO findTrailByIdAndEndUserByTokenAsDTOAsAdmin(@NonNull Long id, @NonNull String token) {
         return repository.findOne(TrailRepository.byId(id).and(TrailRepository.byClient(tenantService.fetchClientByTenantFromToken(token))))
                 .map(TrailMapper.INSTANCE::toDto)
                 .orElseThrow(() -> new NotFoundException("Trail", "ID", id.toString()));
     }
 
+    public Trail findTrailByIdAndEndUserByTokenAsColaborator(@NonNull Long id, @NonNull String token) {
+        return repository.findOne(TrailRepository.byId(id).and(TrailRepository.byEndUser(userService.findUserByToken(token))))
+                .orElseThrow(() -> new NotFoundException("Trail", "ID", id.toString()));
+    }
     private void validate(TrailForm form, @NonNull String token){
         validateIfAlreadyExistsByNameAndClient(form.getName(), tenantService.fetchClientByTenantFromToken(token));
     }
@@ -187,6 +193,35 @@ public class TrailService {
     public Trail findTrailByIdAndToken(@NonNull Long id, @NonNull String token){
         return this.repository.findByIdAndClient(id, tenantService.fetchClientByTenantFromToken(token))
                 .orElseThrow(() -> new NotFoundException("Trail", "ID", id.toString()));
+    }
+
+    public void startTrail(@NonNull Long id, @NonNull String token){
+        Trail trail = findTrailByIdAndEndUserByTokenAsColaborator(id, token);
+        User user = userService.findUserByToken(token);
+        if(!userTrailRegistrationRepository.existsById(createUserRegistrationId(trail.getId(), user.getId()))){
+            userTrailRegistrationRepository.save(createRegistration(trail, user));
+        }
+    }
+
+    public void finishTrail(@NonNull Long id, @NonNull String token) throws Exception {
+        UserTrailRegistration registration =
+                userTrailRegistrationRepository.findById(createUserRegistrationId(id, userService.findUserByToken(token).getId()))
+                        .orElseThrow(() -> new Exception("The user haven't started the trail yet."));
+
+        registration.setFinishedTrailDate(LocalDateTime.now());
+        userTrailRegistrationRepository.save(registration);
+    }
+
+    private UserTrailRegistrationId createUserRegistrationId(@NonNull Long trailId, @NonNull Long userId){
+        return UserTrailRegistrationId.builder().trail(trailId).user(userId).build();
+    }
+
+    public UserTrailRegistration createRegistration(@NonNull Trail trail, @NonNull User user){
+        return UserTrailRegistration.builder()
+                .trail(trail)
+                .user(user)
+                .startedTrailDate(LocalDateTime.now())
+                .build();
     }
 
 }

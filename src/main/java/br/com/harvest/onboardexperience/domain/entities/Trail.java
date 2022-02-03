@@ -56,13 +56,6 @@ public class Trail extends BaseEntityAudit {
     @JoinColumn(name = "idclient")
     private Client client;
 
-//    @ManyToMany
-//    @JoinTable(
-//            name = "tbtrail_stage",
-//            joinColumns = @JoinColumn(name = "idtrail"),
-//            inverseJoinColumns = @JoinColumn(name = "idstage"))
-//    private List<Stage> stages;
-
     @ManyToMany(cascade = CascadeType.ALL)
     @JoinTable(
             name = "tbtrail_map_position_path",
@@ -77,12 +70,7 @@ public class Trail extends BaseEntityAudit {
             inverseJoinColumns = @JoinColumn(name = "idgroup"))
     private List<Group> groups;
 
+    @OneToMany(mappedBy = "trail")
+    private List<UserTrailRegistration> trailRegistrations;
 
-//    @ManyToMany
-//    @JoinTable(
-//            name = "tbtrail_user_registration",
-//            joinColumns = @JoinColumn(name = "idtrail"),
-//            inverseJoinColumns = @JoinColumn(name = "iduser"))
-//    private List<UserTrailRegistration> trailRegistrations;
-//
 }
