@@ -76,7 +76,7 @@ CREATE TABLE IF NOT EXISTS public.tbtext(
 	idtext BIGSERIAL NOT NULL,
 	title CHARACTER VARYING NOT NULL,
 	description CHARACTER VARYING NOT NULL,
-	text CHARACTER VARYING NOT NULL,
+	text varchar NOT NULL,
 	is_active BOOLEAN NOT NULL,
 	idevent BIGINT,
 	idclient BIGINT,

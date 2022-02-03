@@ -70,11 +70,10 @@ public class TextService {
 
     }
 
-    public TextDto findById(Long id, String token) {
+    public TextDto findById(@NonNull Long id,@NonNull final String token) {
         String tenant = jwtUtils.getUserTenant(token);
         Text text = textRepository.findByIdAndClient_Tenant(id,tenant).orElseThrow(
-                ()-> new TextNotFoundExecption(ExceptionMessageFactory.createNotFoundMessage("Text", "ID", id.toString())));
-
+                ()-> new TextNotFoundExecption(ExceptionMessageFactory.createNotFoundMessage("Text", "id", id.toString())));
         return TextMapper.INSTANCE.toDto(text);
 
     }
@@ -134,13 +133,6 @@ public class TextService {
 
     }
 
-    public TextDto findByTextUser(Long id) {
-
-       Text text = textRepository.findById(id).orElseThrow(
-                ()-> new TextNotFoundExecption(ExceptionMessageFactory.createNotFoundMessage("Text", "ID", id.toString())));
-
-        return TextMapper.INSTANCE.toDto(text);
-    }
 
 }
 

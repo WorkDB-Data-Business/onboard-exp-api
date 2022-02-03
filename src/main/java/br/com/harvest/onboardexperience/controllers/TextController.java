@@ -47,19 +47,19 @@ public class TextController {
         return ResponseEntity.ok().body(textService.findALl(token,pageable));
     }
 
-    @Operation(description = "Rertona a listagem dos textos.")
+    @Operation(description = "Retorna o texto pelo ID.")
     @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping(path = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<TextDto> findById(@PathVariable @Pattern(regexp = RegexUtils.ONLY_NUMBERS) Long id,
-                                            @RequestHeader("Authorization") String token) throws RuntimeException{
-        return ResponseEntity.ok().body(textService.findById(id,token));
+                                            @RequestHeader("Authorization") String token){
+        return ResponseEntity.ok(this.textService.findById(id,token));
     }
 
     @Operation(description = "Realiza alteração do texto.")
     @PreAuthorize("hasAuthority('ADMIN')")
     @PutMapping(path = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<TextDto> update( @Pattern(regexp = RegexUtils.ONLY_NUMBERS) Long id,
-                                           @Valid @RequestBody @NotNull TextDto dto,
+    public ResponseEntity<TextDto> update(@PathVariable @Pattern(regexp = RegexUtils.ONLY_NUMBERS) Long id,
+                                           @Valid @RequestBody TextDto dto,
                                            @RequestHeader("Authorization") String token) throws RuntimeException{
         return ResponseEntity.ok().body(textService.update(id,dto,token));
     }
@@ -67,19 +67,9 @@ public class TextController {
     @Operation(description = "Realiza esclusão do texto no bandco de dados.")
     @PreAuthorize("hasAuthority('ADMIN')")
     @DeleteMapping(path = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public void delete( @Pattern(regexp = RegexUtils.ONLY_NUMBERS) Long id,
+    public void delete(@PathVariable @Pattern(regexp = RegexUtils.ONLY_NUMBERS) Long id,
                                            @RequestHeader("Authorization") String token) throws RuntimeException{
          textService.delete(id,token);
     }
-
-    @Operation(description = "Usuario acesso o texto para leitura.")
-    @PreAuthorize("hasAuthority('COLABORTOR')")
-    @GetMapping(path = "/{id}")
-    public ResponseEntity<TextDto> findByTextUser(@PathVariable @Pattern(regexp = RegexUtils.ONLY_NUMBERS) Long id,
-
-                                            @RequestHeader("Authorization") String token) throws RuntimeException{
-        return ResponseEntity.ok().body(textService.findByTextUser(id));
-    }
-
 
 }
