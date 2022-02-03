@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 
 import javax.persistence.criteria.Join;
 import javax.persistence.criteria.JoinType;
+import javax.persistence.criteria.Root;
 import java.util.Optional;
 
 @Repository
@@ -35,12 +36,29 @@ public interface TrailRepository extends JpaRepository<Trail, Long>, JpaSpecific
         return (trail, cq, cb) -> cb.equal(trail.get("name"), isActive);
     }
 
+    static Specification<Trail> byCustomFilter(@NonNull String customFilter) {
+        return Specification.where(byIdAsString(customFilter))
+                .or(byName(customFilter))
+                .or(byAuthor(customFilter))
+                .or(byCoin(customFilter))
+                .or(byDescription(customFilter))
+                .or(byGroup(customFilter));
+    }
+
     static Specification<Trail> byId(@NonNull Long id) {
         return (trail, cq, cb) -> cb.equal(trail.get("id"), id);
     }
 
+    static Specification<Trail> byIdAsString(@NonNull String id) {
+        return (trail, cq, cb) -> cb.like(trail.get("id").as(String.class), id + "%");
+    }
+
     static Specification<Trail> byCoin(@NonNull Coin coin) {
         return (trail, cq, cb) -> cb.equal(trail.get("coin"), coin);
+    }
+
+    static Specification<Trail> byClient(@NonNull Client client) {
+        return (trail, cq, cb) -> cb.equal(trail.get("client"), client);
     }
 
     static Specification<Trail> byAuthor(@NonNull String criteria) {
@@ -55,8 +73,7 @@ public interface TrailRepository extends JpaRepository<Trail, Long>, JpaSpecific
 
     static Specification<Trail> byCoin(@NonNull String criteria) {
         return (trail, cq, cb) -> cb.or(
-                cb.like(cb.lower(trail.get("coin").get("name")), "%" + criteria.toLowerCase() + "%"),
-                cb.like(cb.lower(trail.get("author").get("id").as(String.class)),criteria.toLowerCase() + "%")
+                cb.like(cb.lower(trail.get("coin").get("name")), "%" + criteria.toLowerCase() + "%")
         );
     }
 
@@ -71,6 +88,26 @@ public interface TrailRepository extends JpaRepository<Trail, Long>, JpaSpecific
             return cb.or(
                     cb.equal(joinUsersGroup, user),
                     cb.equal(joinCompanyRolesGroup, user.getCompanyRole())
+            );
+        };
+    }
+
+    static Specification<Trail> byGroup(@NonNull String criteria) {
+        return (trail, cq, cb) -> {
+            Join<Trail, Group> joinGroups = trail.join("groups", JoinType.INNER);
+
+            Join<Group, CompanyRole> joinCompanyRolesGroup = joinGroups.join("companyRoles", JoinType.LEFT);
+
+            Join<Group, User> joinUsersGroup = joinGroups.join("users", JoinType.LEFT);
+
+            cq.distinct(true);
+
+            return cb.or(
+                    cb.like(cb.lower(joinGroups.get("name")), "%" + criteria.toLowerCase() + "%"),
+                    cb.like(cb.lower(joinCompanyRolesGroup.get("name")), "%" + criteria.toLowerCase() + "%"),
+                    cb.like(cb.lower(joinUsersGroup.get("firstName")), "%" + criteria.toLowerCase() + "%"),
+                    cb.like(cb.lower(joinUsersGroup.get("lastName")), "%" + criteria.toLowerCase() + "%"),
+                    cb.like(cb.lower(joinUsersGroup.get("email")), "%" + criteria.toLowerCase() + "%")
             );
         };
     }

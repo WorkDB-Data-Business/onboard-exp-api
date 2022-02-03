@@ -1,6 +1,7 @@
 package br.com.harvest.onboardexperience.services;
 
 import br.com.harvest.onboardexperience.domain.dtos.TrailDTO;
+import br.com.harvest.onboardexperience.domain.dtos.TrailSimpleDTO;
 import br.com.harvest.onboardexperience.domain.dtos.forms.PositionForm;
 import br.com.harvest.onboardexperience.domain.dtos.forms.TrailForm;
 import br.com.harvest.onboardexperience.domain.entities.Client;
@@ -18,7 +19,9 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -92,9 +95,25 @@ public class TrailService {
         repository.delete(findTrailByIdAndToken(id, token));
     }
 
-//    public Page<TrailDTO> findAll(Pageable pageable, CustomFilter filter, @NonNull String token){
-//
-//    }
+    public Page<TrailSimpleDTO> findAll(Pageable pageable, CustomFilter filter, @NonNull String token){
+        return repository.findAll(createQuery(filter, token), pageable).map(TrailMapper.INSTANCE::toSimpleDto);
+    }
+
+    public Page<TrailSimpleDTO> findAllMyTrails(Pageable pageable, CustomFilter filter, @NonNull String token){
+        return repository.findAll(createQuery(filter, token)
+                        .and(TrailRepository.byEndUser(userService.findUserByToken(token))),
+                pageable).map(TrailMapper.INSTANCE::toSimpleDto);
+    }
+
+    private Specification<Trail> createQuery(@NonNull CustomFilter filter, @NonNull String token){
+        Specification<Trail> query = Specification.where(TrailRepository.byClient(tenantService.fetchClientByTenantFromToken(token)));
+
+        if(StringUtils.hasText(filter.getCustomFilter())){
+            query = query.and(TrailRepository.byCustomFilter(filter.getCustomFilter()));
+        }
+
+        return query;
+    }
 
     public TrailDTO findTrailByIdAndEndUserByToken(@NonNull Long id, @NonNull String token) {
         return repository.findOne(TrailRepository.byId(id).and(TrailRepository.byEndUserOrAuthor(userService.findUserByToken(token))))

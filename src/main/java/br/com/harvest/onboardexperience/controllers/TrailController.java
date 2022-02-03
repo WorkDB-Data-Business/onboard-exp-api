@@ -1,12 +1,16 @@
 package br.com.harvest.onboardexperience.controllers;
 
 import br.com.harvest.onboardexperience.domain.dtos.TrailDTO;
+import br.com.harvest.onboardexperience.domain.dtos.TrailSimpleDTO;
 import br.com.harvest.onboardexperience.domain.dtos.forms.PositionForm;
 import br.com.harvest.onboardexperience.domain.dtos.forms.TrailForm;
+import br.com.harvest.onboardexperience.infra.storage.filters.CustomFilter;
 import br.com.harvest.onboardexperience.services.TrailService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -25,19 +29,6 @@ public class TrailController {
 
     @Autowired
     private TrailService trailService;
-//
-//    @Autowired
-//    private UserStageUseCase usecase;
-
-//    @Autowired
-//    private StageService stageService;
-//
-//    @Operation(description = "Busca todas as trilhas.")
-//    @PreAuthorize("hasAuthority('ADMIN')")
-//    @GetMapping
-//    public ResponseEntity<Page<TrailDTO>> searchAllTrals(Pageable pageable, @RequestHeader("Authorization")String token){
-//        return ResponseEntity.ok(trailService.searchAllTrals(pageable,token));
-//    }
 
     @Operation(description = "Salva uma nova trilha")
     @PreAuthorize("hasAuthority('ADMIN')")
@@ -62,43 +53,32 @@ public class TrailController {
         return ResponseEntity.ok(this.trailService.update(id, form, characterMapPositionPath, mapImage, mapMusic, token));
     }
 
-    @Operation(description = "Busca uma trilha pelo id dela e a retorna")
+    @Operation(description = "Realiza a remoção lógica da trilha no banco de dados.")
     @PreAuthorize("hasAuthority('ADMIN')")
     @DeleteMapping(path = "/{id}")
-    public void searchTrailId(@PathVariable("id") Long id, @RequestHeader("Authorization") String token){
+    public void delete(@PathVariable("id") Long id, @RequestHeader("Authorization") String token){
         this.trailService.delete(id, token);
     }
 
-    @Operation(description = "Atualiza uma trilha")
+    @Operation(description = "Busca uma trilha pelo id.")
     @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('COLABORATOR')")
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<TrailDTO> getById(@PathVariable Long id, @RequestHeader("Authorization") String token) {
         return ResponseEntity.ok(this.trailService.findTrailByIdAndEndUserByToken(id, token));
     }
 
-//    @Operation(description = "Atualiza uma trilha")
-//    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('COLABORATOR')")
-//    @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-//    public ResponseEntity<TrailDTO> getById(@PathVariable Long id, @RequestHeader("Authorization") String token) {
-//        return ResponseEntity.ok(this.trailService.findTrailByIdAndEndUserByToken(id, token));
-//    }
+    @Operation(description = "Busca todas as trilhas disponíveis no cliente.")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Page<TrailSimpleDTO>> findAll(Pageable pageable, CustomFilter customFilter, @RequestHeader("Authorization") String token) {
+        return ResponseEntity.ok(this.trailService.findAll(pageable, customFilter, token));
+    }
 
-
-//    @Operation(description = "Retorna com todas as etapas disponiveis.")
-//    @ResponseStatus(HttpStatus.OK)
-//    @PreAuthorize("hasAuthority('ADMIN')")
-//    @GetMapping(path ="/stagesavailables", produces = MediaType.APPLICATION_JSON_VALUE)
-//    public ResponseEntity<List<StageDto>> searchStageAvailable (StageDto dto, @RequestParam("file") MultipartFile file, @RequestHeader("Authorization") String token)throws RuntimeException {
-//
-//        return ResponseEntity.ok().body(usecase.findAllStagesAvailables(dto,file,token));
-//    }
-//
-//    @Operation(description = "Criar uma etapa.")
-//    @PreAuthorize("hasAuthority('ADMIN')")
-//    @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-//    public  ResponseEntity<StageDto> createNewStage(@Valid @ModelAttribute @NotNull StageDto dto, @RequestParam("file") MultipartFile file, @RequestHeader("Authorization") String token) throws RuntimeException{
-//        return ResponseEntity.ok().body(stageService.create(dto, file, token));
-//    }
-//
+    @Operation(description = "Busca todas as trilhas disponíveis no cliente.")
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('COLABORATOR')")
+    @GetMapping(value = "/my-trails", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Page<TrailSimpleDTO>> findAllMyTrails(Pageable pageable, CustomFilter customFilter, @RequestHeader("Authorization") String token) {
+        return ResponseEntity.ok(this.trailService.findAllMyTrails(pageable, customFilter, token));
+    }
 
 }
