@@ -19,7 +19,7 @@ public interface FileRepository extends JpaRepository<HarvestFile, Long>, JpaSpe
 
     Optional<HarvestFile> findByContentPath(String contentPath);
 
-    Boolean existsByName(String name);
+    Boolean existsByNameAndAuthor_Client(String name, Client client);
 
     Optional<HarvestFile> findByIdAndAuthor(Long id, User author);
 

@@ -4,7 +4,6 @@ import br.com.harvest.onboardexperience.domain.dtos.TrailDTO;
 import br.com.harvest.onboardexperience.domain.dtos.forms.PositionForm;
 import br.com.harvest.onboardexperience.domain.dtos.forms.TrailForm;
 import br.com.harvest.onboardexperience.services.TrailService;
-import br.com.harvest.onboardexperience.utils.Constants;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,9 +15,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
 import java.io.IOException;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
 import java.util.List;
 
 @Tag(name = "Trail")
@@ -46,29 +42,48 @@ public class TrailController {
     @Operation(description = "Salva uma nova trilha")
     @PreAuthorize("hasAuthority('ADMIN')")
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<TrailDTO> create(@RequestParam("mapImage") MultipartFile mapImage,
-                                           @RequestParam("mapMusic") MultipartFile mapMusic,
+    public ResponseEntity<TrailDTO> create(@RequestParam(value = "mapImage") MultipartFile mapImage,
+                                           @RequestParam(value = "mapMusic", required = false) MultipartFile mapMusic,
                                            @Valid @ModelAttribute TrailForm form,
                                            @RequestPart("characterMapPositionPath") List<PositionForm> characterMapPositionPath,
-//                                           @RequestParam("groupsId") List<Long> groupsId,
                                            @RequestHeader("Authorization") String token) throws IOException {
         return ResponseEntity.ok(this.trailService.save(form, characterMapPositionPath, mapImage, mapMusic, token));
     }
 
-//    @Operation(description = "Busca uma trilha pelo id dela e a retorna")
-//    @PreAuthorize("hasAuthority('ADMIN')")
-//    @GetMapping(path = "/{id_trail}")
-//    public ResponseEntity<TrailDTO> searchTrailId(@PathVariable(name="idTrilha")Long idTrail,
-//                                                     @RequestHeader("Authorization")String token){
-//        return ResponseEntity.ok(this.trailService.searchTrailId(idTrail));
+    @Operation(description = "Atualiza uma trilha")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @PutMapping(value = "/{id}",produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<TrailDTO> update(@PathVariable("id") Long id,
+                                           @RequestParam(value = "mapImage", required = false) MultipartFile mapImage,
+                                           @RequestParam(value = "mapMusic", required = false) MultipartFile mapMusic,
+                                           @Valid @ModelAttribute TrailForm form,
+                                           @RequestPart("characterMapPositionPath") List<PositionForm> characterMapPositionPath,
+                                           @RequestHeader("Authorization") String token) throws IOException {
+        return ResponseEntity.ok(this.trailService.update(id, form, characterMapPositionPath, mapImage, mapMusic, token));
+    }
+
+    @Operation(description = "Busca uma trilha pelo id dela e a retorna")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @DeleteMapping(path = "/{id}")
+    public void searchTrailId(@PathVariable("id") Long id, @RequestHeader("Authorization") String token){
+        this.trailService.delete(id, token);
+    }
+
+    @Operation(description = "Atualiza uma trilha")
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('COLABORATOR')")
+    @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<TrailDTO> getById(@PathVariable Long id, @RequestHeader("Authorization") String token) {
+        return ResponseEntity.ok(this.trailService.findTrailByIdAndEndUserByToken(id, token));
+    }
+
+//    @Operation(description = "Atualiza uma trilha")
+//    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('COLABORATOR')")
+//    @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+//    public ResponseEntity<TrailDTO> getById(@PathVariable Long id, @RequestHeader("Authorization") String token) {
+//        return ResponseEntity.ok(this.trailService.findTrailByIdAndEndUserByToken(id, token));
 //    }
-//
-//    @Operation(description = "Deleta uma trilha")
-//    @PreAuthorize("hasAuthority('ADMIN')")
-//    @DeleteMapping(path = "/{id_trail}")
-//    public void deleteTrail(@PathVariable(name="idTrilha")Long idTrail, @RequestHeader("Authorization")String token){
-//        this.trailService.deleteTrail(idTrail);
-//    }
+
+
 //    @Operation(description = "Retorna com todas as etapas disponiveis.")
 //    @ResponseStatus(HttpStatus.OK)
 //    @PreAuthorize("hasAuthority('ADMIN')")

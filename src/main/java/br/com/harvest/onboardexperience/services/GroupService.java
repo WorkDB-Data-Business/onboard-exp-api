@@ -89,7 +89,7 @@ public class GroupService {
         repository.delete(group);
     }
 
-    private Group findByIdAndClientTenant(@NonNull final Long id, @NonNull final String token){
+    public Group findByIdAndClientTenant(@NonNull final Long id, @NonNull final String token){
         return repository.findByIdAndClient_Tenant(id, jwtTokenUtils.getUserTenant(token)).orElseThrow(
                 () -> new GroupNotFoundException(ExceptionMessageFactory.createNotFoundMessage("group",
                         "ID", id.toString())));

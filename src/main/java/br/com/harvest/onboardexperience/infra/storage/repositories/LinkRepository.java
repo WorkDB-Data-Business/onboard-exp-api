@@ -24,12 +24,12 @@ public interface LinkRepository extends JpaRepository<Link, Long>, JpaSpecificat
     Optional<Link> findByIdAndAuthor(Long id, User author);
 
     static Specification<Link> byAuthor(@NonNull String criteria) {
-        return (file, cq, cb) -> cb.or(
-                cb.like(cb.lower(file.get("author").get("firstName")), "%" + criteria.toLowerCase() + "%"),
-                cb.like(cb.lower(file.get("author").get("lastName")), "%" + criteria.toLowerCase() + "%"),
-                cb.like(cb.lower(file.get("author").get("nickname")), "%" + criteria.toLowerCase() + "%"),
-                cb.like(cb.lower(file.get("author").get("cpf")),  criteria.toLowerCase() + "%"),
-                cb.like(cb.lower(file.get("author").get("email")), criteria.toLowerCase() + "%")
+        return (link, cq, cb) -> cb.or(
+                cb.like(cb.lower(link.get("author").get("firstName")), "%" + criteria.toLowerCase() + "%"),
+                cb.like(cb.lower(link.get("author").get("lastName")), "%" + criteria.toLowerCase() + "%"),
+                cb.like(cb.lower(link.get("author").get("nickname")), "%" + criteria.toLowerCase() + "%"),
+                cb.like(cb.lower(link.get("author").get("cpf")),  criteria.toLowerCase() + "%"),
+                cb.like(cb.lower(link.get("author").get("email")), criteria.toLowerCase() + "%")
         );
     }
 

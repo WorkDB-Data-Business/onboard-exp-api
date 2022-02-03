@@ -31,6 +31,7 @@ CREATE TABLE IF NOT EXISTS public.tbtrail(
     map_image_path CHARACTER VARYING NOT NULL,
     map_music_path CHARACTER VARYING,
     conclusion_date TIMESTAMP NOT NULL,
+    idclient BIGINT NOT NULL,
 
     created_by CHARACTER VARYING,
     updated_by CHARACTER VARYING,
@@ -39,6 +40,7 @@ CREATE TABLE IF NOT EXISTS public.tbtrail(
 
     FOREIGN KEY (author) REFERENCES tbuser(iduser),
     FOREIGN KEY (idcoin) REFERENCES tbcoin(idcoin),
+    FOREIGN KEY (idclient) REFERENCES tbclient(idclient),
 
 	CONSTRAINT tbtrail_pk PRIMARY KEY (idtrail)
 );

@@ -70,11 +70,14 @@ public class HarvestLibraryStorageService implements StorageService {
 
     private final String FILE_FOLDER = "files";
 
-    public void save(@NonNull UploadForm form, @NonNull String token) {
+    public void save(@NonNull UploadForm form, @NonNull String token) throws FileAlreadyExistsException {
 
         validate(form);
 
+
         HarvestFile harvestFile = convertFormToFile(form, token);
+
+        validateIfAlreadyExists(harvestFile);
 
         uploadFile(harvestFile, form);
         uploadPreviewImage(harvestFile, form);
@@ -114,9 +117,13 @@ public class HarvestLibraryStorageService implements StorageService {
 
     private void validateIfAlreadyExists(HarvestFile harvestFile, @NonNull UploadForm form) throws FileAlreadyExistsException {
         if(!harvestFile.getName().equalsIgnoreCase(form.getName())){
-            if(fileRepository.existsByName(form.getName())){
-                throw new FileAlreadyExistsException(form.getName() + " already exists.");
-            }
+            validateIfAlreadyExists(harvestFile);
+        }
+    }
+
+    private void validateIfAlreadyExists(@NonNull HarvestFile harvestFile) throws FileAlreadyExistsException {
+        if(fileRepository.existsByNameAndAuthor_Client(harvestFile.getName(), harvestFile.getAuthor().getClient())){
+            throw new FileAlreadyExistsException(harvestFile.getName() + " already exists.");
         }
     }
 

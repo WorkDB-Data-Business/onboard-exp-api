@@ -46,7 +46,10 @@ public class Trail extends BaseEntityAudit {
     @JoinColumn(name = "idcoin")
     private Coin coin;
 
-//
+    @ManyToOne
+    @JoinColumn(name = "idclient")
+    private Client client;
+
 //    @ManyToMany
 //    @JoinTable(
 //            name = "tbtrail_stage",
@@ -67,6 +70,7 @@ public class Trail extends BaseEntityAudit {
             joinColumns = @JoinColumn(name = "idtrail"),
             inverseJoinColumns = @JoinColumn(name = "idgroup"))
     private List<Group> groups;
+
 
 //    @ManyToMany
 //    @JoinTable(

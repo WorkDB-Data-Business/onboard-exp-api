@@ -97,9 +97,9 @@ public class FetchService {
         return Collections.emptyList();
     }
 
-    public List<Group> fetchGroups(List<Long> groupsId) {
+    public List<Group> fetchGroups(List<Long> groupsId, @NonNull String token) {
         if(ObjectUtils.isNotEmpty(groupsId)){
-            return groupsId.stream().map(groupService::findById).collect(Collectors.toList());
+            return groupsId.stream().map(id -> groupService.findByIdAndClientTenant(id, token)).collect(Collectors.toList());
         }
         return Collections.emptyList();
     }

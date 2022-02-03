@@ -77,7 +77,7 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 	
 	@ExceptionHandler({CompanyRoleNotFoundException.class, UserNotFoundException.class, CoinNotFoundException.class,
 	ClientNotFoundException.class, RewardNotFoundException.class, PermissionNotFoundException.class,
-	GroupNotFoundException.class, PasswordResetTokenNotFoundException.class, FileNotFoundException.class})
+	GroupNotFoundException.class, PasswordResetTokenNotFoundException.class, FileNotFoundException.class, NotFoundException.class})
 	public ResponseEntity<?> handleNotFoundException(Exception e){
 		logger.error(e);
 		return ResponseEntity.status(HttpStatus.NOT_FOUND).contentType(MediaType.APPLICATION_JSON).body(e);
