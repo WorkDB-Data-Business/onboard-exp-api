@@ -4,6 +4,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 
+import br.com.harvest.onboardexperience.domain.dtos.UserSimpleDto;
 import br.com.harvest.onboardexperience.domain.dtos.forms.ChangePasswordForm;
 import br.com.harvest.onboardexperience.domain.dtos.forms.UserForm;
 import br.com.harvest.onboardexperience.domain.dtos.forms.UserWelcomeForm;
@@ -47,6 +48,13 @@ public class UserController {
 	@GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Page<UserDto>> findAll(Pageable pageable, @RequestHeader("Authorization") String token) {
 		return ResponseEntity.ok(service.findAllByTenant(pageable, token));
+	}
+
+	@Operation(description = "Retorna os usuários cadastrados.")
+	@PreAuthorize("hasAuthority('ADMIN')")
+	@GetMapping(value = "/list", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<List<UserSimpleDto>> findAll(@RequestHeader("Authorization") String token) {
+		return ResponseEntity.ok(service.findAllByTenant(token));
 	}
 
 	@Operation(description = "Retorna os usuários com base no valor buscado.")

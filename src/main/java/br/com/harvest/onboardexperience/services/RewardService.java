@@ -29,7 +29,9 @@ import br.com.harvest.onboardexperience.utils.JwtTokenUtils;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -131,6 +133,11 @@ public class RewardService {
 	public Page<RewardDto> findAllByTenant(Pageable pageable, @NonNull final String token) {
 		String tenant = jwtUtils.getUserTenant(token);
 		return repository.findAllByClient_Tenant(tenant, pageable).map(RewardMapper.INSTANCE::toDto);
+	}
+
+	public List<RewardDto> findAllByTenant(@NonNull final String token) {
+		return repository.findAllByClient(tenantService.fetchClientByTenantFromToken(token)).stream()
+				.map(RewardMapper.INSTANCE::toDto).collect(Collectors.toList());
 	}
 
 	

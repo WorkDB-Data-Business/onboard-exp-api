@@ -23,6 +23,8 @@ import br.com.harvest.onboardexperience.utils.RegexUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
+import java.util.List;
+
 @Tag(name = "Rewards")
 @RestController
 @RequestMapping("/v1/rewards")
@@ -40,6 +42,13 @@ public class RewardController {
 	@GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Page<RewardDto>> findAll(Pageable pageable, @RequestHeader("Authorization") String token) {
 		return ResponseEntity.ok(service.findAllByTenant(pageable, token));
+	}
+
+	@Operation(description = "Retorna as recompensas cadastradas.")
+	@PreAuthorize("hasAuthority('ADMIN')")
+	@GetMapping(value = "/list",produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<List<RewardDto>> findAll(@RequestHeader("Authorization") String token) {
+		return ResponseEntity.ok(service.findAllByTenant(token));
 	}
 
 	@Operation(description = "Retorna os recompensa com base no valor buscado.")

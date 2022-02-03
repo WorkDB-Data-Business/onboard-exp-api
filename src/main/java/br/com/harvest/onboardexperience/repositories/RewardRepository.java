@@ -22,6 +22,7 @@ public interface RewardRepository extends JpaRepository<Reward, Long>{
 	Optional<Reward> findByNameAndClient(String name, Client client);
 
 	Page<Reward> findAllByClient_Tenant(String tenant, Pageable pageable);
+	List<Reward> findAllByClient(Client client);
 
 	@Query(value="SELECT r FROM Reward r WHERE " +
 			"r.client.tenant = :tenant AND (" +
