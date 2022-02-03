@@ -115,8 +115,14 @@ public class TrailService {
         return query;
     }
 
-    public TrailDTO findTrailByIdAndEndUserByToken(@NonNull Long id, @NonNull String token) {
-        return repository.findOne(TrailRepository.byId(id).and(TrailRepository.byEndUserOrAuthor(userService.findUserByToken(token))))
+    public TrailDTO findTrailByIdAndEndUserByTokenAsColaborator(@NonNull Long id, @NonNull String token) {
+        return repository.findOne(TrailRepository.byId(id).and(TrailRepository.byEndUser(userService.findUserByToken(token))))
+                .map(TrailMapper.INSTANCE::toDto)
+                .orElseThrow(() -> new NotFoundException("Trail", "ID", id.toString()));
+    }
+
+    public TrailDTO findTrailByIdAndEndUserByTokenAsAdmin(@NonNull Long id, @NonNull String token) {
+        return repository.findOne(TrailRepository.byId(id).and(TrailRepository.byClient(tenantService.fetchClientByTenantFromToken(token))))
                 .map(TrailMapper.INSTANCE::toDto)
                 .orElseThrow(() -> new NotFoundException("Trail", "ID", id.toString()));
     }

@@ -1,6 +1,10 @@
 package br.com.harvest.onboardexperience.domain.entities;
 
+import br.com.harvest.onboardexperience.utils.SQLQueryUtils;
 import lombok.*;
+import org.hibernate.annotations.ResultCheckStyle;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -12,6 +16,8 @@ import java.util.List;
 @Builder
 @Entity(name = "tbtrail")
 @EqualsAndHashCode(callSuper = true)
+@SQLDelete(sql = SQLQueryUtils.SOFT_DELETE_TRAIL, check = ResultCheckStyle.COUNT)
+@Where(clause = SQLQueryUtils.IS_ACTIVE_FILTER)
 public class Trail extends BaseEntityAudit {
 
     @Id

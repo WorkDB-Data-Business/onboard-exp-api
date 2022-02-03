@@ -12,5 +12,6 @@ public class SQLQueryUtils {
 	public static final String SOFT_DELETE_LINK   		 		= "UPDATE tblink SET is_active = false WHERE idlink = ?";
 	public static final String SOFT_DELETE_SCORM   		 		= "UPDATE tbscorm SET is_active = false WHERE idscorm = ?";
 	public static final String SOFT_DELETE_SCORM_REGISTRATION   = "UPDATE tbscorm_registration SET is_active = false WHERE idscorm_registration = ?";
+	public static final String SOFT_DELETE_TRAIL   				= "UPDATE tbtrail SET is_active = false WHERE idtrail = ?";
 
 }

@@ -61,10 +61,17 @@ public class TrailController {
     }
 
     @Operation(description = "Busca uma trilha pelo id.")
-    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('COLABORATOR')")
+    @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<TrailDTO> getById(@PathVariable Long id, @RequestHeader("Authorization") String token) {
-        return ResponseEntity.ok(this.trailService.findTrailByIdAndEndUserByToken(id, token));
+    public ResponseEntity<TrailDTO> getByIdAdmin(@PathVariable Long id, @RequestHeader("Authorization") String token) {
+        return ResponseEntity.ok(this.trailService.findTrailByIdAndEndUserByTokenAsAdmin(id, token));
+    }
+
+    @Operation(description = "Busca uma trilha pelo id.")
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('COLABORATOR')")
+    @GetMapping(value = "/{id}/my-trail", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<TrailDTO> getByIdColaborator(@PathVariable Long id, @RequestHeader("Authorization") String token) {
+        return ResponseEntity.ok(this.trailService.findTrailByIdAndEndUserByTokenAsColaborator(id, token));
     }
 
     @Operation(description = "Busca todas as trilhas disponíveis no cliente.")
