@@ -3,6 +3,7 @@ package br.com.harvest.onboardexperience.repositories;
 import java.util.List;
 import java.util.Optional;
 
+import br.com.harvest.onboardexperience.domain.entities.Client;
 import br.com.harvest.onboardexperience.domain.entities.Reward;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -22,6 +23,7 @@ public interface CompanyRoleRepository extends JpaRepository<CompanyRole, Long>{
 	void disableAllByClient(Long idClient);
 	
 	Page<CompanyRole> findAllByClient_Tenant(String tenant, Pageable pageable);
+	List<CompanyRole> findAllByClient(Client client);
 	Optional<CompanyRole> findByIdAndClient_Tenant(Long id, String tenant);
 	Optional<CompanyRole> findByNameContainingIgnoreCase(String name);
 	Optional<CompanyRole> findByNameContainingIgnoreCaseAndClient_Tenant(String name, String tenant);

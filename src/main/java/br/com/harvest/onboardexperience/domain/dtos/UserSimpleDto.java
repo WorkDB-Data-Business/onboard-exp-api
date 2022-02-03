@@ -14,4 +14,8 @@ public class UserSimpleDto {
 
     private String firstName;
 
+    private String lastName;
+
+    private String email;
+
 }

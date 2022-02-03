@@ -28,7 +28,9 @@ import br.com.harvest.onboardexperience.utils.JwtTokenUtils;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -54,6 +56,9 @@ public class CoinService {
 
     @Autowired
     private ImageRepository imageRepository;
+
+    @Autowired
+    private TenantService tenantService;
 
     public CoinDto create(@NonNull CoinDto dto, MultipartFile file, String token) {
         String tenant = jwtUtils.getUserTenant(token);
@@ -115,6 +120,11 @@ public class CoinService {
     public Page<CoinDto> findAllByTenant(Pageable pageable, @NonNull String token) {
         String tenant = jwtUtils.getUserTenant(token);
         return repository.findAllByClient_Tenant(tenant, pageable).map(CoinMapper.INSTANCE::toDto);
+    }
+
+    public List<CoinDto> findAllByTenant(@NonNull String token) {
+        return repository.findAllByClient(tenantService.fetchClientByTenantFromToken(token))
+                .stream().map(CoinMapper.INSTANCE::toDto).collect(Collectors.toList());
     }
 
     public void delete(@NonNull Long id, @NonNull String token) {
