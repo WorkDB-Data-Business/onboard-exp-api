@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
+import java.util.List;
 
 @Tag(name = "Group")
 @RestController
@@ -35,6 +36,13 @@ public class GroupController {
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Page<GroupSimpleDto>> findAll(Pageable pageable, @Valid CustomFilter filter, @RequestHeader("Authorization") String token) {
         return ResponseEntity.ok(service.findAllByTenant(pageable, filter, token));
+    }
+
+    @Operation(description = "Retorna os grupos cadastrados.")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @GetMapping(value = "/list", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<GroupSimpleDto>> findAll(@RequestHeader("Authorization") String token) {
+        return ResponseEntity.ok(service.findAllByTenant(token));
     }
 
     @Operation(description = "Retorna o grupo cadastrado pelo ID.")
