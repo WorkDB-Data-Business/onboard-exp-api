@@ -50,7 +50,7 @@ public class LinkStorageService implements StorageService {
     private UserService userService;
 
     @Autowired
-    private ImageStorageService imageStorageService;
+    private AssetStorageService assetStorageService;
 
     private final Function<LinkSimpleDto, LinkSimpleDto> SET_STORAGE = linkSimpleDto -> {
         linkSimpleDto.setStorage(Storage.LINK);
@@ -79,10 +79,10 @@ public class LinkStorageService implements StorageService {
 
     public void uploadImage(@NonNull Link link, @NonNull UploadForm form){
         link.setPreviewImagePath(
-                imageStorageService.uploadImage(form.getPreviewImage(),
+                assetStorageService.uploadAsset(form.getPreviewImage(),
                         link.getAuthor().getClient().getCnpj(),
                         GenericUtils.generateUUID() + "_preview",
-                        FileTypeEnum.IMAGE, link.getAuthor()));
+                        FileTypeEnum.ASSET, link.getAuthor()));
     }
 
     @Override

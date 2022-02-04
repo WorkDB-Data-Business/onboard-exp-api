@@ -19,7 +19,7 @@ public interface FileRepository extends JpaRepository<HarvestFile, Long>, JpaSpe
 
     Optional<HarvestFile> findByContentPath(String contentPath);
 
-    Boolean existsByName(String name);
+    Boolean existsByNameAndAuthor_Client(String name, Client client);
 
     Optional<HarvestFile> findByIdAndAuthor(Long id, User author);
 
@@ -37,8 +37,8 @@ public interface FileRepository extends JpaRepository<HarvestFile, Long>, JpaSpe
         return (file, cq, cb) -> cb.equal(file.get("id").as(String.class), id);
     }
 
-    static Specification<HarvestFile> byIsNotImagePreview() {
-        return (file, cq, cb) -> cb.equal(file.get("isImagePreview"), false);
+    static Specification<HarvestFile> byIsNotAsset() {
+        return (file, cq, cb) -> cb.equal(file.get("isAsset"), false);
     }
 
     static Specification<HarvestFile> byCustomFilter(@NonNull String customFilter){
