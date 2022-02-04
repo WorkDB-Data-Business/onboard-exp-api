@@ -48,6 +48,9 @@ public class QuestionService {
     @Autowired
     private FetchService fetchService;
 
+    @Autowired
+    private AnswerQuestionRepository answerQuestionRepository;
+
     public Page<QuestionDto> findAllQuestions(String token, Pageable pageable) {
         return questionRepository.findAll(QuestionRepository.byAuthorizedClients(userService.findUserByToken(token).getClient()), pageable).map(QuestionMapper.INSTANCE::toDto);
     }
@@ -72,12 +75,22 @@ public class QuestionService {
         questionEventFinal.setAuthorizedClientsId(GenericUtils.extractIDsFromList(question.getAuthorizedClients(), Client.class));
         return questionEventFinal;
     }
+
     public QuestionDto updateQuestionEvent (Long id, QuestionDto dto, String token) throws Exception {
         Question question = findQuestionByIdAndToken(id, token);
-        BeanUtils.copyProperties(dto, question, "id");
-        question = questionRepository.save(question);
-        log.info("The Question of event " + dto.getDescription()+ " was update sucessful");
-        return QuestionMapper.INSTANCE.toDto(question);
+
+            Question updatedQuestion = dtoToEntity(dto, token);
+
+          Question finalQuestion = this.questionRepository.saveAndFlush(updatedQuestion);
+        updatedQuestion.getAnswersQuestions().forEach(
+                answerQuestion -> {
+                    answerQuestion.setQuestion(finalQuestion);
+                    this.answerQuestionRepository.saveAndFlush(answerQuestion);
+                }
+        );
+
+
+        return QuestionMapper.INSTANCE.toDto(updatedQuestion);
     }
 
     public Question findQuestionByIdAndToken(@NonNull Long id, @NonNull String token) throws Exception {
@@ -94,6 +107,7 @@ public class QuestionService {
         User author = userService.findUserById(jwtUtils.getUserId(token));
         return Question
                 .builder()
+                .id(dto.getId())
                 .name(dto.getName())
                 .description(dto.getDescription())
                 .answersQuestions(dto.getAnswersQuestions().stream().map(AnswerQuestionMapper.INSTANCE::toEntity)
