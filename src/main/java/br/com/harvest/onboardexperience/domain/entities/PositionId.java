@@ -3,6 +3,7 @@ package br.com.harvest.onboardexperience.domain.entities;
 import lombok.*;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 
 @EqualsAndHashCode
@@ -13,8 +14,8 @@ import java.math.BigInteger;
 @Builder
 public class PositionId implements Serializable {
 
-    private BigInteger xAxis;
+    private BigDecimal xAxis;
 
-    private BigInteger yAxis;
+    private BigDecimal yAxis;
 
 }
