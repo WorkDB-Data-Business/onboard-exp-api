@@ -28,7 +28,7 @@ public class Question {
     @Column(name = "name")
     private String name;
 
-    @NotNull
+
     @Column(name = "description")
     private String description;
 
