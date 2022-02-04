@@ -1,7 +1,9 @@
 package br.com.harvest.onboardexperience.controllers;
 
 import br.com.harvest.onboardexperience.domain.dtos.AnswerQuestionDto;
+import br.com.harvest.onboardexperience.domain.dtos.QuestionDto;
 import br.com.harvest.onboardexperience.services.AnswerQuestionService;
+import br.com.harvest.onboardexperience.utils.RegexUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
 
 @Tag(name = "Respostas do Questionário")
 @RestController

@@ -18,7 +18,6 @@ public class AnswerQuestionDto {
     private String answer;
 
     @JsonProperty("isCorrect")
-    @Builder.Default
     private Boolean isCorrect = false;
 
     @JsonProperty("idQuestion")
