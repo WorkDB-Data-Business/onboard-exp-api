@@ -3,9 +3,8 @@ package br.com.harvest.onboardexperience.services;
 import br.com.harvest.onboardexperience.domain.entities.User;
 import br.com.harvest.onboardexperience.domain.enumerators.FileTypeEnum;
 import br.com.harvest.onboardexperience.domain.exceptions.BusinessException;
-import br.com.harvest.onboardexperience.infra.storage.entities.Image;
-import br.com.harvest.onboardexperience.infra.storage.repositories.ImageRepository;
-import br.com.harvest.onboardexperience.infra.storage.services.ImageStorageService;
+import br.com.harvest.onboardexperience.infra.storage.repositories.AssetRepository;
+import br.com.harvest.onboardexperience.infra.storage.services.AssetStorageService;
 import br.com.harvest.onboardexperience.mappers.ClientMapper;
 import br.com.harvest.onboardexperience.repositories.UserRepository;
 import br.com.harvest.onboardexperience.utils.GenericUtils;
@@ -49,13 +48,13 @@ public class CoinService {
     private ClientMapper clientMapper;
 
     @Autowired
-    private ImageStorageService imageStorageService;
+    private AssetStorageService assetStorageService;
 
     @Autowired
     private UserService userService;
 
     @Autowired
-    private ImageRepository imageRepository;
+    private AssetRepository assetRepository;
 
     @Autowired
     private TenantService tenantService;
@@ -144,7 +143,7 @@ public class CoinService {
     }
 
     private void saveImage(MultipartFile file, CoinDto dto, User author) {
-        dto.setImagePath(imageStorageService.uploadImage(file, dto.getClient().getCnpj(), dto.getName(), FileTypeEnum.COIN, author));
+        dto.setImagePath(assetStorageService.uploadAsset(file, dto.getClient().getCnpj(), dto.getName(), FileTypeEnum.COIN, author));
     }
 
     private Boolean checkIfIsSameCoin(@NonNull Coin coin, @NonNull CoinDto coinDto) {

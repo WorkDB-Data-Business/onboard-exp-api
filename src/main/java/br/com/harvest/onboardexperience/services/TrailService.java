@@ -1,39 +1,40 @@
 package br.com.harvest.onboardexperience.services;
 
-import br.com.harvest.onboardexperience.domain.dtos.StageDto;
 import br.com.harvest.onboardexperience.domain.dtos.TrailDTO;
-import br.com.harvest.onboardexperience.domain.dtos.UserDto;
+import br.com.harvest.onboardexperience.domain.dtos.TrailSimpleDTO;
+import br.com.harvest.onboardexperience.domain.dtos.forms.PositionForm;
 import br.com.harvest.onboardexperience.domain.dtos.forms.TrailForm;
-import br.com.harvest.onboardexperience.domain.entities.Stage;
-import br.com.harvest.onboardexperience.domain.entities.Trail;
-import br.com.harvest.onboardexperience.mappers.StageMapper;
+import br.com.harvest.onboardexperience.domain.entities.*;
+import br.com.harvest.onboardexperience.domain.enumerators.FileTypeEnum;
+import br.com.harvest.onboardexperience.domain.exceptions.AlreadyExistsException;
+import br.com.harvest.onboardexperience.domain.exceptions.NotFoundException;
+import br.com.harvest.onboardexperience.infra.storage.filters.CustomFilter;
+import br.com.harvest.onboardexperience.infra.storage.services.AssetStorageService;
 import br.com.harvest.onboardexperience.mappers.TrailMapper;
-import br.com.harvest.onboardexperience.mappers.UserMapper;
-import br.com.harvest.onboardexperience.repositories.StageRepository;
 import br.com.harvest.onboardexperience.repositories.TrailRepository;
-import br.com.harvest.onboardexperience.repositories.UserRepository;
+import br.com.harvest.onboardexperience.repositories.UserTrailRegistrationRepository;
 import br.com.harvest.onboardexperience.utils.JwtTokenUtils;
 import lombok.NonNull;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.ResponseEntity;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.validation.constraints.NotNull;
 import java.io.IOException;
+import java.text.MessageFormat;
+import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Objects;
 
 @Service
 public class TrailService {
 
     @Autowired
-    private TrailRepository trailRepository;
-
-    @Autowired
-    private UserRepository userRepository;
+    private TrailRepository repository;
 
     @Autowired
     private UserService userService;
@@ -42,66 +43,185 @@ public class TrailService {
     private JwtTokenUtils tokenUtils;
 
     @Autowired
-    private  TenantService tenant;
+    private TenantService tenantService;
 
     @Autowired
-    private StageRepository stageRepository;
+    private PositionService positionService;
 
-    public List<StageDto> findAllStagesAvailables(StageDto dto, MultipartFile file, String token) {
+    @Autowired
+    private AssetStorageService assetStorageService;
 
-        String tenant = tokenUtils.getUserTenant(token);
+    @Autowired
+    private UserTrailRegistrationRepository userTrailRegistrationRepository;
 
-        List<Stage> stages = stageRepository.findAllByIsAvailableAndClient_Tenant(true,tenant);
+    @Autowired
+    private FetchService fetchService;
 
-        return  stages.stream().map(StageMapper.INSTANCE::toDto).collect(Collectors.toList());
+    public TrailDTO save(@NonNull TrailForm form, List<PositionForm> characterMapPositionPath,
+                         MultipartFile mapImage, MultipartFile mapMusic, @NonNull String token) throws IOException {
+
+        validate(form, token);
+
+        Trail trail = formToTrail(form, characterMapPositionPath, token);
+
+        uploadMapImage(trail, mapImage);
+
+        uploadMapMusicPath(trail, mapMusic);
+
+        trail = repository.save(trail);
+
+        return TrailMapper.INSTANCE.toDto(trail);
     }
 
-    //Busca todas as trilhas.
-    public Page<TrailDTO> searchAllTrals(Pageable pageable, String token) {
+    public TrailDTO update(@NonNull Long id, @NonNull TrailForm form, List<PositionForm> characterMapPositionPath,
+                         MultipartFile mapImage, MultipartFile mapMusic, @NonNull String token) throws IOException {
 
-        return this.trailRepository.findAll(pageable).map(TrailMapper::toDto);
 
+        Trail updatedTrail = formToTrail(form, characterMapPositionPath, token);
+
+        Trail trail = findTrailByIdAndToken(id, token);
+
+        validate(form, updatedTrail);
+
+        uploadMapImage(updatedTrail, mapImage);
+
+        uploadMapMusicPath(updatedTrail, mapMusic);
+
+        BeanUtils.copyProperties(updatedTrail, trail,
+                "id", "author", "client", "createdBy", "createdAt",
+                !Objects.nonNull(mapImage) ? "mapImagePath" : "",
+                !Objects.nonNull(mapMusic) ? "mapMusicPath" : "");
+
+        return TrailMapper.INSTANCE.toDto(repository.save(trail));
     }
 
-    //Salva uma trilha no banco de dados.
-    public TrailDTO saveTrail(MultipartFile file, TrailForm form, String token) throws IOException {
-        UserDto userDTO = UserMapper.INSTANCE.toDto(userService.findUserById(tokenUtils.getUserId(token))) ;
-        return TrailMapper.toDto(this.trailRepository.save(preencherTrilha(form,userDTO,file)));
+    public void delete(@NonNull Long id, @NonNull String token){
+        repository.delete(findTrailByIdAndToken(id, token));
     }
 
-    // Preenche uma trilha.
-    private Trail preencherTrilha(TrailForm form, UserDto userDTO, MultipartFile file) throws IOException {
-
-        return Trail
-                .builder()
-                .nameTrail(form.getNameTrail())
-                .descriptionTrail(form.getDescricaoTrilha())
-                .arquivoTrilhaNome(file.getOriginalFilename())
-                .arquivoTrilhaBytes(file.getBytes())
-                .userCreatedTrail(UserMapper.INSTANCE.toEntity(userDTO)).build();
-
+    public Page<TrailSimpleDTO> findAll(Pageable pageable, CustomFilter filter, @NonNull String token){
+        return repository.findAll(createQuery(filter, token), pageable).map(TrailMapper.INSTANCE::toSimpleDto);
     }
 
-    //busca uma tillha pelo ID.
-    public TrailDTO searchTrailId(Long idTrail) {
-
-        return findTrilhaById(idTrail);
+    public Page<TrailSimpleDTO> findAllMyTrails(Pageable pageable, CustomFilter filter, @NonNull String token){
+        return repository.findAll(createQuery(filter, token)
+                        .and(TrailRepository.byEndUser(userService.findUserByToken(token))),
+                pageable).map(TrailMapper.INSTANCE::toSimpleDto);
     }
 
-    public TrailDTO findTrilhaById(Long id){
-        return TrailMapper.toDto(this.trailRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Erro ao buscar a trilha")));
-    }
+    private Specification<Trail> createQuery(@NonNull CustomFilter filter, @NonNull String token){
+        Specification<Trail> query = Specification.where(TrailRepository.byClient(tenantService.fetchClientByTenantFromToken(token)));
 
-    //deleta uma trilha do banco de dados.
-    public void deleteTrail(Long idTrail) {
-        try{
-            this.trailRepository.deleteById(idTrail);
-        }catch (Exception e){
-            System.out.println("Erro ao deletar"+e.getLocalizedMessage());
+        if(StringUtils.hasText(filter.getCustomFilter())){
+            query = query.and(TrailRepository.byCustomFilter(filter.getCustomFilter()));
         }
 
+        return query;
     }
 
+    public TrailDTO findTrailByIdAndEndUserByTokenAsDTOAsColaborator(@NonNull Long id, @NonNull String token) {
+        return TrailMapper.INSTANCE.toDto(findTrailByIdAndEndUserByTokenAsColaborator(id, token));
+    }
+
+    public TrailDTO findTrailByIdAndEndUserByTokenAsDTOAsAdmin(@NonNull Long id, @NonNull String token) {
+        return repository.findOne(TrailRepository.byId(id).and(TrailRepository.byClient(tenantService.fetchClientByTenantFromToken(token))))
+                .map(TrailMapper.INSTANCE::toDto)
+                .orElseThrow(() -> new NotFoundException("Trail", "ID", id.toString()));
+    }
+
+    public Trail findTrailByIdAndEndUserByTokenAsColaborator(@NonNull Long id, @NonNull String token) {
+        return repository.findOne(TrailRepository.byId(id).and(TrailRepository.byEndUser(userService.findUserByToken(token))))
+                .orElseThrow(() -> new NotFoundException("Trail", "ID", id.toString()));
+    }
+    private void validate(TrailForm form, @NonNull String token){
+        validateIfAlreadyExistsByNameAndClient(form.getName(), tenantService.fetchClientByTenantFromToken(token));
+    }
+
+    private void validate(TrailForm form, Trail trail){
+        if(!trail.getName().equalsIgnoreCase(form.getName())){
+            validateIfAlreadyExistsByNameAndClient(form.getName(), trail.getClient());
+        }
+    }
+
+    private void validateIfAlreadyExistsByNameAndClient(String name, Client client){
+        if(repository.existsByNameAndClient(name, client)){
+            throw new AlreadyExistsException("Trail", "name", name);
+        }
+    }
+
+    private Trail formToTrail(TrailForm form, List<PositionForm> characterMapPositionPath, @NonNull String token) {
+        return Trail
+                .builder()
+                .name(form.getName())
+                .description(form.getDescription())
+                .conclusionDate(form.getConclusionDate())
+                .coin(fetchService.fetchCoin(form.getCoinId(), token))
+                .isActive(form.getIsActive())
+                .author(userService.findUserByToken(token))
+                .groups(fetchService.fetchGroups(form.getGroupsId(), token))
+                .characterMapPositionPath(positionService.getPosition(characterMapPositionPath))
+                .client(tenantService.fetchClientByTenantFromToken(token))
+                .build();
+    }
+
+    private void uploadMapImage(Trail trail, MultipartFile mapImage){
+        if(Objects.nonNull(trail) && Objects.nonNull(mapImage)){
+            trail.setMapImagePath(
+                    assetStorageService.uploadAsset(
+                            mapImage,
+                            trail.getAuthor().getClient().getCnpj(),
+                            MessageFormat.format("{0}_map", trail.getName()),
+                            FileTypeEnum.ASSET, trail.getAuthor()
+                    )
+            );
+        }
+    }
+
+    private void uploadMapMusicPath(Trail trail, MultipartFile mapMusicPath){
+        if(Objects.nonNull(trail) && Objects.nonNull(mapMusicPath)){
+            trail.setMapMusicPath(
+                    assetStorageService.uploadAsset(
+                            mapMusicPath,
+                            trail.getAuthor().getClient().getCnpj(),
+                            MessageFormat.format("{0}_music", trail.getName()),
+                            FileTypeEnum.ASSET, trail.getAuthor()
+                    )
+            );
+        }
+    }
+
+    public Trail findTrailByIdAndToken(@NonNull Long id, @NonNull String token){
+        return this.repository.findByIdAndClient(id, tenantService.fetchClientByTenantFromToken(token))
+                .orElseThrow(() -> new NotFoundException("Trail", "ID", id.toString()));
+    }
+
+    public void startTrail(@NonNull Long id, @NonNull String token){
+        Trail trail = findTrailByIdAndEndUserByTokenAsColaborator(id, token);
+        User user = userService.findUserByToken(token);
+        if(!userTrailRegistrationRepository.existsById(createUserRegistrationId(trail.getId(), user.getId()))){
+            userTrailRegistrationRepository.save(createRegistration(trail, user));
+        }
+    }
+
+    public void finishTrail(@NonNull Long id, @NonNull String token) throws Exception {
+        UserTrailRegistration registration =
+                userTrailRegistrationRepository.findById(createUserRegistrationId(id, userService.findUserByToken(token).getId()))
+                        .orElseThrow(() -> new Exception("The user haven't started the trail yet."));
+
+        registration.setFinishedTrailDate(LocalDateTime.now());
+        userTrailRegistrationRepository.save(registration);
+    }
+
+    private UserTrailRegistrationId createUserRegistrationId(@NonNull Long trailId, @NonNull Long userId){
+        return UserTrailRegistrationId.builder().trail(trailId).user(userId).build();
+    }
+
+    public UserTrailRegistration createRegistration(@NonNull Trail trail, @NonNull User user){
+        return UserTrailRegistration.builder()
+                .trail(trail)
+                .user(user)
+                .startedTrailDate(LocalDateTime.now())
+                .build();
+    }
 
 }
