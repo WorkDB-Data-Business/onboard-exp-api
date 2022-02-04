@@ -7,6 +7,7 @@ import br.com.harvest.onboardexperience.domain.dtos.forms.TrailForm;
 import br.com.harvest.onboardexperience.domain.entities.*;
 import br.com.harvest.onboardexperience.domain.enumerators.FileTypeEnum;
 import br.com.harvest.onboardexperience.domain.exceptions.AlreadyExistsException;
+import br.com.harvest.onboardexperience.domain.exceptions.BusinessException;
 import br.com.harvest.onboardexperience.domain.exceptions.NotFoundException;
 import br.com.harvest.onboardexperience.infra.storage.filters.CustomFilter;
 import br.com.harvest.onboardexperience.infra.storage.services.AssetStorageService;
@@ -198,6 +199,11 @@ public class TrailService {
     public void startTrail(@NonNull Long id, @NonNull String token){
         Trail trail = findTrailByIdAndEndUserByTokenAsColaborator(id, token);
         User user = userService.findUserByToken(token);
+
+        if(LocalDateTime.now().isBefore(trail.getConclusionDate())){
+            throw new BusinessException("You cannot start a trail after its conclusion date.");
+        }
+
         if(!userTrailRegistrationRepository.existsById(createUserRegistrationId(trail.getId(), user.getId()))){
             userTrailRegistrationRepository.save(createRegistration(trail, user));
         }
