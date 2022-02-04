@@ -1,26 +1,3 @@
-CREATE TABLE IF NOT EXISTS public.tbstage(
-	idstage BIGSERIAL NOT NULL,
-	name CHARACTER VARYING NOT NULL,
-	description CHARACTER VARYING NOT NULL,
-	amount_coins BIGINT NOT NULL,
-	idclient BIGINT NOT NULL,
-	is_active BOOLEAN NOT NULL,
-	is_available BOOLEAN NOT NULL,
-	is_prerequisite BOOLEAN NOT NULL,
-	idcoin BIGINT NOT NULL,
-    is_muted BOOLEAN NOT NULL,
-    created_by CHARACTER VARYING,
-    updated_by CHARACTER VARYING,
-    created_at TIMESTAMP default now(),
-    updated_at TIMESTAMP,
-
-
-    FOREIGN KEY (idclient) REFERENCES tbclient(idclient),
-    FOREIGN KEY (idcoin) REFERENCES tbcoin(idcoin),
-
-	CONSTRAINT tbstage_pk PRIMARY KEY (idstage)
-);
-
 CREATE TABLE IF NOT EXISTS public.tbtrail(
 	idtrail BIGSERIAL NOT NULL,
 	name CHARACTER VARYING NOT NULL,
@@ -46,30 +23,21 @@ CREATE TABLE IF NOT EXISTS public.tbtrail(
 );
 
 CREATE TABLE IF NOT EXISTS public.tbposition(
-	x_axis BIGINT NOT NULL,
-	y_axis BIGINT NOT NULL,
+	x_axis DECIMAL NOT NULL,
+	y_axis DECIMAL NOT NULL,
 
 	CONSTRAINT tbposition_pk PRIMARY KEY (x_axis, y_axis)
 );
 
 CREATE TABLE IF NOT EXISTS public.tbtrail_map_position_path(
-	x_axis BIGINT NOT NULL,
-	y_axis BIGINT NOT NULL,
+	x_axis DECIMAL NOT NULL,
+	y_axis DECIMAL NOT NULL,
 	idtrail BIGINT NOT NULL,
 
 	FOREIGN KEY (x_axis, y_axis) REFERENCES tbposition(x_axis, y_axis),
     FOREIGN KEY (idtrail) REFERENCES tbtrail(idtrail),
 
 	CONSTRAINT tbtrail_map_position_path_pk PRIMARY KEY (x_axis, y_axis, idtrail)
-);
-
-CREATE TABLE IF NOT EXISTS public.tbtrail_stage(
-	idstage bigint NOT NULL,
-	idtrail bigint NOT NULL,
-	FOREIGN KEY (idstage) REFERENCES tbstage(idstage),
-	FOREIGN KEY (idtrail) REFERENCES tbtrail(idtrail),
-
-	CONSTRAINT tbtrail_stage_pk PRIMARY KEY (idstage, idtrail)
 );
 
 CREATE TABLE IF NOT EXISTS public.tbtrail_group(
@@ -92,17 +60,26 @@ CREATE TABLE IF NOT EXISTS public.tbtrail_user_registration(
 	CONSTRAINT tbtrail_user_registration_pk PRIMARY KEY (idtrail, iduser)
 );
 
-CREATE TABLE IF NOT EXISTS public.tbevent(
-	idevent BIGSERIAL NOT NULL,
+CREATE TABLE IF NOT EXISTS public.tbstage(
+	idstage BIGSERIAL NOT NULL,
 	name CHARACTER VARYING NOT NULL,
-	description CHARACTER NOT NULL,
-	is_active BOOLEAN NOT NULL,
-    type BOOLEAN NOT NULL,
-    idclient BIGINT NOT NULL,
+	description CHARACTER VARYING NOT NULL,
+	amount_coins BIGINT NOT NULL,
+	minimum_score DECIMAL NOT NULL,
+	idtrail BIGINT NOT NULL,
+	is_pre_requisite BOOLEAN NOT NULL,
+	x_axis_position DECIMAL NOT NULL,
+	y_axis_position DECIMAL NOT NULL,
 
-    FOREIGN KEY (idclient) REFERENCES tbclient(idclient),
+    created_by CHARACTER VARYING,
+    updated_by CHARACTER VARYING,
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP,
 
-	CONSTRAINT tbevent_pk PRIMARY KEY (idevent)
+    FOREIGN KEY (idtrail) REFERENCES tbtrail(idtrail),
+    FOREIGN KEY (x_axis_position, y_axis_position) REFERENCES tbposition(x_axis, y_axis),
+
+	CONSTRAINT tbstage_pk PRIMARY KEY (idstage)
 );
 
 --CREATE TABLE IF NOT EXISTS public.tbquestion(
@@ -132,20 +109,20 @@ CREATE TABLE public.tbquestion (
 
 ALTER TABLE public.tbquestion ADD CONSTRAINT FK_TBQUESTION_ON_IDCLIENT FOREIGN KEY (idclient) REFERENCES public.tbclient (idclient);
 
-CREATE TABLE IF NOT EXISTS public.tbtext(
-	idtext BIGSERIAL NOT NULL,
-	title CHARACTER VARYING NOT NULL,
-	descripton CHARACTER VARYING NOT NULL,
-	text CHARACTER VARYING NOT NULL,
-	is_active BOOLEAN NOT NULL,
-	is_read BOOLEAN NOT NULL,
-	idevent BIGINT NOT NULL,
-	idclient BIGINT NOT NULL,
-
-	FOREIGN KEY (idevent) REFERENCES tbevent(idevent),
-	FOREIGN KEY (idclient) REFERENCES tbclient(idclient),
-
-	CONSTRAINT tbtext_pk PRIMARY KEY (idtext)
-
-);
-
+--CREATE TABLE IF NOT EXISTS public.tbtext(
+--	idtext BIGSERIAL NOT NULL,
+--	title CHARACTER VARYING NOT NULL,
+--	descripton CHARACTER VARYING NOT NULL,
+--	text CHARACTER VARYING NOT NULL,
+--	is_active BOOLEAN NOT NULL,
+--	is_read BOOLEAN NOT NULL,
+--	idevent BIGINT NOT NULL,
+--	idclient BIGINT NOT NULL,
+--
+--	FOREIGN KEY (idevent) REFERENCES tbevent(idevent),
+--	FOREIGN KEY (idclient) REFERENCES tbclient(idclient),
+--
+--	CONSTRAINT tbtext_pk PRIMARY KEY (idtext)
+--
+--);
+--

@@ -1,11 +1,10 @@
 package br.com.harvest.onboardexperience.domain.entities;
 
+import br.com.harvest.onboardexperience.domain.entities.listeners.PositionListener;
 import lombok.*;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.IdClass;
+import javax.persistence.*;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 
 @Data
@@ -15,14 +14,15 @@ import java.math.BigInteger;
 @IdClass(PositionId.class)
 @Entity(name = "tbposition")
 @EqualsAndHashCode
+@EntityListeners(PositionListener.class)
 public class Position {
 
     @Id
     @Column(name = "xAxis")
-    private BigInteger xAxis;
+    private BigDecimal xAxis;
 
     @Id
     @Column(name = "yAxis")
-    private BigInteger yAxis;
+    private BigDecimal yAxis;
 
 }

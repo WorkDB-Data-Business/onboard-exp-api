@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
 
 @Getter
@@ -15,15 +16,15 @@ public class PositionForm {
 
     @Builder
     @JsonCreator
-    public PositionForm(BigInteger xAxis, BigInteger yAxis) {
+    public PositionForm(BigDecimal xAxis, BigDecimal yAxis) {
         this.xAxis = xAxis;
         this.yAxis = yAxis;
     }
 
     @JsonProperty("xAxis")
-    private BigInteger xAxis;
+    private BigDecimal xAxis;
 
     @JsonProperty("yAxis")
-    private BigInteger yAxis;
+    private BigDecimal yAxis;
 
 }
