@@ -1,25 +1,32 @@
 package br.com.harvest.onboardexperience.services;
 
+import br.com.harvest.onboardexperience.domain.dtos.HarvestFileMediaStageDTO;
+import br.com.harvest.onboardexperience.domain.dtos.LinkMediaStageDTO;
 import br.com.harvest.onboardexperience.domain.dtos.ScormMediaStageDTO;
 import br.com.harvest.onboardexperience.domain.dtos.StageDTO;
 import br.com.harvest.onboardexperience.domain.dtos.forms.PositionDTO;
 import br.com.harvest.onboardexperience.domain.entities.*;
-import br.com.harvest.onboardexperience.domain.entities.keys.ScormMediaStageId;
-import br.com.harvest.onboardexperience.domain.entities.keys.ScormMediaUserId;
+import br.com.harvest.onboardexperience.domain.entities.keys.*;
 import br.com.harvest.onboardexperience.domain.exceptions.NotFoundException;
+import br.com.harvest.onboardexperience.infra.scorm.services.ScormService;
 import br.com.harvest.onboardexperience.infra.storage.services.HarvestFileStorageService;
 import br.com.harvest.onboardexperience.infra.storage.services.LinkStorageService;
 import br.com.harvest.onboardexperience.infra.storage.services.ScormStorageService;
+import br.com.harvest.onboardexperience.mappers.HarvestFileStageMapper;
+import br.com.harvest.onboardexperience.mappers.LinkStageMapper;
 import br.com.harvest.onboardexperience.mappers.ScormMediaStageMapper;
 import br.com.harvest.onboardexperience.mappers.StageMapper;
 import br.com.harvest.onboardexperience.repositories.*;
 import br.com.harvest.onboardexperience.domain.dtos.forms.StageForm;
+import com.rusticisoftware.cloud.v2.client.ApiException;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.text.MessageFormat;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -41,7 +48,7 @@ public class StageService {
     private TrailService trailService;
 
     @Autowired
-    private ScormStorageService scormService;
+    private ScormStorageService scormStorageService;
 
     @Autowired
     private PositionService positionService;
@@ -53,13 +60,23 @@ public class StageService {
     private HarvestFileMediaStageRepository harvestFileMediaStageRepository;
 
     @Autowired
+    private HarvestFileMediaUserRepository harvestFileMediaUserRepository;
+
+    @Autowired
     private LinkMediaStageRepository linkMediaStageRepository;
+
+    @Autowired
+    private LinkMediaUserRepository linkMediaUserRepository;
 
     @Autowired
     private LinkStorageService linkStorageService;
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private ScormService scormService;
+
 
     public StageDTO create(StageForm form, @NonNull String token){
         Stage stage = repository.save(formToStage(form, token));
@@ -103,38 +120,137 @@ public class StageService {
 
     public ScormMediaStageDTO startScormMedia(@NonNull Long trailId, @NonNull Long stageId, @NonNull String scormId, @NonNull String token){
         Optional<ScormMediaStage> scormMediaStage = scormMediaStageRepository.findOne(ScormMediaStageRepository.byStageAndScorm(
-            findAsColaborator(trailId, stageId, token), scormService.find(scormId, token, false)
+            findAsColaborator(trailId, stageId, token), scormStorageService.find(scormId, token, false)
         ));
 
-        scormMediaStage.ifPresent(mediaStage -> registerUserOnScormMedia(mediaStage, token));
+        scormMediaStage.ifPresent(mediaStage -> startScormMediaUserExecution(mediaStage, token));
 
         return scormMediaStage.map(ScormMediaStageMapper.INSTANCE::toDto).orElse(null);
     }
 
-    private void registerUserOnScormMedia(@NonNull ScormMediaStage scormMediaStage, @NonNull String token){
+    public HarvestFileMediaStageDTO startHarvestFileMedia(@NonNull Long trailId, @NonNull Long stageId, @NonNull String harvestFileId, @NonNull String token) throws Exception {
+        Optional<HarvestFileMediaStage> harvestFileMediaStage = harvestFileMediaStageRepository.findOne(HarvestFileMediaStageRepository.byStageAndHarvestFile(
+                findAsColaborator(trailId, stageId, token), harvestFileStorageService.getFileByIdAndAuthorizedClient(harvestFileId, token, false)
+        ));
+
+        harvestFileMediaStage.ifPresent(mediaStage -> startHarvestFileMediaUserExecution(mediaStage, token));
+
+        return harvestFileMediaStage.map(HarvestFileStageMapper.INSTANCE::toDto).orElse(null);
+    }
+
+    public LinkMediaStageDTO startLinkMedia(@NonNull Long trailId, @NonNull Long stageId, @NonNull String linkMedia, @NonNull String token) {
+        Optional<LinkMediaStage> linkMediaStage = linkMediaStageRepository.findOne(LinkMediaStageRepository.byStageAndLink(
+                findAsColaborator(trailId, stageId, token), linkStorageService.getLinkByIdAndAuthorizedClient(linkMedia, token, false)
+        ));
+
+        linkMediaStage.ifPresent(mediaStage -> startLinkMediaUserExecution(mediaStage, token));
+
+        return linkMediaStage.map(LinkStageMapper.INSTANCE::toDto).orElse(null);
+    }
+
+    public void startScormMediaUserExecution(@NonNull ScormMediaStage scormMediaStage, @NonNull String token){
 
         User user = userService.findUserByToken(token);
 
+        if(!scormMediaUserRepository.existsById(createScormMediaUserId(scormMediaStage, user))){
+            scormMediaUserRepository.save(createScormMediaUser(scormMediaStage, user));
+        }
+    }
+
+    public void startHarvestFileMediaUserExecution(@NonNull HarvestFileMediaStage harvestFileMediaStage, @NonNull String token){
+
+        User user = userService.findUserByToken(token);
+
+        if(!harvestFileMediaUserRepository.existsById(createHarvestFileMediaUserId(harvestFileMediaStage, user))){
+            harvestFileMediaUserRepository.save(createHarvestMediaUser(harvestFileMediaStage, user));
+        }
+    }
+
+    public void startLinkMediaUserExecution(@NonNull LinkMediaStage linkMediaStage, @NonNull String token){
+
+        User user = userService.findUserByToken(token);
+
+        if(!linkMediaUserRepository.existsById(createLinkMediaUserId(linkMediaStage, user))){
+            linkMediaUserRepository.save(createLinkMediaUser(linkMediaStage, user));
+        }
+    }
+
+    public void finishUserScormMediaExecution(@NonNull ScormMediaStage scormMediaStage, @NonNull String token) throws ApiException {
+        User user = userService.findUserByToken(token);
+
+        ScormMediaUser scormMediaUser = scormMediaUserRepository.findById(createScormMediaUserId(scormMediaStage, user)).orElseThrow(
+                () -> new NotFoundException(MessageFormat.format("There isn't any start register of SCORM execution from user ID {}", user.getId()))
+        );
+
+        if(!scormMediaUser.getIsCompleted()){
+            scormMediaUser.setCompletedAt(LocalDateTime.now());
+            scormMediaUser.setIsCompleted(true);
+            scormMediaUserRepository.save(scormMediaUser);
+            scormService.deleteRegistration(scormMediaUser.getScormMedia().getScorm().getId(), user.getId());
+        }
+
+    }
+
+    private ScormMediaUserId createScormMediaUserId(@NonNull ScormMediaStage scormMediaStage, @NonNull User user){
         ScormMediaStageId scormMediaStageId = ScormMediaStageId.builder()
                 .scorm(scormMediaStage.getScorm().getId())
                 .stage(scormMediaStage.getStage().getId())
                 .build();
 
-        ScormMediaUserId scormMediaUserId = ScormMediaUserId.builder()
+        return ScormMediaUserId.builder()
                 .user(user.getId())
                 .scormMedia(scormMediaStageId)
                 .build();
-
-        if(!scormMediaUserRepository.existsById(scormMediaUserId)){
-            scormMediaUserRepository.save(createScormMediaUser(scormMediaStage, user));
-        }
     }
+
+    private LinkMediaUserId createLinkMediaUserId(@NonNull LinkMediaStage linkMediaStage, @NonNull User user){
+        LinkMediaStageId linkMediaStageId = LinkMediaStageId.builder()
+                .link(linkMediaStage.getLink().getId())
+                .stage(linkMediaStage.getStage().getId())
+                .build();
+
+        return LinkMediaUserId.builder()
+                .user(user.getId())
+                .linkMedia(linkMediaStageId)
+                .build();
+    }
+
+    private HarvestFileMediaUserId createHarvestFileMediaUserId(@NonNull HarvestFileMediaStage harvestFileMediaStage, @NonNull User user){
+        HarvestFileMediaStageId harvestFileMediaStageId = HarvestFileMediaStageId.builder()
+                .harvestFile(harvestFileMediaStage.getHarvestFile().getId())
+                .stage(harvestFileMediaStage.getStage().getId())
+                .build();
+
+        return HarvestFileMediaUserId.builder()
+                .user(user.getId())
+                .harvestFileMedia(harvestFileMediaStageId)
+                .build();
+    }
+
 
     private ScormMediaUser createScormMediaUser(@NonNull ScormMediaStage scormMediaStage, @NonNull User user){
         return ScormMediaUser
                 .builder()
                 .user(user)
                 .scormMedia(scormMediaStage)
+                .isCompleted(false)
+                .build();
+    }
+
+    private LinkMediaUser createLinkMediaUser(@NonNull LinkMediaStage linkMediaStage, @NonNull User user){
+        return LinkMediaUser
+                .builder()
+                .user(user)
+                .linkMedia(linkMediaStage)
+                .isCompleted(false)
+                .build();
+    }
+
+    private HarvestFileMediaUser createHarvestMediaUser(@NonNull HarvestFileMediaStage harvestFileMediaStage, @NonNull User user){
+        return HarvestFileMediaUser
+                .builder()
+                .user(user)
+                .harvestFileMedia(harvestFileMediaStage)
                 .isCompleted(false)
                 .build();
     }
@@ -191,7 +307,7 @@ public class StageService {
     private ScormMediaStage createScormMedia(String scormId, Stage stage, String token){
         return ScormMediaStage
                 .builder()
-                .scorm(scormService.find(scormId, token, false))
+                .scorm(scormStorageService.find(scormId, token, false))
                 .stage(stage)
                 .build();
     }

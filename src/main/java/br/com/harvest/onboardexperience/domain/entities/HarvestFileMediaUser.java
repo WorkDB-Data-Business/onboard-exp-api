@@ -2,10 +2,7 @@ package br.com.harvest.onboardexperience.domain.entities;
 
 import br.com.harvest.onboardexperience.domain.entities.keys.HarvestFileMediaUserId;
 import br.com.harvest.onboardexperience.infra.storage.entities.HarvestFile;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -14,19 +11,18 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode
+@Builder
 @IdClass(HarvestFileMediaUserId.class)
 @Entity(name="tbstage_file_user")
 public class HarvestFileMediaUser {
 
     @Id
     @ManyToOne
-    @JoinColumn(name = "idfile")
-    private HarvestFile harvestFile;
-
-    @Id
-    @ManyToOne
-    @JoinColumn(name = "idstage")
-    private Stage stage;
+    @JoinColumns({
+            @JoinColumn(name = "idfile"),
+            @JoinColumn(name = "idstage")
+    })
+    private HarvestFileMediaStage harvestFileMedia;
 
     @Id
     @ManyToOne

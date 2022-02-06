@@ -12,9 +12,7 @@ import java.io.Serializable;
 @Builder
 public class HarvestFileMediaUserId implements Serializable {
 
-    private Long harvestFile;
-
-    private Long stage;
+    private HarvestFileMediaStageId harvestFileMedia;
 
     private Long user;
 

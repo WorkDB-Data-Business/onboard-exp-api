@@ -12,9 +12,7 @@ import java.io.Serializable;
 @Builder
 public class LinkMediaUserId implements Serializable {
 
-    private Long link;
-
-    private Long stage;
+    private LinkMediaStageId linkMedia;
 
     private Long user;
 
