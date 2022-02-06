@@ -1,35 +1,22 @@
 package br.com.harvest.onboardexperience.services;
 
 
-import br.com.harvest.onboardexperience.domain.dtos.AnswerQuestionDto;
-import br.com.harvest.onboardexperience.domain.dtos.EventDto;
 import br.com.harvest.onboardexperience.domain.dtos.QuestionEventDto;
 import br.com.harvest.onboardexperience.domain.dtos.forms.AnswerQuestionFormDto;
 import br.com.harvest.onboardexperience.domain.dtos.forms.QuestionEventFormDto;
 import br.com.harvest.onboardexperience.domain.entities.*;
-import br.com.harvest.onboardexperience.domain.exceptions.EventNotFoundExecption;
-import br.com.harvest.onboardexperience.domain.exceptions.StageNotFoundExecption;
-import br.com.harvest.onboardexperience.domain.factories.ExceptionMessageFactory;
-import br.com.harvest.onboardexperience.mappers.EventMapper;
 import br.com.harvest.onboardexperience.mappers.QuestionEventMapper;
-import br.com.harvest.onboardexperience.repositories.EventRepository;
 import br.com.harvest.onboardexperience.repositories.QuestionEventRepository;
 import br.com.harvest.onboardexperience.repositories.UserRepository;
 import br.com.harvest.onboardexperience.utils.JwtTokenUtils;
-import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.NotImplementedException;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 import javax.transaction.Transactional;
 import javax.ws.rs.NotFoundException;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service

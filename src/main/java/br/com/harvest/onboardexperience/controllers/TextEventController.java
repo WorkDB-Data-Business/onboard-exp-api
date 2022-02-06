@@ -1,11 +1,7 @@
 package br.com.harvest.onboardexperience.controllers;
 
 
-import br.com.harvest.onboardexperience.domain.dtos.QuestionEventDto;
 import br.com.harvest.onboardexperience.domain.dtos.TextEventDto;
-import br.com.harvest.onboardexperience.domain.dtos.TrailDTO;
-import br.com.harvest.onboardexperience.services.EventService;
-import br.com.harvest.onboardexperience.services.QuestionEventService;
 import br.com.harvest.onboardexperience.services.TextEventService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -23,9 +19,6 @@ import javax.validation.constraints.NotNull;
 @CrossOrigin(origins = "*", maxAge = 360000)
 @RequestMapping("/v1/text")
 public class TextEventController {
-
-    @Autowired
-    private EventService eventService;
 
     @Autowired
     private TextEventService  textEventService;

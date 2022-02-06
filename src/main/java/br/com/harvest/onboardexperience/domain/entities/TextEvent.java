@@ -34,10 +34,6 @@ public class TextEvent {
     private Boolean isActive;
 
     @ManyToOne
-    @JoinColumn(name = "idevent")
-    private Event event;
-
-    @ManyToOne
     @JoinColumn(name = "idclient")
     private Client client;
 

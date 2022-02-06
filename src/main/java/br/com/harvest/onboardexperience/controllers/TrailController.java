@@ -2,7 +2,7 @@ package br.com.harvest.onboardexperience.controllers;
 
 import br.com.harvest.onboardexperience.domain.dtos.TrailDTO;
 import br.com.harvest.onboardexperience.domain.dtos.TrailSimpleDTO;
-import br.com.harvest.onboardexperience.domain.dtos.forms.PositionForm;
+import br.com.harvest.onboardexperience.domain.dtos.forms.PositionDTO;
 import br.com.harvest.onboardexperience.domain.dtos.forms.TrailForm;
 import br.com.harvest.onboardexperience.infra.storage.filters.CustomFilter;
 import br.com.harvest.onboardexperience.services.TrailService;
@@ -37,7 +37,7 @@ public class TrailController {
     public ResponseEntity<TrailDTO> create(@RequestParam(value = "mapImage") MultipartFile mapImage,
                                            @RequestParam(value = "mapMusic", required = false) MultipartFile mapMusic,
                                            @Valid @ModelAttribute TrailForm form,
-                                           @RequestPart("characterMapPositionPath") List<PositionForm> characterMapPositionPath,
+                                           @RequestPart("characterMapPositionPath") List<PositionDTO> characterMapPositionPath,
                                            @RequestHeader("Authorization") String token) throws IOException {
         return ResponseEntity.ok(this.trailService.save(form, characterMapPositionPath, mapImage, mapMusic, token));
     }
@@ -49,7 +49,7 @@ public class TrailController {
                                            @RequestParam(value = "mapImage", required = false) MultipartFile mapImage,
                                            @RequestParam(value = "mapMusic", required = false) MultipartFile mapMusic,
                                            @Valid @ModelAttribute TrailForm form,
-                                           @RequestPart("characterMapPositionPath") List<PositionForm> characterMapPositionPath,
+                                           @RequestPart("characterMapPositionPath") List<PositionDTO> characterMapPositionPath,
                                            @RequestHeader("Authorization") String token) throws IOException {
         return ResponseEntity.ok(this.trailService.update(id, form, characterMapPositionPath, mapImage, mapMusic, token));
     }
@@ -66,7 +66,7 @@ public class TrailController {
     @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<TrailDTO> getByIdAdmin(@PathVariable Long id, @RequestHeader("Authorization") String token) {
-        return ResponseEntity.ok(this.trailService.findTrailByIdAndEndUserByTokenAsDTOAsAdmin(id, token));
+        return ResponseEntity.ok(this.trailService.findTrailByIdAndTokenAsDTOAsAdmin(id, token));
     }
 
     @Operation(description = "Busca uma trilha pelo id como colaborador.")

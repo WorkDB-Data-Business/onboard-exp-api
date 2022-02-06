@@ -40,7 +40,7 @@ import java.util.function.Function;
 
 @Service
 @Slf4j
-public class HarvestLibraryStorageService implements StorageService {
+public class HarvestFileStorageService implements StorageService {
 
     @Autowired
     private TenantService tenantService;
@@ -193,7 +193,7 @@ public class HarvestLibraryStorageService implements StorageService {
         fileRepository.save(file);
     }
 
-    private HarvestFile getFileByIdAndAuthorizedClient(@NonNull String id, @NonNull String token, Boolean validateAuthor) throws Exception {
+    public HarvestFile getFileByIdAndAuthorizedClient(@NonNull String id, @NonNull String token, Boolean validateAuthor) throws Exception {
 
         User user = userService.findUserByToken(token);
 

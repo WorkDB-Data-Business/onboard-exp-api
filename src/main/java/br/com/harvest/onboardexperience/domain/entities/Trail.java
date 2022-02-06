@@ -73,4 +73,7 @@ public class Trail extends BaseEntityAudit {
     @OneToMany(mappedBy = "trail")
     private List<UserTrailRegistration> trailRegistrations;
 
+    @OneToMany(mappedBy = "trail", cascade = CascadeType.ALL)
+    private List<Stage> stages;
+
 }

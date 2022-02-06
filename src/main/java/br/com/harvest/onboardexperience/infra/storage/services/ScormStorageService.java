@@ -158,7 +158,7 @@ public class ScormStorageService implements StorageService {
         return Optional.of(dto);
     }
 
-    private Scorm find(@NonNull String id, @NonNull String token, Boolean validateAuthor) throws Exception {
+    public Scorm find(@NonNull String id, @NonNull String token, Boolean validateAuthor) {
         User user = userService.findUserByToken(token);
 
         Scorm scorm = repository.findOne(createFindOneQuery(id, user))
@@ -179,6 +179,7 @@ public class ScormStorageService implements StorageService {
 
         Specification<Scorm> queryByIdAndAuthor = ScormRepository.byScormIdEqual(id)
                 .and(ScormRepository.byAuthor(user));
+
         return queryByIdAndAuthorizedClient.or(queryByIdAndAuthor);
     }
 

@@ -13,7 +13,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.nio.file.FileAlreadyExistsException;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -45,7 +44,7 @@ public class StorageAdapter {
                 this.storageService = this.context.getBean(LinkStorageService.class);
                 break;
             case HARVEST_FILE:
-                this.storageService = this.context.getBean(HarvestLibraryStorageService.class);
+                this.storageService = this.context.getBean(HarvestFileStorageService.class);
                 break;
             case SCORM:
                 this.storageService = this.context.getBean(ScormStorageService.class);

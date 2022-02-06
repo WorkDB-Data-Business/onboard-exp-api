@@ -1,10 +1,9 @@
-package br.com.harvest.onboardexperience.domain.entities;
+package br.com.harvest.onboardexperience.domain.entities.keys;
 
 import lombok.*;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.math.BigInteger;
 
 @EqualsAndHashCode
 @Getter

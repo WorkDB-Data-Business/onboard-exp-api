@@ -2,28 +2,29 @@ package br.com.harvest.onboardexperience.domain.dtos.forms;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.*;
 
+import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
-import java.math.BigInteger;
 
 @Getter
 @Setter
 @EqualsAndHashCode
 @NoArgsConstructor
-public class PositionForm {
+public class PositionDTO {
 
     @Builder
     @JsonCreator
-    public PositionForm(BigDecimal xAxis, BigDecimal yAxis) {
+    public PositionDTO(BigDecimal xAxis, BigDecimal yAxis) {
         this.xAxis = xAxis;
         this.yAxis = yAxis;
     }
 
+    @NotNull
     @JsonProperty("xAxis")
     private BigDecimal xAxis;
 
+    @NotNull
     @JsonProperty("yAxis")
     private BigDecimal yAxis;
 

@@ -1,4 +1,4 @@
-package br.com.harvest.onboardexperience.domain.entities;
+package br.com.harvest.onboardexperience.domain.entities.keys;
 
 import lombok.*;
 
@@ -13,7 +13,7 @@ import java.io.Serializable;
 @NoArgsConstructor
 @Builder
 @Embeddable
-public class UserCoinKey implements Serializable {
+public class UserCoinId implements Serializable {
 
     @Column(name = "iduser")
     private Long idUser;

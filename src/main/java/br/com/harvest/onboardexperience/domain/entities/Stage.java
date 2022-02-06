@@ -1,21 +1,19 @@
 package br.com.harvest.onboardexperience.domain.entities;
 
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.*;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.List;
 
 @Data
-@EqualsAndHashCode
+@EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity
-@Table(name="tbstage", schema="public")
+@Builder
+@Entity(name = "tbstage")
 public class Stage extends BaseEntityAudit {
 
     @Id
@@ -32,24 +30,30 @@ public class Stage extends BaseEntityAudit {
     @Column(name = "amount_coins")
     private BigInteger amountCoins;
 
-    @ManyToOne
-    @JoinColumn(name = "idclient")
-    private Client client;
+    @Column(name = "minimum_score")
+    private BigDecimal minimumScore;
 
     @ManyToOne
-    @JoinColumn(name = "idcoin")
-    private Coin coin;
+    @JoinColumn(name = "idtrail")
+    private Trail trail;
 
-    @Column(name = "is_active")
-    private Boolean isActive;
+    @Column(name = "is_pre_requisite")
+    private Boolean isPreRequisite;
 
-    @Column(name = "is_available")
-    private Boolean isAvailable;
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumns({
+            @JoinColumn(name = "x_axis"),
+            @JoinColumn(name = "y_axis")
+    })
+    private Position position;
 
-    @Column(name = "is_prerequisite")
-    private Boolean isPrerequisite;
+    @OneToMany(mappedBy = "scorm", cascade = CascadeType.ALL)
+    private List<ScormMediaStage> scorms;
 
-    @Column(name = "is_muted")
-    private Boolean isMuted;
+    @OneToMany(mappedBy = "harvestFile", cascade = CascadeType.ALL)
+    private List<HarvestFileMediaStage> files;
+
+    @OneToMany(mappedBy = "link", cascade = CascadeType.ALL)
+    private List<LinkMediaUser> links;
 
 }

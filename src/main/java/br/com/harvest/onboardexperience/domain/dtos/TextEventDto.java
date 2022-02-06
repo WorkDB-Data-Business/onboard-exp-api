@@ -1,6 +1,5 @@
 package br.com.harvest.onboardexperience.domain.dtos;
 
-import br.com.harvest.onboardexperience.domain.entities.Event;
 import lombok.*;
 
 @Data
