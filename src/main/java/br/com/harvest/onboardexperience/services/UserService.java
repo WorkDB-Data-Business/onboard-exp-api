@@ -134,7 +134,7 @@ public class UserService {
 
         validateUser(user, userDto);
 
-        BeanUtils.copyProperties(UserMapper.INSTANCE.toEntity(userDto), user,  "id", "client", "createdBy", "createdAt", "password");
+        BeanUtils.copyProperties(UserMapper.INSTANCE.toEntity(userDto), user,  "id", "client", "createdBy", "createdAt", "password", "scormLearnerId");
 
         user = repository.save(user);
 
