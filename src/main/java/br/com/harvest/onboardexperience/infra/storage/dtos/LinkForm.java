@@ -6,7 +6,6 @@ import lombok.*;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
 
 @Data
 @Builder
@@ -14,8 +13,6 @@ import javax.validation.constraints.Size;
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = false)
 public class LinkForm {
-
-    private Long id;
 
     @NotBlank
     private String link;
