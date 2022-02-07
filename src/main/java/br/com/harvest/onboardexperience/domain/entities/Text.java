@@ -7,6 +7,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.util.List;
 
 @Data
 @EqualsAndHashCode
@@ -14,7 +15,7 @@ import javax.persistence.*;
 @NoArgsConstructor
 @Entity
 @Table(name = "tbtext", schema = "public")
-public class TextEvent {
+public class Text {
 
     @Id
     @Column(name = "idtext")
@@ -24,8 +25,8 @@ public class TextEvent {
     @Column(name = "title")
     private String title;
 
-    @Column(name = "descripton")
-    private String descripton;
+    @Column(name = "description")
+    private String description;
 
     @Column(name = "text")
     private String text;
@@ -34,12 +35,19 @@ public class TextEvent {
     private Boolean isActive;
 
     @ManyToOne
+    @JoinColumn(name = "author")
+    private User author;
+
+    @ManyToOne
     @JoinColumn(name = "idevent")
     private Event event;
 
-    @ManyToOne
-    @JoinColumn(name = "idclient")
-    private Client client;
+    @ManyToMany
+    @JoinTable(
+            name = "tbtext_client",
+            joinColumns = @JoinColumn(name = "idtext"),
+            inverseJoinColumns = @JoinColumn(name = "idclient"))
+    private List<Client> authorizedClients;
 
 
 }

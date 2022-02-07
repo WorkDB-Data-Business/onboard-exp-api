@@ -87,5 +87,6 @@ public class EventService {
         repository.delete(event);
     }
 
+
 }
 

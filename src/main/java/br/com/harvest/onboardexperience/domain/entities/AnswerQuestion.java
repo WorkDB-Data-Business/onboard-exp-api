@@ -1,33 +1,32 @@
 package br.com.harvest.onboardexperience.domain.entities;
 
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.*;
 
 @Data
+@Builder
 @EqualsAndHashCode
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "tbanswerquestion", schema = "public")
+@Table(name = "tbanswer_question", schema = "public")
 public class AnswerQuestion {
 
     @Id
-    @Column(name = "id_answer")
+    @Column(name = "idanswer")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(name = "answer")
     private String answer;
 
-    @ManyToOne
-    @JoinColumn(name = "id_question")
-    private QuestionEvent questionEvent;
+    @ManyToOne()
+    @JoinColumn(name = "idquestion")
+    private Question question;
+
 
     @Column(name = "is_correct")
-    private Boolean iscorrect;
+    private Boolean isCorrect;
 }

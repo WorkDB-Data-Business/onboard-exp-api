@@ -58,7 +58,8 @@ public class StageController {
     @Operation(description = "Retorna a etapa cadastrada pelo ID.")
     @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping(path = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<StageDto> findById(@PathVariable @Pattern(regexp = RegexUtils.ONLY_NUMBERS) Long id, @RequestHeader("Authorization") String token){
+    public ResponseEntity<StageDto> findById(@PathVariable @Pattern(regexp = RegexUtils.ONLY_NUMBERS) Long id,
+                                             @RequestHeader("Authorization") String token){
         return ResponseEntity.ok(service.findByid(id, token));
     }
 
