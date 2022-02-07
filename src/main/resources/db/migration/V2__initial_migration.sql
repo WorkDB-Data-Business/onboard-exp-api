@@ -86,6 +86,11 @@ CREATE TABLE IF NOT EXISTS public.tbstage_scorm(
 	idscorm CHARACTER VARYING NOT NULL,
 	idstage BIGINT NOT NULL,
 
+	created_by CHARACTER VARYING,
+    updated_by CHARACTER VARYING,
+    created_at TIMESTAMP default now(),
+    updated_at TIMESTAMP,
+
 	FOREIGN KEY (idscorm) REFERENCES tbscorm(idscorm),
 	FOREIGN KEY (idstage) REFERENCES tbstage(idstage),
 
@@ -96,6 +101,10 @@ CREATE TABLE IF NOT EXISTS public.tbstage_scorm(
 CREATE TABLE IF NOT EXISTS public.tbstage_file(
 	idfile BIGINT NOT NULL,
 	idstage BIGINT NOT NULL,
+	created_by CHARACTER VARYING,
+    updated_by CHARACTER VARYING,
+    created_at TIMESTAMP default now(),
+    updated_at TIMESTAMP,
 
 	FOREIGN KEY (idfile) REFERENCES tbfile(idfile),
 	FOREIGN KEY (idstage) REFERENCES tbstage(idstage),
@@ -107,6 +116,10 @@ CREATE TABLE IF NOT EXISTS public.tbstage_file(
 CREATE TABLE IF NOT EXISTS public.tbstage_link(
 	idlink BIGINT NOT NULL,
 	idstage BIGINT NOT NULL,
+	created_by CHARACTER VARYING,
+    updated_by CHARACTER VARYING,
+    created_at TIMESTAMP default now(),
+    updated_at TIMESTAMP,
 
 	FOREIGN KEY (idlink) REFERENCES tblink(idlink),
 	FOREIGN KEY (idstage) REFERENCES tbstage(idstage),

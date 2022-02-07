@@ -13,7 +13,7 @@ import javax.persistence.*;
 @Builder
 @IdClass(LinkMediaStageId.class)
 @Entity(name="tbstage_link")
-public class LinkMediaStage {
+public class LinkMediaStage extends BaseEntityAudit{
 
     @Id
     @ManyToOne

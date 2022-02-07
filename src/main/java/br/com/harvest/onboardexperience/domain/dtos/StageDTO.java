@@ -33,10 +33,6 @@ public class StageDTO {
 
 	private PositionDTO position;
 
-	private List<ScormMediaStageDTO> scorms;
-
-	private List<HarvestFileMediaStageDTO> files;
-
-	private List<LinkMediaStageDTO> links;
+	private List<MediaExecution> mediaExecutions;
 
 }

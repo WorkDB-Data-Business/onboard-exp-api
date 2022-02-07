@@ -1,5 +1,6 @@
 package br.com.harvest.onboardexperience.domain.dtos.forms;
 
+import br.com.harvest.onboardexperience.domain.dtos.MediaExecution;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
@@ -26,22 +27,13 @@ public class StageForm {
     @JsonProperty("minimumScore")
     private BigDecimal minimumScore;
 
-    @JsonProperty("trailId")
-    private Long trailId;
-
     @JsonProperty("isPreRequisite")
     private Boolean isPreRequisite;
 
     @JsonProperty("position")
     private PositionDTO position;
 
-    @JsonProperty("scorms")
-    private List<String> scorms;
-
-    @JsonProperty("files")
-    private List<Long> files;
-
-    @JsonProperty("links")
-    private List<Long> links;
+    @JsonProperty("medias")
+    private List<MediaExecution> medias;
 
 }

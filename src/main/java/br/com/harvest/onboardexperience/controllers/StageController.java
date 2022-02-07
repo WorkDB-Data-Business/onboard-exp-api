@@ -4,10 +4,12 @@ package br.com.harvest.onboardexperience.controllers;
 import br.com.harvest.onboardexperience.domain.dtos.StageDTO;
 import br.com.harvest.onboardexperience.domain.dtos.forms.PositionDTO;
 import br.com.harvest.onboardexperience.domain.dtos.forms.StageForm;
+import br.com.harvest.onboardexperience.infra.storage.enumerators.Storage;
 import br.com.harvest.onboardexperience.services.StageService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -25,25 +27,23 @@ public class StageController {
     @Autowired
     private StageService service;
 
-//    @Operation(description = "Retorna Etapas Cadastradas.")
-//    @PreAuthorize("hasAuthority('ADMIN')")
-//    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-//    public ResponseEntity<Page<StageDTO>> findAll(Pageable pageable, @RequestHeader("Authorization") String token){
-//        return ResponseEntity.ok(service.findAllByTenant(pageable,token));
-//    }
-//
-//    @Operation(description = "Retorna a etapa cadastrada pelo ID.")
-//    @PreAuthorize("hasAuthority('ADMIN')")
-//    @GetMapping(path = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-//    public ResponseEntity<StageDTO> findById(@PathVariable @Pattern(regexp = RegexUtils.ONLY_NUMBERS) Long id, @RequestHeader("Authorization") String token){
-//        return ResponseEntity.ok(service.findByid(id, token));
-//    }
+    @Operation(description = "Salva uma Etapa no Banco de dados")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @PostMapping(value = "/trails/{trailId}/stages", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    public  ResponseEntity<StageDTO> create(@PathVariable("trailId") Long trailId,
+                                            @Valid @RequestBody StageForm dto,
+                                            @RequestHeader("Authorization") String token) throws Exception {
+        return ResponseEntity.ok().body(service.create(trailId, dto, token));
+    }
 
     @Operation(description = "Salva uma Etapa no Banco de dados")
     @PreAuthorize("hasAuthority('ADMIN')")
-    @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public  ResponseEntity<StageDTO> create(@Valid @RequestBody StageForm dto, @RequestHeader("Authorization") String token) throws Exception {
-        return ResponseEntity.ok().body(service.create(dto, token));
+    @PutMapping(value = "/trails/{trailId}/stages/{stageId}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    public  ResponseEntity<StageDTO> update(@PathVariable("trailId") Long trailId,
+                                            @PathVariable("trailId") Long stageId,
+                                            @Valid @RequestBody StageForm dto,
+                                            @RequestHeader("Authorization") String token) throws Exception {
+        return ResponseEntity.ok().body(service.update(trailId, stageId, dto, token));
     }
 
     @Operation(description = "Busca uma etapa no banco de dados como admin.")
@@ -52,7 +52,7 @@ public class StageController {
     public ResponseEntity<StageDTO> findAsAdmin(@PathVariable("trailId") Long trailId,
                                           @PathVariable("stageId") Long stageId,
                                           @RequestHeader("Authorization") String token) {
-        return ResponseEntity.ok().body(service.findAsAdmin(trailId, stageId, token));
+        return ResponseEntity.ok().body(service.findAsAdminAsDTO(trailId, stageId, token));
     }
 
     @Operation(description = "Busca uma etapa no banco de dados como colaborador.")
@@ -89,44 +89,27 @@ public class StageController {
         return ResponseEntity.ok().body(service.findStageByPosition(trailId, position, token));
     }
 
-//    @Operation(description = "Realiza a exclusão de uma Etapa no banco de dados.")
-//    @PreAuthorize("hasAuthority('ADMIN')")
-//    @ResponseStatus(HttpStatus.NO_CONTENT)
-//    @DeleteMapping(path = "/{id}")
-//    public void delete(@PathVariable  @Pattern(regexp = RegexUtils.ONLY_NUMBERS) Long id, @RequestHeader("Authorization") String token) {
-//        service.delete(id, token);
-//    }
-//
-//    @Operation(description = "Realiza a inativação de uma moeda no banco de dados.")
-//    @ResponseStatus(HttpStatus.NO_CONTENT)
-//    @PreAuthorize("hasAuthority('ADMIN')")
-//    @PatchMapping(path = "/disable/{id}")
-//    public void disable(@PathVariable  @Pattern(regexp = RegexUtils.ONLY_NUMBERS) Long id, @RequestHeader("Authorization") String token) {
-//        service.disableStage(id, token);
-//    }
-//
-//    @Operation(description = "Retorna com todas as etapas disponiveis.")
-//    @ResponseStatus(HttpStatus.OK)
-//    @PreAuthorize("hasAuthority('ADMIN')")
-//    @GetMapping(path ="/stagesavailables", produces = MediaType.APPLICATION_JSON_VALUE)
-//    public ResponseEntity<List<StageDTO>> findByStageAvailable (StageDTO dto, @RequestParam("file") MultipartFile file, @RequestHeader("Authorization") String token)throws RuntimeException {
-//        return ResponseEntity.ok().body(usecase.findAllStagesAvailables(dto,file,token));
-//    }
-//    @Operation(description = "Cria um evento dentro da Etapa.")
-//    @PreAuthorize("hasAuthority('ADMIN')")
-//    @PostMapping(path ="/event", produces = MediaType.APPLICATION_JSON_VALUE)
-//    public ResponseEntity<EventDto> create(@Valid @ModelAttribute @NotNull EventDto dto, @RequestParam("file") MultipartFile file, @RequestHeader("Authorization") String token) throws RuntimeException{
-//        return ResponseEntity.ok().body(eventService.create(dto,file,token));
-//    }
-//
-//    @Operation(description = "Realiza a conclusão da etapa")
-//    @ResponseStatus(HttpStatus.OK)
-//    @PreAuthorize("hasAuthority('ADMIN' or hasAuthority('COLABORATOR'))")
-//    @PostMapping(path = "/completestage", produces = MediaType.APPLICATION_JSON_VALUE)
-//    public void completeStage(@Valid @RequestBody UserCoinForm form, @RequestHeader("Authorization") String token){
-//        usecase.completeStage(form,token);
-//
-//    }
-//
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(description = "Registra a execução da mídia do SCORM na etapa.")
+    @PreAuthorize("hasAuthority('COLABORATOR')")
+    @PostMapping(value = "/trails/{trailId}/stages/{stageId}/media/{mediaId}/{mediaType}/start")
+    public void startMedia(@PathVariable("trailId") Long trailId,
+                                    @PathVariable("stageId") Long stageId,
+                                    @PathVariable("mediaId") String mediaId,
+                                    @PathVariable("mediaType") Storage type,
+                                    @RequestHeader("Authorization") String token) throws Exception {
+        service.startMedia(trailId, stageId, mediaId, type, token);
+    }
 
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(description = "Registra a execução da mídia do SCORM na etapa.")
+    @PreAuthorize("hasAuthority('COLABORATOR')")
+    @PostMapping(value = "/trails/{trailId}/stages/{stageId}/media/{mediaId}/{mediaType}/finish")
+    public void finishMedia(@PathVariable("trailId") Long trailId,
+                                    @PathVariable("stageId") Long stageId,
+                                    @PathVariable("mediaId") String mediaId,
+                                    @PathVariable("mediaType") Storage type,
+                                    @RequestHeader("Authorization") String token) throws Exception {
+        service.finishMedia(trailId, stageId, mediaId, type, token);
+    }
 }

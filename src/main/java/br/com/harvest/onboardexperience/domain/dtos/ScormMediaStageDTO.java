@@ -13,7 +13,4 @@ public class ScormMediaStageDTO {
     @JsonProperty("id")
     private String id;
 
-    @JsonProperty("executionOrder")
-    private Integer executionOrder;
-
 }

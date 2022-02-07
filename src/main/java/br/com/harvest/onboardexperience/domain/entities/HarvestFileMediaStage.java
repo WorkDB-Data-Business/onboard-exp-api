@@ -13,7 +13,7 @@ import javax.persistence.*;
 @Builder
 @IdClass(HarvestFileMediaStageId.class)
 @Entity(name="tbstage_file")
-public class HarvestFileMediaStage {
+public class HarvestFileMediaStage extends BaseEntityAudit{
 
     @Id
     @ManyToOne
