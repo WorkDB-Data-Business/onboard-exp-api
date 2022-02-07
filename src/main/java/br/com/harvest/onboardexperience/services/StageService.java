@@ -22,6 +22,7 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
@@ -80,7 +81,7 @@ public class StageService {
         return StageMapper.INSTANCE.toDto(stage);
     }
 
-    public StageDTO update(@NonNull Long trailId, @NonNull Long stageId, StageForm form, @NonNull String token){
+    public StageDTO update(@NonNull Long trailId, @NonNull Long stageId, @NonNull StageForm form, @NonNull String token){
         Stage stage = findAsAdmin(trailId, stageId, token);
         Stage updatedStage = formToStage(trailId, form, token);
 
@@ -173,18 +174,18 @@ public class StageService {
 
     public List<StageDTO> findAllByTrailAsColaborator(@NonNull Long trailId, @NonNull String token){
         return trailService.findTrailByIdAndEndUserByTokenAsColaborator(trailId, token)
-                .getStages().stream().map(StageMapper.INSTANCE::toDto).collect(Collectors.toList());
+                .getStages().stream().map(this::stageToDto).collect(Collectors.toList());
     }
 
     public List<StageDTO> findAllByTrailAsAdmin(@NonNull Long trailId, @NonNull String token){
         return trailService.findTrailByIdAndTokenAsAdmin(trailId, token)
-                .getStages().stream().map(StageMapper.INSTANCE::toDto).collect(Collectors.toList());
+                .getStages().stream().map(this::stageToDto).collect(Collectors.toList());
     }
 
     public StageDTO findStageByPosition(@NonNull Long trailId, @NonNull PositionDTO position, @NonNull String token){
         return repository.findOne(StageRepository.byPositionAndTrail(positionService.getPosition(position),
                 trailService.findTrailByIdAndEndUserByTokenAsColaborator(trailId, token)))
-                .map(StageMapper.INSTANCE::toDto)
+                .map(this::stageToDto)
                 .orElse(null);
     }
 
@@ -226,7 +227,7 @@ public class StageService {
         }
     }
 
-    public void startScormMedia(@NonNull Long trailId, @NonNull Long stageId, @NonNull String scormId, @NonNull String token){
+    private void startScormMedia(@NonNull Long trailId, @NonNull Long stageId, @NonNull String scormId, @NonNull String token){
         Optional<ScormMediaStage> scormMediaStage = scormMediaStageRepository.findOne(ScormMediaStageRepository.byStageAndScorm(
             findAsColaborator(trailId, stageId, token), scormStorageService.find(scormId, token, false)
         ));
@@ -234,7 +235,7 @@ public class StageService {
         scormMediaStage.ifPresent(mediaStage -> startScormMediaUserExecution(mediaStage, token));
     }
 
-    public void startHarvestFileMedia(@NonNull Long trailId, @NonNull Long stageId, @NonNull String harvestFileId, @NonNull String token) throws Exception {
+    private void startHarvestFileMedia(@NonNull Long trailId, @NonNull Long stageId, @NonNull String harvestFileId, @NonNull String token) throws Exception {
         Optional<HarvestFileMediaStage> harvestFileMediaStage = harvestFileMediaStageRepository.findOne(HarvestFileMediaStageRepository.byStageAndHarvestFile(
                 findAsColaborator(trailId, stageId, token), harvestFileStorageService.getFileByIdAndAuthorizedClient(harvestFileId, token, false)
         ));
@@ -242,7 +243,7 @@ public class StageService {
         harvestFileMediaStage.ifPresent(mediaStage -> startHarvestFileMediaUserExecution(mediaStage, token));
     }
 
-    public void startLinkMedia(@NonNull Long trailId, @NonNull Long stageId, @NonNull String linkMediaId, @NonNull String token) {
+    private void startLinkMedia(@NonNull Long trailId, @NonNull Long stageId, @NonNull String linkMediaId, @NonNull String token) {
         Optional<LinkMediaStage> linkMediaStage = linkMediaStageRepository.findOne(LinkMediaStageRepository.byStageAndLink(
                 findAsColaborator(trailId, stageId, token), linkStorageService.getLinkByIdAndAuthorizedClient(linkMediaId, token, false)
         ));
@@ -259,7 +260,7 @@ public class StageService {
         }
     }
 
-    public void startHarvestFileMediaUserExecution(@NonNull HarvestFileMediaStage harvestFileMediaStage, @NonNull String token){
+    private void startHarvestFileMediaUserExecution(@NonNull HarvestFileMediaStage harvestFileMediaStage, @NonNull String token){
 
         User user = userService.findUserByToken(token);
 
@@ -268,7 +269,7 @@ public class StageService {
         }
     }
 
-    public void startLinkMediaUserExecution(@NonNull LinkMediaStage linkMediaStage, @NonNull String token){
+    private void startLinkMediaUserExecution(@NonNull LinkMediaStage linkMediaStage, @NonNull String token){
 
         User user = userService.findUserByToken(token);
 
@@ -277,7 +278,7 @@ public class StageService {
         }
     }
 
-    public void finishScormMediaExecution(@NonNull Long trailId, @NonNull Long stageId, @NonNull String scormId, @NonNull String token) throws Exception {
+    private void finishScormMediaExecution(@NonNull Long trailId, @NonNull Long stageId, @NonNull String scormId, @NonNull String token) throws Exception {
         User user = userService.findUserByToken(token);
 
         ScormMediaStage scormMediaStage = scormMediaStageRepository.findOne(ScormMediaStageRepository.byStageAndScorm(
@@ -306,7 +307,7 @@ public class StageService {
 
     }
 
-    public void finishHarvestFileMediaExecution(@NonNull Long trailId, @NonNull Long stageId, @NonNull String harvestFileId, @NonNull String token) throws Exception {
+    private void finishHarvestFileMediaExecution(@NonNull Long trailId, @NonNull Long stageId, @NonNull String harvestFileId, @NonNull String token) throws Exception {
         User user = userService.findUserByToken(token);
 
         HarvestFileMediaStage harvestFileMediaStage = harvestFileMediaStageRepository.findOne(HarvestFileMediaStageRepository.byStageAndHarvestFile(
@@ -326,7 +327,7 @@ public class StageService {
         }
     }
 
-    public void finishLinkMediaExecution(@NonNull Long trailId, @NonNull Long stageId, @NonNull String linkId, @NonNull String token) {
+    private void finishLinkMediaExecution(@NonNull Long trailId, @NonNull Long stageId, @NonNull String linkId, @NonNull String token) {
         User user = userService.findUserByToken(token);
 
         LinkMediaStage linkMediaStage = linkMediaStageRepository.findOne(LinkMediaStageRepository.byStageAndLink(
@@ -347,42 +348,46 @@ public class StageService {
         }
     }
 
-    private ScormMediaUserId createScormMediaUserId(@NonNull ScormMediaStage scormMediaStage, @NonNull User user){
-        ScormMediaStageId scormMediaStageId = ScormMediaStageId.builder()
-                .scorm(scormMediaStage.getScorm().getId())
-                .stage(scormMediaStage.getStage().getId())
-                .build();
-
-        return ScormMediaUserId.builder()
-                .user(user.getId())
-                .scormMedia(scormMediaStageId)
+    private ScormMediaStageId createScormMediaId(@NonNull String scormId, @NonNull Long stageId){
+        return ScormMediaStageId.builder()
+                .scorm(scormId)
+                .stage(stageId)
                 .build();
     }
 
-    private LinkMediaUserId createLinkMediaUserId(@NonNull LinkMediaStage linkMediaStage, @NonNull User user){
-        LinkMediaStageId linkMediaStageId = LinkMediaStageId.builder()
-                .link(linkMediaStage.getLink().getId())
-                .stage(linkMediaStage.getStage().getId())
+    private ScormMediaUserId createScormMediaUserId(@NonNull ScormMediaStage scormMediaStage, @NonNull User user){
+        return ScormMediaUserId.builder()
+                .user(user.getId())
+                .scormMedia(createScormMediaId(scormMediaStage.getScorm().getId(), scormMediaStage.getStage().getId()))
                 .build();
+    }
 
+    private LinkMediaStageId createLinkMediaStageId(@NonNull Long linkId, @NonNull Long stageId){
+        return LinkMediaStageId.builder()
+                .link(linkId)
+                .stage(stageId)
+                .build();
+    }
+    private LinkMediaUserId createLinkMediaUserId(@NonNull LinkMediaStage linkMediaStage, @NonNull User user){
         return LinkMediaUserId.builder()
                 .user(user.getId())
-                .linkMedia(linkMediaStageId)
+                .linkMedia(createLinkMediaStageId(linkMediaStage.getLink().getId(), linkMediaStage.getStage().getId()))
+                .build();
+    }
+
+    private HarvestFileMediaStageId createHarvestMediaStageId(@NonNull Long fileId, @NonNull Long stageId){
+        return HarvestFileMediaStageId.builder()
+                .harvestFile(fileId)
+                .stage(stageId)
                 .build();
     }
 
     private HarvestFileMediaUserId createHarvestFileMediaUserId(@NonNull HarvestFileMediaStage harvestFileMediaStage, @NonNull User user){
-        HarvestFileMediaStageId harvestFileMediaStageId = HarvestFileMediaStageId.builder()
-                .harvestFile(harvestFileMediaStage.getHarvestFile().getId())
-                .stage(harvestFileMediaStage.getStage().getId())
-                .build();
-
         return HarvestFileMediaUserId.builder()
                 .user(user.getId())
-                .harvestFileMedia(harvestFileMediaStageId)
+                .harvestFileMedia(createHarvestMediaStageId(harvestFileMediaStage.getHarvestFile().getId(), harvestFileMediaStage.getStage().getId()))
                 .build();
     }
-
 
     private ScormMediaUser createScormMediaUser(@NonNull ScormMediaStage scormMediaStage, @NonNull User user){
         return ScormMediaUser
@@ -424,20 +429,26 @@ public class StageService {
     }
 
     private void associateScormMediaToStage(String scormsId, @NonNull Stage stage, @NonNull String token){
-        if(ObjectUtils.isNotEmpty(scormsId)){
-            scormMediaStageRepository.save(createScormMedia(scormsId, stage, token));
+        if(StringUtils.hasText(scormsId)){
+            if(!scormMediaStageRepository.existsById(createScormMediaId(scormsId, stage.getId()))){
+                scormMediaStageRepository.save(createScormMedia(scormsId, stage, token));
+            }
         }
     }
 
     private void associateHarvestFilesToStage(Long filesId, @NonNull Stage stage, @NonNull String token) throws Exception {
-        if(ObjectUtils.isNotEmpty(filesId)){
-            harvestFileMediaStageRepository.save(createHarvestFileMedia(filesId, stage, token));
+        if(Objects.nonNull(filesId)){
+            if(!harvestFileMediaStageRepository.existsById(createHarvestMediaStageId(filesId, stage.getId()))){
+                harvestFileMediaStageRepository.save(createHarvestFileMedia(filesId, stage, token));
+            }
         }
     }
 
     private void associateLinkMediaToStage(Long linksId, @NonNull Stage stage, @NonNull String token){
-        if(ObjectUtils.isNotEmpty(linksId)){
-            linkMediaStageRepository.save(createLinkMedia(linksId, stage, token));
+        if(Objects.nonNull(linksId)){
+            if(!linkMediaStageRepository.existsById(createLinkMediaStageId(linksId, stage.getId()))){
+                linkMediaStageRepository.save(createLinkMedia(linksId, stage, token));
+            }
         }
     }
 
