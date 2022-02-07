@@ -41,6 +41,9 @@ public class FetchService {
     @Autowired
     private StageService stageService;
 
+    @Autowired
+    private GroupService groupService;
+
     private final Long HARVEST_CLIENT = 1L;
 
     public List<CompanyRoleDto> fetchCompanyRoles(List<Long> companyRolesId, String token){
@@ -94,6 +97,13 @@ public class FetchService {
         return Collections.emptyList();
     }
 
+    public List<Group> fetchGroups(List<Long> groupsId, @NonNull String token) {
+        if(ObjectUtils.isNotEmpty(groupsId)){
+            return groupsId.stream().map(id -> groupService.findByIdAndClientTenant(id, token)).collect(Collectors.toList());
+        }
+        return Collections.emptyList();
+    }
+
     public User fetchUser(@NonNull Long id, @NonNull String token){
         return userService.findUserByIdAndTenant(id, token);
     }
@@ -107,7 +117,7 @@ public class FetchService {
     }
 
     public Reward fetchReward(@NonNull Long id, @NonNull String token){
-        return rewardService.findRewardByIdAndTenant(id, token);
+        return rewardService.findRewardByIdAndToken(id, token);
     }
     public Stage fetchStage(@NonNull Long id, @NonNull String token){
         return stageService.findRewardByIdAndTenant(id, token);

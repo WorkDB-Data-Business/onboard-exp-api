@@ -1,7 +1,7 @@
 package br.com.harvest.onboardexperience.infra.storage.config.events;
 
-import br.com.harvest.onboardexperience.infra.storage.entities.Image;
-import br.com.harvest.onboardexperience.infra.storage.repositories.ImageRepository;
+import br.com.harvest.onboardexperience.infra.storage.entities.Asset;
+import br.com.harvest.onboardexperience.infra.storage.repositories.AssetRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.content.commons.annotations.HandleBeforeSetContent;
 import org.springframework.content.commons.annotations.StoreEventHandler;
@@ -12,12 +12,12 @@ import java.nio.file.FileAlreadyExistsException;
 public class ImageStorageEvent {
 
     @Autowired
-    private ImageRepository repository;
+    private AssetRepository repository;
 
     @HandleBeforeSetContent
-    public void handleBeforeSetContent(Image image) throws FileAlreadyExistsException {
-        if(repository.existsByFileName(image.getFileName())){
-            throw new FileAlreadyExistsException(image.getFileName() + " already exists.");
+    public void handleBeforeSetContent(Asset asset) throws FileAlreadyExistsException {
+        if(repository.existsByFileName(asset.getFileName())){
+            throw new FileAlreadyExistsException(asset.getFileName() + " already exists.");
         }
     }
 

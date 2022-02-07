@@ -25,7 +25,7 @@ ALTER TABLE tbscorm
     ADD preview_image_path CHARACTER VARYING;
 
 ALTER TABLE tbfile
-    ADD is_image_preview BOOLEAN NOT NULL;
+    ADD is_asset BOOLEAN NOT NULL;
 
 CREATE TABLE IF NOT EXISTS public.tbquestion_client(
      idquestion BIGINT,

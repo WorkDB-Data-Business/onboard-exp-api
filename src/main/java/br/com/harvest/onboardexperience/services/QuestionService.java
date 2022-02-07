@@ -79,7 +79,6 @@ public class QuestionService {
     public QuestionDto updateQuestionEvent (Long id, QuestionDto dto, String token) throws Exception {
         Question question = findQuestionByIdAndToken(id, token);
 
-//        aaaa
         Question updatedQuestion = dtoToEntity(dto, token);
 
           Question finalQuestion = this.questionRepository.saveAndFlush(updatedQuestion);

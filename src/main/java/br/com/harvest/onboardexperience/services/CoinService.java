@@ -3,9 +3,8 @@ package br.com.harvest.onboardexperience.services;
 import br.com.harvest.onboardexperience.domain.entities.User;
 import br.com.harvest.onboardexperience.domain.enumerators.FileTypeEnum;
 import br.com.harvest.onboardexperience.domain.exceptions.BusinessException;
-import br.com.harvest.onboardexperience.infra.storage.entities.Image;
-import br.com.harvest.onboardexperience.infra.storage.repositories.ImageRepository;
-import br.com.harvest.onboardexperience.infra.storage.services.ImageStorageService;
+import br.com.harvest.onboardexperience.infra.storage.repositories.AssetRepository;
+import br.com.harvest.onboardexperience.infra.storage.services.AssetStorageService;
 import br.com.harvest.onboardexperience.mappers.ClientMapper;
 import br.com.harvest.onboardexperience.repositories.UserRepository;
 import br.com.harvest.onboardexperience.utils.GenericUtils;
@@ -28,6 +27,10 @@ import br.com.harvest.onboardexperience.utils.JwtTokenUtils;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
 @Slf4j
 @Service
 public class CoinService {
@@ -45,17 +48,20 @@ public class CoinService {
     private ClientMapper clientMapper;
 
     @Autowired
-    private ImageStorageService imageStorageService;
+    private AssetStorageService assetStorageService;
 
     @Autowired
-    private UserRepository userRepository;
+    private UserService userService;
 
     @Autowired
-    private ImageRepository imageRepository;
+    private AssetRepository assetRepository;
+
+    @Autowired
+    private TenantService tenantService;
 
     public CoinDto create(@NonNull CoinDto dto, MultipartFile file, String token) {
         String tenant = jwtUtils.getUserTenant(token);
-        User user = userRepository.findById(jwtUtils.getUserId(token)).orElseThrow(() -> new RuntimeException("usuário não encontrado")) ;
+        User user = userService.findUserByToken(token);
 
         validate(dto, tenant);
         saveImage(file, dto, user);
@@ -66,22 +72,24 @@ public class CoinService {
         return CoinMapper.INSTANCE.toDto(coin);
     }
 
-
     public CoinDto update(@NonNull Long id, @NonNull CoinDto dto, MultipartFile file, @NonNull String token) {
+        User user = userService.findUserByToken(token);
         String tenant = jwtUtils.getUserTenant(token);
-        User user = userRepository.findById(jwtUtils.getUserId(token)).orElseThrow(() -> new RuntimeException("usuário não encontrado")) ;
 
+        Boolean needToImagePreview = Objects.nonNull(file);
 
-        Coin coin = repository.findByIdAndClient_Tenant(id, tenant).orElseThrow(
-                () -> new CoinNotFoundException(ExceptionMessageFactory.createNotFoundMessage("coin", "ID", id.toString())));
+        Coin coin = findCoinByIdAndToken(id, token);
 
         dto.setClient(clientMapper.toDto(coin.getClient()));
 
         validate(coin, dto, tenant);
 
-        saveImage(file, dto, user);
+        if(needToImagePreview){
+            saveImage(file, dto, user);
+        }
 
-        BeanUtils.copyProperties(dto, coin, "id", "client", "createdAt", "createdBy");
+        BeanUtils.copyProperties(dto, coin, "id", "client", "createdAt", "createdBy",
+                !needToImagePreview ? "imagePath" : "");
 
         coin = repository.save(coin);
 
@@ -92,12 +100,12 @@ public class CoinService {
 
 
     public CoinDto findByIdAndTenant(@NonNull Long id, @NonNull String token) {
-        String tenant = jwtUtils.getUserTenant(token);
+        return CoinMapper.INSTANCE.toDto(findCoinByIdAndToken(id, token));
+    }
 
-        CoinDto coin = CoinMapper.INSTANCE.toDto(repository.findByIdAndClient_Tenant(id, tenant).orElseThrow(
-                () -> new CoinNotFoundException(ExceptionMessageFactory.createNotFoundMessage("coin", "ID", id.toString()))));
-
-        return coin;
+    private Coin findCoinByIdAndToken(@NonNull Long id, @NonNull String token){
+        return repository.findByIdAndClient_Tenant(id, jwtUtils.getUserTenant(token)).orElseThrow(
+                () -> new CoinNotFoundException(ExceptionMessageFactory.createNotFoundMessage("coin", "ID", id.toString())));
     }
 
     public Page<CoinDto> findByCriteria(String criteria, Pageable pageable, String token) {
@@ -113,40 +121,33 @@ public class CoinService {
         return repository.findAllByClient_Tenant(tenant, pageable).map(CoinMapper.INSTANCE::toDto);
     }
 
+    public List<CoinDto> findAllByTenant(@NonNull String token) {
+        return repository.findAllByClient(tenantService.fetchClientByTenantFromToken(token))
+                .stream().map(CoinMapper.INSTANCE::toDto).collect(Collectors.toList());
+    }
 
     public void delete(@NonNull Long id, @NonNull String token) {
-        String tenant = jwtUtils.getUserTenant(token);
-
-        Coin coin = repository.findByIdAndClient_Tenant(id, tenant).orElseThrow(
-                () -> new CoinNotFoundException(ExceptionMessageFactory.createNotFoundMessage("coin", "ID", id.toString())));
-
-        repository.delete(coin);
+        repository.delete(findCoinByIdAndToken(id, token));
     }
 
     @Transactional
     public void disableCoin(@NonNull final Long id, @NonNull final String token) {
-        String tenant = jwtUtils.getUserTenant(token);
-            Coin coin = repository.findByIdAndClient_Tenant(id, tenant).orElseThrow(
-                    () -> new CoinNotFoundException(ExceptionMessageFactory.createNotFoundMessage("coin", "ID", id.toString())));
+        Coin coin = findCoinByIdAndToken(id, token);
 
-            coin.setIsActive(!coin.getIsActive());
-            repository.save(coin);
+        coin.setIsActive(!coin.getIsActive());
 
-            String isEnabled = coin.getIsActive().equals(true) ? "disabled" : "enabled";
-            log.info("The coin with ID " + id + " was " + isEnabled + " successful.");
+        repository.save(coin);
+
+        String isEnabled = coin.getIsActive().equals(true) ? "disabled" : "enabled";
+        log.info("The coin with ID " + id + " was " + isEnabled + " successful.");
     }
 
     private void saveImage(MultipartFile file, CoinDto dto, User author) {
-        dto.setImagePath(imageStorageService.uploadImage(file, dto.getClient().getCnpj(), dto.getName(), FileTypeEnum.COIN, author));
+        dto.setImagePath(assetStorageService.uploadAsset(file, dto.getClient().getCnpj(), dto.getName(), FileTypeEnum.COIN, author));
     }
 
     private Boolean checkIfIsSameCoin(@NonNull Coin coin, @NonNull CoinDto coinDto) {
-        Boolean sameName = coin.getName().equalsIgnoreCase(coinDto.getName());
-
-        if (sameName) {
-            return true;
-        }
-        return false;
+        return coin.getName().equalsIgnoreCase(coinDto.getName());
     }
 
     private void validate(@NonNull CoinDto coin, @NonNull final String tenant) {
@@ -174,12 +175,5 @@ public class CoinService {
             checkIfCoinAlreadyExists(dto, tenant);
         }
     }
-
-    public Coin findRewardByIdAndTenant(Long id, String token) {
-        String tenant = jwtUtils.getUserTenant(token);
-        return repository.findByIdAndClient_Tenant(id, tenant).orElseThrow(
-                () -> new CoinNotFoundException(ExceptionMessageFactory.createNotFoundMessage("C", "ID", id.toString())));
-    }
-
 }
 

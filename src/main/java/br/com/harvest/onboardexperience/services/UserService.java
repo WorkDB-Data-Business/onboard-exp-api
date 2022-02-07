@@ -1,11 +1,10 @@
 package br.com.harvest.onboardexperience.services;
 
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 
+import br.com.harvest.onboardexperience.domain.dtos.UserSimpleDto;
 import br.com.harvest.onboardexperience.domain.entities.Client;
 import br.com.harvest.onboardexperience.domain.entities.CompanyRole;
 import br.com.harvest.onboardexperience.domain.entities.Role;
@@ -135,7 +134,7 @@ public class UserService {
 
         validateUser(user, userDto);
 
-        BeanUtils.copyProperties(UserMapper.INSTANCE.toEntity(userDto), user,  "id", "client", "createdBy", "createdAt", "password");
+        BeanUtils.copyProperties(UserMapper.INSTANCE.toEntity(userDto), user,  "id", "client", "createdBy", "createdAt", "password", "scormLearnerId");
 
         user = repository.save(user);
 
@@ -218,6 +217,10 @@ public class UserService {
         return repository.findAllByClient_Tenant(tenant, pageable).map(UserMapper.INSTANCE::toDto);
     }
 
+    public List<UserSimpleDto> findAllByTenant(@NonNull final String token) {
+        return repository.findAllByClient(tenantService.fetchClientByTenantFromToken(token))
+                .stream().map(UserMapper.INSTANCE::toUserSimpleDto).collect(Collectors.toList());
+    }
 
     public void delete(@NonNull final Long id, @NonNull final String token) {
         String tenant = jwtUtils.getUserTenant(token);

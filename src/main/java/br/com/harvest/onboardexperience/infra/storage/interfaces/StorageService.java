@@ -13,12 +13,13 @@ import org.springframework.data.domain.Pageable;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.FileAlreadyExistsException;
 import java.util.List;
 import java.util.Optional;
 
 public interface StorageService {
 
-	void save(@NonNull UploadForm form, @NonNull String token);
+	void save(@NonNull UploadForm form, @NonNull String token) throws FileAlreadyExistsException;
 	void validate(@NonNull UploadForm form);
 	Page<?> findAll(@NonNull String token, HarvestLibraryFilter filter, Pageable pageable);
 	void update(@NonNull String id, @NonNull UploadForm form, @NonNull String token) throws Exception;

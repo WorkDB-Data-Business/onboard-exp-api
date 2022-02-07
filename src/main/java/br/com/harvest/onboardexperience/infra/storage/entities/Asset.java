@@ -19,7 +19,7 @@ import javax.persistence.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = false)
-public class Image extends BaseEntityAudit {
+public class Asset extends BaseEntityAudit {
 
     @Id
     @Column(name = "idfile")
@@ -46,7 +46,7 @@ public class Image extends BaseEntityAudit {
     private String mimeType;
 
     @Builder.Default
-    @Column(name = "is_image_preview")
-    private Boolean isImagePreview = true;
+    @Column(name = "is_asset")
+    private Boolean isAsset = true;
 
 }

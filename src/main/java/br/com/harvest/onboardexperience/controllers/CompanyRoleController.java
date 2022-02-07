@@ -20,6 +20,8 @@ import br.com.harvest.onboardexperience.utils.RegexUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
+import java.util.List;
+
 @Tag(name = "Company Role")
 @RestController
 @RequestMapping("/v1/company-roles")
@@ -36,13 +38,20 @@ public class CompanyRoleController {
 		return ResponseEntity.ok(service.findAllByTenant(pageable, token));
 	}
 
+	@Operation(description = "Retorna os cargos cadastrados.")
+	@PreAuthorize("hasAuthority('ADMIN')")
+	@GetMapping(value = "/list",produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<List<CompanyRoleDto>> findAll(@RequestHeader("Authorization") String token) {
+		return ResponseEntity.ok(service.findAllByTenant(token));
+	}
+
 	@Operation(description = "Retorna os cargos com base no valor buscado.")
 	@PreAuthorize("hasAuthority('ADMIN')")
 	@GetMapping(path = "/find/{criteria}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Page<CompanyRoleDto>> findbyCriteria(@PathVariable String criteria, Pageable pageable, @RequestHeader("Authorization") String token) {
 		return ResponseEntity.ok(service.findByCriteria(criteria, pageable, token));
 	}
-	
+
 	@Operation(description = "Retorna o cargo cadastrado pelo ID.")
 	@PreAuthorize("hasAuthority('ADMIN')")
 	@GetMapping(path = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)

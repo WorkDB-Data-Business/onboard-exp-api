@@ -22,4 +22,5 @@ public class AnswerQuestionDto {
 
     @JsonProperty("idQuestion")
     private Long idQuestion;
+
 }

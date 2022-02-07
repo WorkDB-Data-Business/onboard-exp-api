@@ -44,6 +44,13 @@ public class CoinController {
 		return ResponseEntity.ok(service.findAllByTenant(pageable, token));
 	}
 
+	@Operation(description = "Retorna as moedas cadastradas.")
+	@PreAuthorize("hasAuthority('ADMIN')")
+	@GetMapping(value = "/list",produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<List<CoinDto>> findAll(@RequestHeader("Authorization") String token) {
+		return ResponseEntity.ok(service.findAllByTenant(token));
+	}
+
 	@Operation(description = "Retorna as moedas com base no valor buscado.")
 	@PreAuthorize("hasAuthority('ADMIN')")
 	@GetMapping(path = "/find/{criteria}", produces = MediaType.APPLICATION_JSON_VALUE)

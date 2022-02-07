@@ -13,6 +13,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.nio.file.FileAlreadyExistsException;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -55,8 +56,7 @@ public class StorageAdapter {
         return this;
     }
 
-    public void save(){
-
+    public void save() throws Exception {
         this.storageService.save(this.form, this.token);
     }
 

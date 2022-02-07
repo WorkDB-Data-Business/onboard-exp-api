@@ -52,6 +52,4 @@ public class Stage extends BaseEntityAudit {
     @Column(name = "is_muted")
     private Boolean isMuted;
 
-
-
 }

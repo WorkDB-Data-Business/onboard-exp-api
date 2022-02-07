@@ -1,6 +1,6 @@
 package br.com.harvest.onboardexperience.domain.dtos;
 
-
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
 @Data
@@ -8,14 +8,12 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode
-public class UserSimpleDto {
+public class CoinSimpleDTO {
 
+    @JsonProperty("id")
     private Long id;
 
-    private String firstName;
-
-    private String lastName;
-
-    private String email;
+    @JsonProperty("name")
+    private String name;
 
 }

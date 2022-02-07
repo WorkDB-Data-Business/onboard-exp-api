@@ -61,7 +61,7 @@ public class HarvestLibraryStorageService implements StorageService {
     private FetchService fetchService;
 
     @Autowired
-    private ImageStorageService imageStorageService;
+    private AssetStorageService assetStorageService;
 
     private final Function<FileSimpleDto, FileSimpleDto> setStorage = fileSimpleDto -> {
         fileSimpleDto.setStorage(Storage.HARVEST_FILE);
@@ -70,11 +70,14 @@ public class HarvestLibraryStorageService implements StorageService {
 
     private final String FILE_FOLDER = "files";
 
-    public void save(@NonNull UploadForm form, @NonNull String token) {
+    public void save(@NonNull UploadForm form, @NonNull String token) throws FileAlreadyExistsException {
 
         validate(form);
 
+
         HarvestFile harvestFile = convertFormToFile(form, token);
+
+        validateIfAlreadyExists(harvestFile);
 
         uploadFile(harvestFile, form);
         uploadPreviewImage(harvestFile, form);
@@ -103,7 +106,7 @@ public class HarvestLibraryStorageService implements StorageService {
     private Specification<HarvestFile> createQuery(@NonNull HarvestLibraryFilter filter, @NonNull String token){
         Specification<HarvestFile> query = Specification.where(
                 FileRepository.byAuthorizedClients(tenantService.fetchClientByTenantFromToken(token)))
-                .and(FileRepository.byIsNotImagePreview());
+                .and(FileRepository.byIsNotAsset());
 
         if(StringUtils.hasText(filter.getCustomFilter())) {
             query = query.and(FileRepository.byCustomFilter(filter.getCustomFilter()));
@@ -114,9 +117,13 @@ public class HarvestLibraryStorageService implements StorageService {
 
     private void validateIfAlreadyExists(HarvestFile harvestFile, @NonNull UploadForm form) throws FileAlreadyExistsException {
         if(!harvestFile.getName().equalsIgnoreCase(form.getName())){
-            if(fileRepository.existsByName(form.getName())){
-                throw new FileAlreadyExistsException(form.getName() + " already exists.");
-            }
+            validateIfAlreadyExists(harvestFile);
+        }
+    }
+
+    private void validateIfAlreadyExists(@NonNull HarvestFile harvestFile) throws FileAlreadyExistsException {
+        if(fileRepository.existsByNameAndAuthor_Client(harvestFile.getName(), harvestFile.getAuthor().getClient())){
+            throw new FileAlreadyExistsException(harvestFile.getName() + " already exists.");
         }
     }
 
@@ -213,10 +220,10 @@ public class HarvestLibraryStorageService implements StorageService {
 
     private void uploadPreviewImage(@NonNull HarvestFile harvestFile, @NonNull UploadForm form){
         harvestFile.setPreviewImagePath(
-                imageStorageService.uploadImage(form.getPreviewImage(),
+                assetStorageService.uploadAsset(form.getPreviewImage(),
                         harvestFile.getAuthor().getClient().getCnpj(),
                         harvestFile.getName() + "_preview",
-                        FileTypeEnum.IMAGE, harvestFile.getAuthor()));
+                        FileTypeEnum.ASSET, harvestFile.getAuthor()));
     }
 
     private String createFilePath(String fileName, Client client) {
