@@ -38,10 +38,6 @@ public class Text {
     @JoinColumn(name = "author")
     private User author;
 
-    @ManyToOne
-    @JoinColumn(name = "idevent")
-    private Event event;
-
     @ManyToMany
     @JoinTable(
             name = "tbtext_client",

@@ -1,6 +1,7 @@
 package br.com.harvest.onboardexperience.domain.dtos;
 
 import br.com.harvest.onboardexperience.domain.entities.Client;
+import br.com.harvest.onboardexperience.domain.entities.Event;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
@@ -18,18 +19,15 @@ public class TextDto {
     private Long id;
 
     @JsonProperty("title")
-    @NotNull
     private String title;
 
     @JsonProperty("description")
-    @NotNull
     private String description;
 
     @JsonProperty("text")
-    @NotNull
     private String text;
 
-    @Builder.Default
+    @JsonProperty
     private Boolean isActive = true;
 
     @JsonProperty

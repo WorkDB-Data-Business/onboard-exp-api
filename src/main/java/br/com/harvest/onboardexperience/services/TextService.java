@@ -71,10 +71,10 @@ public class TextService {
 //
 //    }
 
-    public Page<TextDto> findALl(String token, Pageable pageable) {
-        return textRepository.findAll(TextRepository.byAuthorizedClients(userService.findUserByToken(token).getClient()),
-                pageable).map(TextMapper.INSTANCE::toDto);
-    }
+//    public Page<TextDto> findALl(String token, Pageable pageable) {
+//        return textRepository.findAll(TextRepository.byAuthorizedClients(userService.findUserByToken(token).getClient()),
+//                pageable).map(TextMapper.INSTANCE::toDto);
+//    }
 
     public TextDto findById(@NonNull Long id) {
        Text text = textRepository.findById(id).orElseThrow(
@@ -156,8 +156,12 @@ public class TextService {
                         ()-> new Exception("Texto Not Found")
                 );
 
-
     }
 
-   }
+    public Page<TextDto> findALltext(String token, Pageable pageable) {
+        String tenant = jwtUtils.getUserTenant(token);
+        return textRepository.findAll(pageable).map(TextMapper.INSTANCE::toDto);
+
+    }
+}
 

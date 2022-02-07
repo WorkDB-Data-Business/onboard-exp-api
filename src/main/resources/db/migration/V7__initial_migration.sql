@@ -9,6 +9,17 @@ CREATE TABLE IF NOT EXISTS public.tbanswer_descriptive (
   CONSTRAINT pk_tbanswer_descriptiv PRIMARY KEY (idanswer_descriptive)
 );
 
+CREATE TABLE public.tbtext (
+  idtext BIGSERIAL NOT NULL,
+  title CHARACTER VARYING(255),
+  description CHARACTER VARYING(255),
+  text VARCHAR,
+  is_active BOOLEAN,
+  author BIGINT,
+
+  CONSTRAINT tbtext_pk PRIMARY KEY (idtext)
+);
+
 CREATE TABLE IF NOT EXISTS public.tbtext_client(
      idtext BIGINT,
      idclient  BIGINT,
