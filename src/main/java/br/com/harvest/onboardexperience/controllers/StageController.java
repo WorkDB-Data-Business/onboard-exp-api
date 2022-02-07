@@ -5,7 +5,6 @@ import br.com.harvest.onboardexperience.domain.dtos.StageDTO;
 import br.com.harvest.onboardexperience.domain.dtos.forms.PositionDTO;
 import br.com.harvest.onboardexperience.domain.dtos.forms.StageForm;
 import br.com.harvest.onboardexperience.services.StageService;
-//import br.com.harvest.onboardexperience.usecases.UserStageUseCase;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,7 +39,7 @@ public class StageController {
 //        return ResponseEntity.ok(service.findByid(id, token));
 //    }
 
-    @Operation(description = "Salva uma etapa no banco de dados")
+    @Operation(description = "Salva uma Etapa no Banco de dados")
     @PreAuthorize("hasAuthority('ADMIN')")
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public  ResponseEntity<StageDTO> create(@Valid @RequestBody StageForm dto, @RequestHeader("Authorization") String token) throws Exception {

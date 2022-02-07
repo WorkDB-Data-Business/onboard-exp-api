@@ -26,3 +26,10 @@ ALTER TABLE tbscorm
 
 ALTER TABLE tbfile
     ADD is_asset BOOLEAN NOT NULL;
+
+CREATE TABLE IF NOT EXISTS public.tbquestion_client(
+     idquestion BIGINT,
+     idclient  BIGINT,
+
+      CONSTRAINT tbharvest_question_answer_pk PRIMARY KEY (idquestion, idclient)
+);

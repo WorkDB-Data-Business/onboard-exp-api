@@ -74,6 +74,11 @@ public class GroupService {
         return repository.findAll(createQuery(filter, token), pageable).map(GroupMapper.INSTANCE::toGroupSimpleDto);
     }
 
+    public List<GroupSimpleDto> findAllByTenant(@NonNull final String token){
+        return repository.findAll(Specification.where(GroupRepository.byClient(tenantService.fetchClientByTenantFromToken(token))))
+                .stream().map(GroupMapper.INSTANCE::toGroupSimpleDto).collect(Collectors.toList());
+    }
+
     private Specification<Group> createQuery(@NonNull CustomFilter filter, @NonNull String token){
         Specification<Group> query = Specification.where(GroupRepository.byClient(tenantService.fetchClientByTenantFromToken(token)));
 

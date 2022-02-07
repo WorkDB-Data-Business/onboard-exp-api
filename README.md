@@ -109,7 +109,7 @@ Primeiro, verifique se as instruções no docker-compose.yml e no Dockerfile est
 Ao subir a aplicação, é possível acessar o Swagger através do link abaixo. A porta da aplicação é definida no arquivo .env.
 
 ```bash
-    http://localhost:8080/api/swagger-ui/index.html?configUrl=/api/api-docs/swagger-config#/
+    http://localhost:8080/api/swagger-ui.html
 ```
 
 ## Gerenciamento dos containers

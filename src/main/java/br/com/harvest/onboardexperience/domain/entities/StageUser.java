@@ -18,12 +18,12 @@ public class StageUser {
 
     @Id
     @ManyToOne
-    @Column(name = "iduser")
+    @JoinColumn(name = "iduser")
     private User user;
 
     @Id
     @ManyToOne
-    @Column(name = "idstage")
+    @JoinColumn(name = "idstage")
     private Stage stage;
 
     @Column(name = "score")

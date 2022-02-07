@@ -61,7 +61,7 @@ public interface LinkRepository extends JpaRepository<Link, Long>, JpaSpecificat
     }
 
     static Specification<Link> byContentType(@NonNull String contentType) {
-        return (link, cq, cb) -> cb.like(cb.lower(link.get("contentType")), "%" + contentType.toLowerCase() + "%");
+        return (link, cq, cb) -> cb.like(cb.lower(link.get("contentType").as(String.class)), "%" + contentType.toLowerCase() + "%");
     }
 
     static Specification<Link> byLink(@NonNull String linkDescription) {

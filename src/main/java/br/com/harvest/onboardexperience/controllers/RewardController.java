@@ -23,6 +23,8 @@ import br.com.harvest.onboardexperience.utils.RegexUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
+import java.util.List;
+
 @Tag(name = "Rewards")
 @RestController
 @RequestMapping("/v1/rewards")
@@ -36,21 +38,28 @@ public class RewardController {
 	private UserRewardUseCase useCase;
 	
 	@Operation(description = "Retorna as recompensas cadastradas.")
-	@PreAuthorize("hasAuthority('ADMIN')")
+	@PreAuthorize("hasAuthority('ADMIN') or hasAuthority('COLABORATOR')")
 	@GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Page<RewardDto>> findAll(Pageable pageable, @RequestHeader("Authorization") String token) {
 		return ResponseEntity.ok(service.findAllByTenant(pageable, token));
 	}
 
-	@Operation(description = "Retorna os recompensa com base no valor buscado.")
+	@Operation(description = "Retorna as recompensas cadastradas.")
 	@PreAuthorize("hasAuthority('ADMIN')")
+	@GetMapping(value = "/list",produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<List<RewardDto>> findAll(@RequestHeader("Authorization") String token) {
+		return ResponseEntity.ok(service.findAllByTenant(token));
+	}
+
+	@Operation(description = "Retorna os recompensa com base no valor buscado.")
+	@PreAuthorize("hasAuthority('ADMIN') or hasAuthority('COLABORATOR')")
 	@GetMapping(path = "/find/{criteria}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Page<RewardDto>> findbyCriteria(@PathVariable String criteria, Pageable pageable, @RequestHeader("Authorization") String token) {
 		return ResponseEntity.ok(service.findByCriteria(criteria, pageable, token));
 	}
 	
 	@Operation(description = "Retorna a recompensa cadastrada pelo ID.")
-	@PreAuthorize("hasAuthority('ADMIN')")
+	@PreAuthorize("hasAuthority('ADMIN') or hasAuthority('COLABORATOR')")
 	@GetMapping(path = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<RewardDto> findById(@PathVariable  @Pattern(regexp = RegexUtils.ONLY_NUMBERS) Long id, @RequestHeader("Authorization") String token) {
 		return ResponseEntity.ok(service.findRewardDtoByIdAndTenant(id, token));
@@ -91,7 +100,7 @@ public class RewardController {
 
 	@Operation(description = "Realiza a compra de uma recompensa.")
 	@ResponseStatus(HttpStatus.OK)
-	@PreAuthorize("hasAuthority('ADMIN') or hasAuthority('COLABORATOR')")
+	@PreAuthorize("hasAuthority('COLABORATOR')")
 	@PostMapping(path = "/purchase")
 	public void purchaseReward(@Valid @RequestBody RewardPurchaseForm form, @RequestHeader("Authorization") String token) {
 		useCase.purchaseReward(form, token);

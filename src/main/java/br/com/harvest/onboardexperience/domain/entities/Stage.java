@@ -47,13 +47,13 @@ public class Stage extends BaseEntityAudit {
     })
     private Position position;
 
-    @OneToMany(mappedBy = "scorm", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "stage", cascade = CascadeType.ALL)
     private List<ScormMediaStage> scorms;
 
-    @OneToMany(mappedBy = "harvestFile", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "stage", cascade = CascadeType.ALL)
     private List<HarvestFileMediaStage> files;
 
-    @OneToMany(mappedBy = "link", cascade = CascadeType.ALL)
-    private List<LinkMediaUser> links;
+    @OneToMany(mappedBy = "stage", cascade = CascadeType.ALL)
+    private List<LinkMediaStage> links;
 
 }
