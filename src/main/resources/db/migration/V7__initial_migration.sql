@@ -15,3 +15,6 @@ CREATE TABLE IF NOT EXISTS public.tbtext_client(
 
       CONSTRAINT ttbtext_client_pk PRIMARY KEY (idtext, idclient)
 );
+
+ALTER TABLE tbquestion
+ADD preview_image_path CHARACTER VARYING;

@@ -96,19 +96,3 @@ CREATE TABLE public.tbquestion (
 );
 
 
---CREATE TABLE IF NOT EXISTS public.tbtext(
---	idtext BIGSERIAL NOT NULL,
---	title CHARACTER VARYING NOT NULL,
---	description CHARACTER VARYING,
---	text varchar NOT NULL,
---	is_active BOOLEAN NOT NULL,
---	author BIGINT,
---	idevent BIGINT,
---	idclient BIGINT,
---
---	FOREIGN KEY (idevent) REFERENCES tbevent(idevent),
---	FOREIGN KEY (idclient) REFERENCES tbclient(idclient),
---
---	CONSTRAINT tbtext_pk PRIMARY KEY (idtext)
---
---);
