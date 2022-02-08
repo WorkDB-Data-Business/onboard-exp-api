@@ -1,24 +1,20 @@
 package br.com.harvest.onboardexperience.domain.dtos.forms;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonSetter;
 import lombok.*;
 
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 @Getter
-@Setter
+@Builder
 @EqualsAndHashCode
+@AllArgsConstructor
 @NoArgsConstructor
 public class PositionDTO {
-
-    @Builder
-    @JsonCreator
-    public PositionDTO(BigDecimal xAxis, BigDecimal yAxis) {
-        this.xAxis = xAxis;
-        this.yAxis = yAxis;
-    }
 
     @NotNull
     @JsonProperty("xAxis")
@@ -28,4 +24,13 @@ public class PositionDTO {
     @JsonProperty("yAxis")
     private BigDecimal yAxis;
 
+    @JsonSetter("xAxis")
+    public void setXAxis(@NonNull BigDecimal xAxis) {
+        this.xAxis = xAxis.setScale(4, RoundingMode.HALF_UP);
+    }
+
+    @JsonSetter("yAxis")
+    public void setYAxis(@NonNull BigDecimal yAxis) {
+        this.yAxis = yAxis.setScale(4, RoundingMode.HALF_UP);
+    }
 }

@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 public class ScormMediaUser {
 
     @Id
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumns({
             @JoinColumn(name = "idscorm"),
             @JoinColumn(name = "idstage")
@@ -24,7 +24,7 @@ public class ScormMediaUser {
     private ScormMediaStage scormMedia;
 
     @Id
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "iduser")
     private User user;
 

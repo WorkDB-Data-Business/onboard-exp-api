@@ -148,8 +148,8 @@ CREATE TABLE IF NOT EXISTS public.tbstage_file_user(
 	iduser BIGINT NOT NULL,
 	completed_at TIMESTAMP,
 
-	FOREIGN KEY (iduser) REFERENCES tbuser(iduser),
-	FOREIGN KEY (idfile, idstage) REFERENCES tbstage_file(idfile, idstage),
+	FOREIGN KEY (iduser) REFERENCES tbuser(iduser) ON DELETE CASCADE,
+	FOREIGN KEY (idfile, idstage) REFERENCES tbstage_file(idfile, idstage) ON DELETE CASCADE,
 
 	CONSTRAINT tbstage_file_user_pk PRIMARY KEY (idfile, idstage, iduser)
 );

@@ -1,17 +1,21 @@
 package br.com.harvest.onboardexperience.domain.dtos;
 
-import br.com.harvest.onboardexperience.infra.storage.dtos.FileIdDTO;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
+
+import java.math.BigDecimal;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode
-public class HarvestFileMediaStageDTO {
+public class StageUserSimpleDTO {
 
-    @JsonProperty("harvestFile")
-    private FileIdDTO harvestFile;
+    @JsonProperty("score")
+    private BigDecimal score;
+
+    @JsonProperty("isCompleted")
+    private Boolean isCompleted;
 
 }

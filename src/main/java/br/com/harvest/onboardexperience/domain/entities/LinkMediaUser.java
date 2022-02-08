@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 public class LinkMediaUser {
 
     @Id
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumns({
             @JoinColumn(name = "idlink"),
             @JoinColumn(name = "idstage")
@@ -24,7 +24,7 @@ public class LinkMediaUser {
     private LinkMediaStage linkMedia;
 
     @Id
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "iduser")
     private User user;
 

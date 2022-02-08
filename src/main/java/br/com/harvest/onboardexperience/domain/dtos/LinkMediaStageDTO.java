@@ -1,5 +1,7 @@
 package br.com.harvest.onboardexperience.domain.dtos;
 
+import br.com.harvest.onboardexperience.infra.storage.dtos.LinkIdDTO;
+import br.com.harvest.onboardexperience.infra.storage.dtos.LinkSimpleDto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
@@ -10,7 +12,7 @@ import lombok.*;
 @EqualsAndHashCode
 public class LinkMediaStageDTO {
 
-    @JsonProperty("id")
-    private Long id;
+    @JsonProperty("link")
+    private LinkIdDTO link;
 
 }

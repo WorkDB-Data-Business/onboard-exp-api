@@ -6,9 +6,11 @@ import lombok.*;
 import javax.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 @Data
-@EqualsAndHashCode
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -29,8 +31,9 @@ public class StageUser {
     @Column(name = "score")
     private BigDecimal score;
 
+    @Builder.Default
     @Column(name = "is_completed")
-    private Boolean isCompleted;
+    private Boolean isCompleted = false;
 
     @Column(name = "completed_at")
     private LocalDateTime completedAt;
@@ -38,4 +41,40 @@ public class StageUser {
     @Column(name = "started_at")
     private LocalDateTime startedAt;
 
+    @Builder.Default
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumns({
+            @JoinColumn(name = "idstage", insertable = false, updatable = false),
+            @JoinColumn(name = "iduser", insertable = false, updatable = false)
+    })
+    private List<ScormMediaUser> scorms = new ArrayList<>();
+
+    @Builder.Default
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumns({
+            @JoinColumn(name = "idstage", insertable = false, updatable = false),
+            @JoinColumn(name = "iduser", insertable = false, updatable = false)
+    })
+    private List<HarvestFileMediaUser> harvestFiles = new ArrayList<>();
+
+    @Builder.Default
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumns({
+            @JoinColumn(name = "idstage", insertable = false, updatable = false),
+            @JoinColumn(name = "iduser", insertable = false, updatable = false)
+    })
+    private List<LinkMediaUser> links = new ArrayList<>();
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        StageUser stageUser = (StageUser) o;
+        return Objects.equals(user, stageUser.user) && Objects.equals(stage, stageUser.stage) && Objects.equals(score, stageUser.score) && Objects.equals(isCompleted, stageUser.isCompleted) && Objects.equals(completedAt, stageUser.completedAt) && Objects.equals(startedAt, stageUser.startedAt) && Objects.equals(scorms, stageUser.scorms) && Objects.equals(harvestFiles, stageUser.harvestFiles) && Objects.equals(links, stageUser.links);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(user, stage, score, isCompleted, completedAt, startedAt, scorms, harvestFiles, links);
+    }
 }

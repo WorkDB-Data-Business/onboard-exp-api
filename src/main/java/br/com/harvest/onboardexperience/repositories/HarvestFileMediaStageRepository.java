@@ -18,7 +18,7 @@ public interface HarvestFileMediaStageRepository extends JpaRepository<HarvestFi
 
     static Specification<HarvestFileMediaStage> byStageAndHarvestFile(@NonNull Stage stage, @NonNull HarvestFile harvestFile) {
         return (file, cq, cb) -> cb.and(
-                cb.equal(file.get("harvestFile"), file),
+                cb.equal(file.get("harvestFile"), harvestFile),
                 cb.equal(file.get("stage"), stage)
         );
     }

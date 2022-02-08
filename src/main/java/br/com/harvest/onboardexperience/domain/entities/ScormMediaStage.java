@@ -28,7 +28,4 @@ public class ScormMediaStage extends BaseEntityAudit {
     @JoinColumn(name = "idstage")
     private Stage stage;
 
-    @OneToMany(mappedBy = "scormMedia")
-    private List<ScormMediaUser> users;
-
 }

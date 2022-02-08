@@ -7,9 +7,9 @@ import javax.persistence.*;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.List;
+import java.util.Objects;
 
 @Data
-@EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -48,6 +48,9 @@ public class Stage extends BaseEntityAudit {
     private Position position;
 
     @OneToMany(mappedBy = "stage", cascade = CascadeType.ALL)
+    private List<StageUser> stageUsers;
+
+    @OneToMany(mappedBy = "stage", cascade = CascadeType.ALL)
     private List<ScormMediaStage> scorms;
 
     @OneToMany(mappedBy = "stage", cascade = CascadeType.ALL)
@@ -56,4 +59,16 @@ public class Stage extends BaseEntityAudit {
     @OneToMany(mappedBy = "stage", cascade = CascadeType.ALL)
     private List<LinkMediaStage> links;
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Stage stage = (Stage) o;
+        return Objects.equals(id, stage.id) && Objects.equals(name, stage.name) && Objects.equals(description, stage.description) && Objects.equals(amountCoins, stage.amountCoins) && Objects.equals(minimumScore, stage.minimumScore) && Objects.equals(trail, stage.trail) && Objects.equals(isPreRequisite, stage.isPreRequisite) && Objects.equals(position, stage.position);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, name, description, amountCoins, minimumScore, trail, isPreRequisite, position);
+    }
 }
