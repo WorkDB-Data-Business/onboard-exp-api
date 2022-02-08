@@ -1,9 +1,12 @@
 package br.com.harvest.onboardexperience.utils;
 
+import java.util.Locale;
+
 public class Constants {
 
     public static class Date {
         public static final String DATE_PATTERN = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
+        public static final Locale LOCALE_BRASIL = new Locale("pt", "BR");
     }
 
     public static class Harvest {

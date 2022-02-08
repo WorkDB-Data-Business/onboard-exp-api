@@ -2,9 +2,10 @@ package br.com.harvest.onboardexperience.services;
 
 import br.com.harvest.onboardexperience.domain.dtos.TrailDTO;
 import br.com.harvest.onboardexperience.domain.dtos.TrailSimpleDTO;
-import br.com.harvest.onboardexperience.domain.dtos.forms.PositionForm;
+import br.com.harvest.onboardexperience.domain.dtos.forms.PositionDTO;
 import br.com.harvest.onboardexperience.domain.dtos.forms.TrailForm;
 import br.com.harvest.onboardexperience.domain.entities.*;
+import br.com.harvest.onboardexperience.domain.entities.keys.UserTrailRegistrationId;
 import br.com.harvest.onboardexperience.domain.enumerators.FileTypeEnum;
 import br.com.harvest.onboardexperience.domain.exceptions.AlreadyExistsException;
 import br.com.harvest.onboardexperience.domain.exceptions.BusinessException;
@@ -58,7 +59,7 @@ public class TrailService {
     @Autowired
     private FetchService fetchService;
 
-    public TrailDTO save(@NonNull TrailForm form, List<PositionForm> characterMapPositionPath,
+    public TrailDTO save(@NonNull TrailForm form, List<PositionDTO> characterMapPositionPath,
                          MultipartFile mapImage, MultipartFile mapMusic, @NonNull String token) throws IOException {
 
         validate(form, token);
@@ -74,7 +75,7 @@ public class TrailService {
         return TrailMapper.INSTANCE.toDto(trail);
     }
 
-    public TrailDTO update(@NonNull Long id, @NonNull TrailForm form, List<PositionForm> characterMapPositionPath,
+    public TrailDTO update(@NonNull Long id, @NonNull TrailForm form, List<PositionDTO> characterMapPositionPath,
                          MultipartFile mapImage, MultipartFile mapMusic, @NonNull String token) throws IOException {
 
 
@@ -124,16 +125,20 @@ public class TrailService {
         return TrailMapper.INSTANCE.toDto(findTrailByIdAndEndUserByTokenAsColaborator(id, token));
     }
 
-    public TrailDTO findTrailByIdAndEndUserByTokenAsDTOAsAdmin(@NonNull Long id, @NonNull String token) {
-        return repository.findOne(TrailRepository.byId(id).and(TrailRepository.byClient(tenantService.fetchClientByTenantFromToken(token))))
-                .map(TrailMapper.INSTANCE::toDto)
-                .orElseThrow(() -> new NotFoundException("Trail", "ID", id.toString()));
+    public TrailDTO findTrailByIdAndTokenAsDTOAsAdmin(@NonNull Long id, @NonNull String token) {
+        return TrailMapper.INSTANCE.toDto(findTrailByIdAndTokenAsAdmin(id, token));
     }
 
     public Trail findTrailByIdAndEndUserByTokenAsColaborator(@NonNull Long id, @NonNull String token) {
         return repository.findOne(TrailRepository.byId(id).and(TrailRepository.byEndUser(userService.findUserByToken(token))))
                 .orElseThrow(() -> new NotFoundException("Trail", "ID", id.toString()));
     }
+
+    public Trail findTrailByIdAndTokenAsAdmin(@NonNull Long id, @NonNull String token) {
+        return repository.findOne(TrailRepository.byId(id).and(TrailRepository.byClient(tenantService.fetchClientByTenantFromToken(token))))
+                .orElseThrow(() -> new NotFoundException("Trail", "ID", id.toString()));
+    }
+
     private void validate(TrailForm form, @NonNull String token){
         validateIfAlreadyExistsByNameAndClient(form.getName(), tenantService.fetchClientByTenantFromToken(token));
     }
@@ -150,7 +155,7 @@ public class TrailService {
         }
     }
 
-    private Trail formToTrail(TrailForm form, List<PositionForm> characterMapPositionPath, @NonNull String token) {
+    private Trail formToTrail(TrailForm form, List<PositionDTO> characterMapPositionPath, @NonNull String token) {
         return Trail
                 .builder()
                 .name(form.getName())

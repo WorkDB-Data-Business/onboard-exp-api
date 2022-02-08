@@ -2,7 +2,6 @@ package br.com.harvest.onboardexperience.controllers;
 
 
 import br.com.harvest.onboardexperience.domain.dtos.TextDto;
-import br.com.harvest.onboardexperience.services.EventService;
 import br.com.harvest.onboardexperience.services.TextService;
 import br.com.harvest.onboardexperience.utils.RegexUtils;
 import io.swagger.v3.oas.annotations.Operation;
@@ -24,9 +23,6 @@ import javax.validation.constraints.Pattern;
 @CrossOrigin(origins = "*", maxAge = 360000)
 @RequestMapping("/v1/text")
 public class TextController {
-
-    @Autowired
-    private EventService eventService;
 
     @Autowired
     private TextService textService;

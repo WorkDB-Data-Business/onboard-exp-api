@@ -1,21 +1,19 @@
 package br.com.harvest.onboardexperience.domain.entities;
 
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.*;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.List;
+import java.util.Objects;
 
 @Data
-@EqualsAndHashCode
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity
-@Table(name="tbstage", schema="public")
+@Builder
+@Entity(name = "tbstage")
 public class Stage extends BaseEntityAudit {
 
     @Id
@@ -32,24 +30,45 @@ public class Stage extends BaseEntityAudit {
     @Column(name = "amount_coins")
     private BigInteger amountCoins;
 
-    @ManyToOne
-    @JoinColumn(name = "idclient")
-    private Client client;
+    @Column(name = "minimum_score")
+    private BigDecimal minimumScore;
 
-    @ManyToOne
-    @JoinColumn(name = "idcoin")
-    private Coin coin;
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "idtrail")
+    private Trail trail;
 
-    @Column(name = "is_active")
-    private Boolean isActive;
+    @Column(name = "is_pre_requisite")
+    private Boolean isPreRequisite;
 
-    @Column(name = "is_available")
-    private Boolean isAvailable;
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumns({
+            @JoinColumn(name = "x_axis"),
+            @JoinColumn(name = "y_axis")
+    })
+    private Position position;
 
-    @Column(name = "is_prerequisite")
-    private Boolean isPrerequisite;
+    @OneToMany(mappedBy = "stage")
+    private List<StageUser> stageUsers;
 
-    @Column(name = "is_muted")
-    private Boolean isMuted;
+    @OneToMany(mappedBy = "stage")
+    private List<ScormMediaStage> scorms;
 
+    @OneToMany(mappedBy = "stage")
+    private List<HarvestFileMediaStage> files;
+
+    @OneToMany(mappedBy = "stage")
+    private List<LinkMediaStage> links;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Stage stage = (Stage) o;
+        return Objects.equals(id, stage.id) && Objects.equals(name, stage.name) && Objects.equals(description, stage.description) && Objects.equals(amountCoins, stage.amountCoins) && Objects.equals(minimumScore, stage.minimumScore) && Objects.equals(trail, stage.trail) && Objects.equals(isPreRequisite, stage.isPreRequisite) && Objects.equals(position, stage.position);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, name, description, amountCoins, minimumScore, trail, isPreRequisite, position);
+    }
 }

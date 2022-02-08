@@ -1,11 +1,9 @@
 package br.com.harvest.onboardexperience.domain.dtos;
 
-import br.com.harvest.onboardexperience.domain.dtos.forms.PositionForm;
-import br.com.harvest.onboardexperience.domain.entities.*;
+import br.com.harvest.onboardexperience.domain.dtos.forms.PositionDTO;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
-import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -45,7 +43,7 @@ public class TrailDTO {
     private CoinSimpleDTO coin;
 
     @JsonProperty("characterMapPositionPath")
-    private List<PositionForm> characterMapPositionPath;
+    private List<PositionDTO> characterMapPositionPath;
 
     @JsonProperty("groups")
     private List<GroupDto> groups;

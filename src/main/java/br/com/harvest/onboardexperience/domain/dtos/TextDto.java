@@ -1,11 +1,9 @@
 package br.com.harvest.onboardexperience.domain.dtos;
 
 import br.com.harvest.onboardexperience.domain.entities.Client;
-import br.com.harvest.onboardexperience.domain.entities.Event;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
-import javax.validation.constraints.NotNull;
 import java.util.List;
 
 @Data

@@ -68,8 +68,8 @@ CREATE TABLE IF NOT EXISTS public.tbstage(
 	minimum_score DECIMAL NOT NULL,
 	idtrail BIGINT NOT NULL,
 	is_pre_requisite BOOLEAN NOT NULL,
-	x_axis_position DECIMAL NOT NULL,
-	y_axis_position DECIMAL NOT NULL,
+	x_axis DECIMAL NOT NULL,
+	y_axis DECIMAL NOT NULL,
 
     created_by CHARACTER VARYING,
     updated_by CHARACTER VARYING,
@@ -77,9 +77,109 @@ CREATE TABLE IF NOT EXISTS public.tbstage(
     updated_at TIMESTAMP,
 
     FOREIGN KEY (idtrail) REFERENCES tbtrail(idtrail),
-    FOREIGN KEY (x_axis_position, y_axis_position) REFERENCES tbposition(x_axis, y_axis),
+    FOREIGN KEY (x_axis, y_axis) REFERENCES tbposition(x_axis, y_axis),
 
 	CONSTRAINT tbstage_pk PRIMARY KEY (idstage)
+);
+
+CREATE TABLE IF NOT EXISTS public.tbstage_scorm(
+	idscorm CHARACTER VARYING NOT NULL,
+	idstage BIGINT NOT NULL,
+
+	created_by CHARACTER VARYING,
+    updated_by CHARACTER VARYING,
+    created_at TIMESTAMP default now(),
+    updated_at TIMESTAMP,
+
+	FOREIGN KEY (idscorm) REFERENCES tbscorm(idscorm) ON DELETE CASCADE,
+	FOREIGN KEY (idstage) REFERENCES tbstage(idstage) ON DELETE CASCADE,
+
+	CONSTRAINT tbstage_scorm_pk PRIMARY KEY (idscorm, idstage)
+);
+
+
+CREATE TABLE IF NOT EXISTS public.tbstage_file(
+	idfile BIGINT NOT NULL,
+	idstage BIGINT NOT NULL,
+	created_by CHARACTER VARYING,
+    updated_by CHARACTER VARYING,
+    created_at TIMESTAMP default now(),
+    updated_at TIMESTAMP,
+
+	FOREIGN KEY (idfile) REFERENCES tbfile(idfile) ON DELETE CASCADE,
+	FOREIGN KEY (idstage) REFERENCES tbstage(idstage) ON DELETE CASCADE,
+
+	CONSTRAINT tbstage_file_pk PRIMARY KEY (idfile, idstage)
+);
+
+
+CREATE TABLE IF NOT EXISTS public.tbstage_link(
+	idlink BIGINT NOT NULL,
+	idstage BIGINT NOT NULL,
+	created_by CHARACTER VARYING,
+    updated_by CHARACTER VARYING,
+    created_at TIMESTAMP default now(),
+    updated_at TIMESTAMP,
+
+	FOREIGN KEY (idlink) REFERENCES tblink(idlink) ON DELETE CASCADE,
+	FOREIGN KEY (idstage) REFERENCES tbstage(idstage) ON DELETE CASCADE,
+
+	CONSTRAINT tbstage_link_pk PRIMARY KEY (idlink, idstage)
+);
+
+
+CREATE TABLE IF NOT EXISTS public.tbstage_scorm_user(
+	idscorm CHARACTER VARYING NOT NULL,
+	idstage BIGINT NOT NULL,
+	is_completed BOOLEAN NOT NULL,
+	iduser BIGINT NOT NULL,
+	completed_at TIMESTAMP,
+
+	FOREIGN KEY (iduser) REFERENCES tbuser(iduser) ON DELETE CASCADE,
+	FOREIGN KEY (idscorm, idstage) REFERENCES tbstage_scorm(idscorm, idstage) ON DELETE CASCADE,
+
+	CONSTRAINT tbstage_scorm_user_pk PRIMARY KEY (idscorm, idstage, iduser)
+);
+
+CREATE TABLE IF NOT EXISTS public.tbstage_file_user(
+	idfile BIGINT NOT NULL,
+	idstage BIGINT NOT NULL,
+	is_completed BOOLEAN NOT NULL,
+	iduser BIGINT NOT NULL,
+	completed_at TIMESTAMP,
+
+	FOREIGN KEY (iduser) REFERENCES tbuser(iduser) ON DELETE CASCADE,
+	FOREIGN KEY (idfile, idstage) REFERENCES tbstage_file(idfile, idstage) ON DELETE CASCADE,
+
+	CONSTRAINT tbstage_file_user_pk PRIMARY KEY (idfile, idstage, iduser)
+);
+
+CREATE TABLE IF NOT EXISTS public.tbstage_link_user(
+	idlink BIGINT NOT NULL,
+	idstage BIGINT NOT NULL,
+	is_completed BOOLEAN NOT NULL,
+	iduser BIGINT NOT NULL,
+	completed_at TIMESTAMP,
+
+	FOREIGN KEY (iduser) REFERENCES tbuser(iduser) ON DELETE CASCADE,
+	FOREIGN KEY (idlink, idstage) REFERENCES tbstage_link(idlink, idstage) ON DELETE CASCADE,
+
+	CONSTRAINT tbstage_link_user_pk PRIMARY KEY (idlink, idstage, iduser)
+);
+
+
+CREATE TABLE IF NOT EXISTS public.tbstage_user(
+	iduser BIGINT NOT NULL,
+	idstage BIGINT NOT NULL,
+	score DECIMAL,
+	is_completed BOOLEAN NOT NULL,
+	completed_at TIMESTAMP,
+	started_at TIMESTAMP NOT NULL,
+
+	FOREIGN KEY (iduser) REFERENCES tbuser(iduser) ON DELETE CASCADE,
+    FOREIGN KEY (idstage) REFERENCES tbstage(idstage) ON DELETE CASCADE,
+
+	CONSTRAINT tbstage_user_pk PRIMARY KEY (idstage, iduser)
 );
 
 CREATE TABLE public.tbquestion (
@@ -94,5 +194,3 @@ CREATE TABLE public.tbquestion (
   FOREIGN KEY(author) references tbuser(iduser),
   CONSTRAINT pk_tbquestion PRIMARY KEY (idquestion)
 );
-
-

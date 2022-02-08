@@ -1,5 +1,6 @@
 package br.com.harvest.onboardexperience.domain.entities;
 
+import br.com.harvest.onboardexperience.domain.entities.keys.UserTrailRegistrationId;
 import lombok.*;
 
 import javax.persistence.*;

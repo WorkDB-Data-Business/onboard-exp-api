@@ -1,5 +1,6 @@
 package br.com.harvest.onboardexperience.domain.entities;
 
+import br.com.harvest.onboardexperience.domain.entities.keys.UserCoinId;
 import lombok.*;
 
 import javax.persistence.*;
@@ -14,7 +15,7 @@ import java.math.BigInteger;
 public class UserCoin {
 
     @EmbeddedId
-    private UserCoinKey id;
+    private UserCoinId id;
 
     @ManyToOne
     @MapsId("idUser")

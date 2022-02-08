@@ -13,6 +13,7 @@ import java.math.BigInteger;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode
+@Builder
 public class UserCoinForm {
 
     @NotNull
@@ -20,9 +21,6 @@ public class UserCoinForm {
 
     @NotNull
     private Long coinId;
-
-    @NotNull
-    private Long StageId;
 
     @NotNull
     @Min(ValidationUtils.MIN_COIN)

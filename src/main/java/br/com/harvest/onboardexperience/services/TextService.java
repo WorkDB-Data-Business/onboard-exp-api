@@ -1,21 +1,15 @@
 package br.com.harvest.onboardexperience.services;
 
 
-import br.com.harvest.onboardexperience.domain.dtos.StageDto;
 import br.com.harvest.onboardexperience.domain.dtos.TextDto;
-import br.com.harvest.onboardexperience.domain.entities.Client;
-import br.com.harvest.onboardexperience.domain.entities.Stage;
 import br.com.harvest.onboardexperience.domain.entities.Text;
 import br.com.harvest.onboardexperience.domain.entities.User;
-import br.com.harvest.onboardexperience.domain.exceptions.BusinessException;
 import br.com.harvest.onboardexperience.domain.exceptions.TextNotFoundExecption;
 import br.com.harvest.onboardexperience.domain.factories.ExceptionMessageFactory;
 import br.com.harvest.onboardexperience.mappers.TextMapper;
 import br.com.harvest.onboardexperience.repositories.TextRepository;
 import br.com.harvest.onboardexperience.repositories.UserRepository;
 import br.com.harvest.onboardexperience.utils.JwtTokenUtils;
-import io.jsonwebtoken.ExpiredJwtException;
-import io.swagger.v3.oas.annotations.Operation;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -24,8 +18,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import javax.ws.rs.NotFoundException;
-import java.util.List;
 
 @Slf4j
 @Service

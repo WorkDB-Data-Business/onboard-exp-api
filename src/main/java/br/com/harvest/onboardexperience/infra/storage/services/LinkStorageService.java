@@ -163,7 +163,7 @@ public class LinkStorageService implements StorageService {
         repository.save(link);
     }
 
-    private Link getLinkByIdAndAuthorizedClient(@NonNull String id, @NonNull String token, Boolean validateAuthor){
+    public Link getLinkByIdAndAuthorizedClient(@NonNull String id, @NonNull String token, Boolean validateAuthor){
         User user = userService.findUserByToken(token);
 
         Link link = repository

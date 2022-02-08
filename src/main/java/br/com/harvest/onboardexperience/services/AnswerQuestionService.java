@@ -4,22 +4,12 @@ import br.com.harvest.onboardexperience.domain.dtos.AnswerQuestionDto;
 import br.com.harvest.onboardexperience.domain.dtos.QuestionDto;
 import br.com.harvest.onboardexperience.domain.entities.AnswerQuestion;
 import br.com.harvest.onboardexperience.domain.entities.Question;
-import br.com.harvest.onboardexperience.domain.entities.User;
-import br.com.harvest.onboardexperience.domain.exceptions.AnswerQuestionNotFoundExecption;
-import br.com.harvest.onboardexperience.domain.factories.ExceptionMessageFactory;
 import br.com.harvest.onboardexperience.mappers.AnswerQuestionMapper;
-import br.com.harvest.onboardexperience.mappers.EventMapper;
-import br.com.harvest.onboardexperience.mappers.QuestionMapper;
 import br.com.harvest.onboardexperience.repositories.AnswerQuestionRepository;
-import br.com.harvest.onboardexperience.repositories.QuestionRepository;
 import br.com.harvest.onboardexperience.utils.JwtTokenUtils;
-import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Slf4j
 @Service

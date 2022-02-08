@@ -20,6 +20,7 @@ import br.com.harvest.onboardexperience.utils.JwtTokenUtils;
 import com.rusticisoftware.cloud.v2.client.ApiException;
 import com.rusticisoftware.cloud.v2.client.model.CourseSchema;
 import com.rusticisoftware.cloud.v2.client.model.CreateRegistrationSchema;
+import com.rusticisoftware.cloud.v2.client.model.RegistrationSchema;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
@@ -99,6 +100,9 @@ public class ScormService {
 
         return registrationRepository.findByUserAndScormAndIsActive(user, scorm, true).orElse(null);
     }
+    public Optional<RegistrationSchema> getResultForRegistration(String registrationId) throws ApiException {
+        return Optional.ofNullable(scormAPI.getResultForRegistration(registrationId));
+    }
 
     public String generateScormExecutionLink(@NonNull String courseId, @NonNull String token) throws ApiException {
         return scormAPI.buildLaunchLink(findScormRegistrationByIdAndToken(courseId, token).getId());
@@ -114,12 +118,27 @@ public class ScormService {
         }
     }
 
+    public void registerPassStatusOnScormRegistration(@NonNull String scormId, @NonNull Long userId) throws ApiException {
+        User user = userService.findUserById(userId);
+        Scorm scorm = findByIdAndClient(scormId, user.getClient());
+        Optional<ScormRegistration> registration = registrationRepository.findByUserAndScormAndIsActive(user, scorm, true);
+        if(registration.isPresent()){
+            registration.map(this::registerPassStatusOnRegistration).ifPresent(registrationRepository::save);
+        }
+    }
+
+
     public void deleteRegistration(@NonNull String scormId, @NonNull String token) throws ApiException {
         deleteRegistration(scormId, userService.findUserById(tokenUtils.getUserId(token)).getId());
     }
 
     private ScormRegistration disableRegistration(ScormRegistration registration){
         registration.setIsActive(false);
+        return registration;
+    }
+
+    private ScormRegistration registerPassStatusOnRegistration(ScormRegistration registration){
+        registration.setIsCompleted(true);
         return registration;
     }
 

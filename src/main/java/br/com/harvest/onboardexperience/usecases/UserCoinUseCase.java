@@ -1,11 +1,10 @@
 package br.com.harvest.onboardexperience.usecases;
 
-import br.com.harvest.onboardexperience.domain.dtos.CoinDto;
 import br.com.harvest.onboardexperience.domain.dtos.UserCoinDto;
 import br.com.harvest.onboardexperience.domain.entities.Coin;
 import br.com.harvest.onboardexperience.domain.entities.User;
 import br.com.harvest.onboardexperience.domain.entities.UserCoin;
-import br.com.harvest.onboardexperience.domain.entities.UserCoinKey;
+import br.com.harvest.onboardexperience.domain.entities.keys.UserCoinId;
 import br.com.harvest.onboardexperience.domain.enumerators.CoinOperation;
 import br.com.harvest.onboardexperience.domain.exceptions.InsufficientCoinException;
 import br.com.harvest.onboardexperience.repositories.UserCoinRepository;
@@ -18,7 +17,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigInteger;
-import java.time.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -36,6 +34,15 @@ public class UserCoinUseCase {
 
     public void addCoinToUser(@NonNull UserCoinForm form, @NonNull String token){
         executeOperationAndSave(form, CoinOperation.ADD, token);
+    }
+
+    public UserCoinForm createAddCoinsForm(@NonNull User user, @NonNull Coin coin, @NonNull BigInteger amountCoins){
+        return UserCoinForm.builder()
+                .userId(user.getId())
+                .coinId(coin.getId())
+                .amount(amountCoins)
+                .operation(CoinOperation.ADD)
+                .build();
     }
 
     public void subtractCoinFromUser(@NonNull UserCoinForm form, @NonNull String token){
@@ -95,8 +102,8 @@ public class UserCoinUseCase {
         return convertFormToUserCoin(fetchService.fetchUser(form.getUserId(), token), fetchService.fetchCoin(form.getCoinId(), token), form.getAmount());
     }
 
-    private UserCoinKey generateUserCoinKey(@NonNull User user, @NonNull Coin coin){
-        return UserCoinKey.builder()
+    private UserCoinId generateUserCoinKey(@NonNull User user, @NonNull Coin coin){
+        return UserCoinId.builder()
                 .idCoin(coin.getId())
                 .idUser(user.getId())
                 .build();

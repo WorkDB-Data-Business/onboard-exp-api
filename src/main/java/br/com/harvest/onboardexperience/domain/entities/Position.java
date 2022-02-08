@@ -1,11 +1,11 @@
 package br.com.harvest.onboardexperience.domain.entities;
 
+import br.com.harvest.onboardexperience.domain.entities.keys.PositionId;
 import br.com.harvest.onboardexperience.domain.entities.listeners.PositionListener;
 import lombok.*;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
-import java.math.BigInteger;
 
 @Data
 @NoArgsConstructor
@@ -18,11 +18,11 @@ import java.math.BigInteger;
 public class Position {
 
     @Id
-    @Column(name = "xAxis")
+    @Column(name = "x_axis")
     private BigDecimal xAxis;
 
     @Id
-    @Column(name = "yAxis")
+    @Column(name = "y_axis")
     private BigDecimal yAxis;
 
 }

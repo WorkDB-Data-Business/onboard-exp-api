@@ -9,13 +9,13 @@ import org.hibernate.annotations.Where;
 import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @Entity(name = "tbtrail")
-@EqualsAndHashCode(callSuper = true)
 @SQLDelete(sql = SQLQueryUtils.SOFT_DELETE_TRAIL, check = ResultCheckStyle.COUNT)
 @Where(clause = SQLQueryUtils.IS_ACTIVE_FILTER)
 public class Trail extends BaseEntityAudit {
@@ -73,4 +73,19 @@ public class Trail extends BaseEntityAudit {
     @OneToMany(mappedBy = "trail")
     private List<UserTrailRegistration> trailRegistrations;
 
+    @OneToMany(mappedBy = "trail", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    private List<Stage> stages;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Trail trail = (Trail) o;
+        return Objects.equals(id, trail.id) && Objects.equals(name, trail.name) && Objects.equals(description, trail.description) && Objects.equals(mapImagePath, trail.mapImagePath) && Objects.equals(mapMusicPath, trail.mapMusicPath) && Objects.equals(conclusionDate, trail.conclusionDate) && Objects.equals(author, trail.author) && Objects.equals(isActive, trail.isActive) && Objects.equals(coin, trail.coin) && Objects.equals(client, trail.client) && Objects.equals(characterMapPositionPath, trail.characterMapPositionPath) && Objects.equals(groups, trail.groups);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, name, description, mapImagePath, mapMusicPath, conclusionDate, author, isActive, coin, client, characterMapPositionPath, groups);
+    }
 }
