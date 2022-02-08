@@ -21,6 +21,9 @@ public class QuestionDto {
     @JsonProperty("description")
     private String description;
 
+    @JsonProperty("previewImagePath")
+    private String previewImagePath;
+
     @JsonProperty("scoreQuestion")
     private Long scoreQuestion;
 
