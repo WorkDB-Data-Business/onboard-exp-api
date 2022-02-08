@@ -7,15 +7,16 @@ import br.com.harvest.onboardexperience.domain.entities.keys.*;
 import br.com.harvest.onboardexperience.domain.exceptions.NotFoundException;
 import br.com.harvest.onboardexperience.infra.scorm.entities.ScormRegistration;
 import br.com.harvest.onboardexperience.infra.scorm.services.ScormService;
+import br.com.harvest.onboardexperience.infra.storage.entities.HarvestFile;
 import br.com.harvest.onboardexperience.infra.storage.enumerators.Storage;
 import br.com.harvest.onboardexperience.infra.storage.services.HarvestFileStorageService;
 import br.com.harvest.onboardexperience.infra.storage.services.LinkStorageService;
 import br.com.harvest.onboardexperience.infra.storage.services.ScormStorageService;
-import br.com.harvest.onboardexperience.mappers.PositionMapper;
 import br.com.harvest.onboardexperience.mappers.StageMapper;
 import br.com.harvest.onboardexperience.mappers.StageUserMapper;
 import br.com.harvest.onboardexperience.repositories.*;
 import br.com.harvest.onboardexperience.domain.dtos.forms.StageForm;
+import br.com.harvest.onboardexperience.usecases.UserCoinUseCase;
 import com.rusticisoftware.cloud.v2.client.model.RegistrationSchema;
 import com.rusticisoftware.cloud.v2.client.model.RegistrationSuccess;
 import lombok.NonNull;
@@ -83,6 +84,9 @@ public class StageService {
     @Autowired
     private ScormService scormService;
 
+    @Autowired
+    private UserCoinUseCase userCoinUseCase;
+
     public StageDTO create(@NonNull Long trailId, StageForm form, @NonNull String token){
         Stage stage = repository.save(formToStage(trailId, form, token));
         associateMediasToStage(form.getMedias(), stage, token);
@@ -97,16 +101,7 @@ public class StageService {
 
         associateMediasToStage(form.getMedias(), stage, token);
 
-        return StageMapper.INSTANCE.toDto(stage);
-    }
-
-    public StageUserDTO teste(@NonNull Long stageId, @NonNull Long userId){
-        return stageUserRepository.findById(
-                StageUserId.builder()
-                        .stage(stageId)
-                        .user(userId)
-                        .build()
-        ).map(StageUserMapper.INSTANCE::toDto).orElse(null);
+        return StageMapper.INSTANCE.toDto(repository.save(stage));
     }
 
     public void startStage(@NonNull Long trailId, @NonNull Long stageId, @NonNull String token){
@@ -116,6 +111,9 @@ public class StageService {
 
         if(!stageUserRepository.existsById(createStageUserId(user, stage))){
             stageUserRepository.save(createStageUser(user, stage));
+            stage.getLinks().forEach(link -> startLinkMedia(trailId, stageId, link.getLink().getId().toString(), token));
+            stage.getFiles().forEach(file -> startHarvestFileMedia(trailId, stageId, file.getHarvestFile().getId().toString(), token));
+            stage.getScorms().forEach(scorm -> startScormMedia(trailId, stageId, scorm.getScorm().getId(), token));
         }
     }
 
@@ -129,13 +127,17 @@ public class StageService {
                         "start from user ID {1}", stage.getId(), user.getId()))
         );
 
-        stageUser.setScore(calculateUserScore(stageUser));
+        if(!stageUser.getIsCompleted()){
+            stageUser.setScore(calculateUserScore(stageUser));
 
-        if(stageUser.getScore().compareTo(stageUser.getStage().getMinimumScore()) >= 0){
-            stageUser.setCompletedAt(LocalDateTime.now());
-            stageUser.setIsCompleted(true);
+            if(stageUser.getScore().compareTo(stageUser.getStage().getMinimumScore()) >= 0){
+                stageUser.setCompletedAt(LocalDateTime.now());
+                stageUser.setIsCompleted(true);
+                userCoinUseCase.addCoinToUser(userCoinUseCase.createAddCoinsForm(stageUser.getUser(),
+                        stageUser.getStage().getTrail().getCoin(), stageUser.getStage().getAmountCoins()), token);
+            }
+
         }
-
         return StageUserMapper.INSTANCE.toSimpleDTO(stageUserRepository.save(stageUser));
     }
 
@@ -151,7 +153,7 @@ public class StageService {
         totalMediaPassed = totalMediaPassed.add(BigInteger.valueOf(stageUser.getHarvestFiles().stream().filter(HarvestFileMediaUser::getIsCompleted).count()));
         totalMediaPassed = totalMediaPassed.add(BigInteger.valueOf(stageUser.getLinks().stream().filter(LinkMediaUser::getIsCompleted).count()));
 
-        return new BigDecimal(totalMediaPassed).divide(new BigDecimal(totalMedia), RoundingMode.HALF_UP)
+        return new BigDecimal(totalMediaPassed).divide(new BigDecimal(totalMedia), 2, RoundingMode.HALF_UP)
                 .multiply(new BigDecimal("100")).setScale(2, RoundingMode.HALF_UP);
     }
 
@@ -317,9 +319,17 @@ public class StageService {
         scormMediaStage.ifPresent(mediaStage -> startScormMediaUserExecution(mediaStage, token));
     }
 
-    private void startHarvestFileMedia(@NonNull Long trailId, @NonNull Long stageId, @NonNull String harvestFileId, @NonNull String token) throws Exception {
+    private void startHarvestFileMedia(@NonNull Long trailId, @NonNull Long stageId, @NonNull String harvestFileId, @NonNull String token) {
+        HarvestFile harvestFile = null;
+
+        try {
+            harvestFile = harvestFileStorageService.getFileByIdAndAuthorizedClient(harvestFileId, token, false);
+        } catch (Exception e){
+            log.info("An error was occurred", e);
+        }
+
         Optional<HarvestFileMediaStage> harvestFileMediaStage = harvestFileMediaStageRepository.findOne(HarvestFileMediaStageRepository.byStageAndHarvestFile(
-                findAsColaborator(trailId, stageId, token), harvestFileStorageService.getFileByIdAndAuthorizedClient(harvestFileId, token, false)
+                findAsColaborator(trailId, stageId, token), harvestFile
         ));
 
         harvestFileMediaStage.ifPresent(mediaStage -> startHarvestFileMediaUserExecution(mediaStage, token));

@@ -67,7 +67,7 @@ public class StageController {
         return ResponseEntity.ok().body(service.findAsColaboratorAsDTO(trailId, stageId, token));
     }
 
-    @Operation(description = "Busca uma etapa no banco de dados como admin.")
+    @Operation(description = "Busca todas as etapas no banco de dados como admin.")
     @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping(value = "/trails/{trailId}/stages", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<StageDTO>> findAllStagesByTrailAsAdmin(@PathVariable("trailId") Long trailId,
@@ -75,7 +75,7 @@ public class StageController {
         return ResponseEntity.ok().body(service.findAllByTrailAsAdmin(trailId, token));
     }
 
-    @Operation(description = "Busca uma etapa no banco de dados como colaborador.")
+    @Operation(description = "Busca todas as etapas no banco de dados como colaborador.")
     @PreAuthorize("hasAuthority('COLABORATOR')")
     @GetMapping(value = "/trails/{trailId}/stages/my-stages", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<StageDTO>> findAllStagesByTrailAsColaborator(@PathVariable("trailId") Long trailId,
@@ -99,18 +99,6 @@ public class StageController {
                                                 @PathVariable("stageId") Long stageId,
                                                 @RequestHeader("Authorization") String token) {
         return ResponseEntity.ok().body(service.findAsAdminAsDTO(trailId, stageId, token));
-    }
-
-    @ResponseStatus(HttpStatus.OK)
-    @Operation(description = "Registra a execução da mídia na etapa.")
-    @PreAuthorize("hasAuthority('COLABORATOR')")
-    @PostMapping(value = "/trails/{trailId}/stages/{stageId}/media/{mediaId}/{mediaType}/start")
-    public void startMedia(@PathVariable("trailId") Long trailId,
-                                    @PathVariable("stageId") Long stageId,
-                                    @PathVariable("mediaId") String mediaId,
-                                    @PathVariable("mediaType") Storage type,
-                                    @RequestHeader("Authorization") String token) throws Exception {
-        service.startMedia(trailId, stageId, mediaId, type, token);
     }
 
     @ResponseStatus(HttpStatus.OK)

@@ -33,7 +33,7 @@ public class Stage extends BaseEntityAudit {
     @Column(name = "minimum_score")
     private BigDecimal minimumScore;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "idtrail")
     private Trail trail;
 
@@ -47,16 +47,16 @@ public class Stage extends BaseEntityAudit {
     })
     private Position position;
 
-    @OneToMany(mappedBy = "stage", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "stage")
     private List<StageUser> stageUsers;
 
-    @OneToMany(mappedBy = "stage", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "stage")
     private List<ScormMediaStage> scorms;
 
-    @OneToMany(mappedBy = "stage", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "stage")
     private List<HarvestFileMediaStage> files;
 
-    @OneToMany(mappedBy = "stage", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "stage")
     private List<LinkMediaStage> links;
 
     @Override

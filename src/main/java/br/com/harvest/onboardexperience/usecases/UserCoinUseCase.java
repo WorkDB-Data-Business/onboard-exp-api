@@ -36,6 +36,15 @@ public class UserCoinUseCase {
         executeOperationAndSave(form, CoinOperation.ADD, token);
     }
 
+    public UserCoinForm createAddCoinsForm(@NonNull User user, @NonNull Coin coin, @NonNull BigInteger amountCoins){
+        return UserCoinForm.builder()
+                .userId(user.getId())
+                .coinId(coin.getId())
+                .amount(amountCoins)
+                .operation(CoinOperation.ADD)
+                .build();
+    }
+
     public void subtractCoinFromUser(@NonNull UserCoinForm form, @NonNull String token){
         executeOperationAndSave(form, CoinOperation.SUBTRACT, token);
     }

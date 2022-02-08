@@ -91,8 +91,8 @@ CREATE TABLE IF NOT EXISTS public.tbstage_scorm(
     created_at TIMESTAMP default now(),
     updated_at TIMESTAMP,
 
-	FOREIGN KEY (idscorm) REFERENCES tbscorm(idscorm),
-	FOREIGN KEY (idstage) REFERENCES tbstage(idstage),
+	FOREIGN KEY (idscorm) REFERENCES tbscorm(idscorm) ON DELETE CASCADE,
+	FOREIGN KEY (idstage) REFERENCES tbstage(idstage) ON DELETE CASCADE,
 
 	CONSTRAINT tbstage_scorm_pk PRIMARY KEY (idscorm, idstage)
 );
@@ -106,8 +106,8 @@ CREATE TABLE IF NOT EXISTS public.tbstage_file(
     created_at TIMESTAMP default now(),
     updated_at TIMESTAMP,
 
-	FOREIGN KEY (idfile) REFERENCES tbfile(idfile),
-	FOREIGN KEY (idstage) REFERENCES tbstage(idstage),
+	FOREIGN KEY (idfile) REFERENCES tbfile(idfile) ON DELETE CASCADE,
+	FOREIGN KEY (idstage) REFERENCES tbstage(idstage) ON DELETE CASCADE,
 
 	CONSTRAINT tbstage_file_pk PRIMARY KEY (idfile, idstage)
 );
@@ -121,8 +121,8 @@ CREATE TABLE IF NOT EXISTS public.tbstage_link(
     created_at TIMESTAMP default now(),
     updated_at TIMESTAMP,
 
-	FOREIGN KEY (idlink) REFERENCES tblink(idlink),
-	FOREIGN KEY (idstage) REFERENCES tbstage(idstage),
+	FOREIGN KEY (idlink) REFERENCES tblink(idlink) ON DELETE CASCADE,
+	FOREIGN KEY (idstage) REFERENCES tbstage(idstage) ON DELETE CASCADE,
 
 	CONSTRAINT tbstage_link_pk PRIMARY KEY (idlink, idstage)
 );
@@ -135,8 +135,8 @@ CREATE TABLE IF NOT EXISTS public.tbstage_scorm_user(
 	iduser BIGINT NOT NULL,
 	completed_at TIMESTAMP,
 
-	FOREIGN KEY (iduser) REFERENCES tbuser(iduser),
-	FOREIGN KEY (idscorm, idstage) REFERENCES tbstage_scorm(idscorm, idstage),
+	FOREIGN KEY (iduser) REFERENCES tbuser(iduser) ON DELETE CASCADE,
+	FOREIGN KEY (idscorm, idstage) REFERENCES tbstage_scorm(idscorm, idstage) ON DELETE CASCADE,
 
 	CONSTRAINT tbstage_scorm_user_pk PRIMARY KEY (idscorm, idstage, iduser)
 );
@@ -161,8 +161,8 @@ CREATE TABLE IF NOT EXISTS public.tbstage_link_user(
 	iduser BIGINT NOT NULL,
 	completed_at TIMESTAMP,
 
-	FOREIGN KEY (iduser) REFERENCES tbuser(iduser),
-	FOREIGN KEY (idlink, idstage) REFERENCES tbstage_link(idlink, idstage),
+	FOREIGN KEY (iduser) REFERENCES tbuser(iduser) ON DELETE CASCADE,
+	FOREIGN KEY (idlink, idstage) REFERENCES tbstage_link(idlink, idstage) ON DELETE CASCADE,
 
 	CONSTRAINT tbstage_link_user_pk PRIMARY KEY (idlink, idstage, iduser)
 );
@@ -176,8 +176,8 @@ CREATE TABLE IF NOT EXISTS public.tbstage_user(
 	completed_at TIMESTAMP,
 	started_at TIMESTAMP NOT NULL,
 
-	FOREIGN KEY (iduser) REFERENCES tbuser(iduser),
-    FOREIGN KEY (idstage) REFERENCES tbstage(idstage),
+	FOREIGN KEY (iduser) REFERENCES tbuser(iduser) ON DELETE CASCADE,
+    FOREIGN KEY (idstage) REFERENCES tbstage(idstage) ON DELETE CASCADE,
 
 	CONSTRAINT tbstage_user_pk PRIMARY KEY (idstage, iduser)
 );
