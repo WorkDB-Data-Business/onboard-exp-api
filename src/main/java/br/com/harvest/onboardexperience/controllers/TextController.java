@@ -42,9 +42,9 @@ public class TextController {
     @Operation(description = "Rertona a listagem dos textos.")
     @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Page<TextDto>> findAll(@RequestHeader("Authorization") String token, Pageable pageable)
+    public ResponseEntity<Page<TextDto>> findAllText(@RequestHeader("Authorization") String token, Pageable pageable)
             throws RuntimeException{
-        return ResponseEntity.ok().body(textService.findALl(token,pageable));
+        return ResponseEntity.ok().body(textService.findALltext(token,pageable));
     }
 
     @Operation(description = "Retorna o texto pelo ID.")

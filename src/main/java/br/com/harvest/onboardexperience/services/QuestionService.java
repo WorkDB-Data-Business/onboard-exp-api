@@ -52,7 +52,8 @@ public class QuestionService {
     private AnswerQuestionRepository answerQuestionRepository;
 
     public Page<QuestionDto> findAllQuestions(String token, Pageable pageable) {
-        return questionRepository.findAll(QuestionRepository.byAuthorizedClients(userService.findUserByToken(token).getClient()), pageable).map(QuestionMapper.INSTANCE::toDto);
+        return questionRepository.findAll(QuestionRepository.byAuthorizedClients(userService.findUserByToken(token).getClient()),
+                pageable).map(QuestionMapper.INSTANCE::toDto);
     }
 
     public QuestionDto findQuestionById(Long id, QuestionFrom from) {
@@ -82,7 +83,7 @@ public class QuestionService {
         Question updatedQuestion = dtoToEntity(dto, token);
 
           Question finalQuestion = this.questionRepository.saveAndFlush(updatedQuestion);
-        updatedQuestion.getAnswersQuestions().forEach(
+            updatedQuestion.getAnswersQuestions().forEach(
                 answerQuestion -> {
                     answerQuestion.setQuestion(finalQuestion);
                     this.answerQuestionRepository.saveAndFlush(answerQuestion);
