@@ -3,6 +3,8 @@ package br.com.harvest.onboardexperience.domain.dtos;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
+import java.math.BigDecimal;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -15,6 +17,9 @@ public class UserMetrics {
 
     @JsonProperty("name")
     private String name;
+
+    @JsonProperty("averageScore")
+    private BigDecimal averageScore;
 
     @JsonProperty("averageLengthOfStayOnTrail")
     private AverageLengthOfStayOnTrail averageLengthOfStayOnTrail;

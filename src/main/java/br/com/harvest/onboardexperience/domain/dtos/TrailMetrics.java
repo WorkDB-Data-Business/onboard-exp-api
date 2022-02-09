@@ -3,6 +3,7 @@ package br.com.harvest.onboardexperience.domain.dtos;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.List;
 
@@ -21,6 +22,9 @@ public class TrailMetrics {
 
     @JsonProperty("name")
     private String name;
+
+    @JsonProperty("averageScore")
+    private BigDecimal averageScore;
 
     @JsonProperty("userMetrics")
     private List<UserMetrics> userMetrics;

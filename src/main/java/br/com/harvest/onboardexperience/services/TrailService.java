@@ -24,10 +24,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.util.Collection;
@@ -238,12 +241,18 @@ public class TrailService {
 
         List<StageUser> userStages = stageUserRepository.findAll(StageUserRepository.byUserAndTrail(user, trail));
 
-        boolean isAllStagesFinished = userStages.stream().allMatch(StageUser::getIsCompleted);
+        boolean isAllStagesFinished = !ObjectUtils.isEmpty(userStages) && userStages.stream().allMatch(StageUser::getIsCompleted);
 
         if(isAllStagesFinished && Objects.isNull(registration.getFinishedTrailDate())){
+            registration.setAverageScore(calculateAverageScoreOnTrail(userStages));
             registration.setFinishedTrailDate(LocalDateTime.now());
             userTrailRegistrationRepository.save(registration);
         }
+    }
+
+    private BigDecimal calculateAverageScoreOnTrail(List<StageUser> userStages){
+        return userStages.stream().map(StageUser::getScore).reduce(BigDecimal.ZERO,
+                BigDecimal::add).divide(BigDecimal.valueOf(userStages.size()), 2, RoundingMode.HALF_UP);
     }
 
     public void validateIfUserStartedTheTrail(@NonNull Long id, @NonNull String token){

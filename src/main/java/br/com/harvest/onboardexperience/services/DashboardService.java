@@ -148,15 +148,29 @@ public class DashboardService {
     }
 
     private TrailMetrics getTrailMetric(@NonNull Trail trail){
+        List<UserMetrics> userMetrics = getUserMetrics(trail);
+
+        List<UserTrailRegistration> registrations = trail.getTrailRegistrations();
+
+        BigInteger activeUsersQuantity = BigInteger.valueOf(registrations.stream().filter(
+                userTrailRegistration ->
+                        Objects.nonNull(userTrailRegistration.getStartedTrailDate())
+                                && Objects.isNull(userTrailRegistration.getFinishedTrailDate())
+        ).count());
+
+        BigInteger finishedUsersQuantity = BigInteger.valueOf(registrations.stream().filter(
+                userTrailRegistration ->
+                        Objects.nonNull(userTrailRegistration.getStartedTrailDate())
+                                && Objects.nonNull(userTrailRegistration.getFinishedTrailDate())
+        ).count());
+
         return TrailMetrics.builder()
                 .trailId(trail.getId())
                 .name(trail.getName())
-                .quantityActiveUsers(BigInteger.valueOf(trail.getTrailRegistrations().stream().filter(
-                        userTrailRegistration ->
-                                Objects.nonNull(userTrailRegistration.getStartedTrailDate())
-                                && Objects.isNull(userTrailRegistration.getFinishedTrailDate())
-                ).count()))
-                .userMetrics(getUserMetrics(trail))
+                .quantityActiveUsers(activeUsersQuantity)
+                .userMetrics(userMetrics)
+                .averageScore(userMetrics.stream().map(UserMetrics::getAverageScore).reduce(BigDecimal.ZERO, BigDecimal::add)
+                        .divide(new BigDecimal(finishedUsersQuantity), 2, RoundingMode.HALF_UP))
                 .build();
     }
 
@@ -172,6 +186,7 @@ public class DashboardService {
                         .orElse(MessageFormat.format("{0} {1}",
                                 registration.getUser().getFirstName(), registration.getUser().getLastName())))
                 .id(registration.getUser().getId())
+                .averageScore(registration.getAverageScore())
                 .averageLengthOfStayOnTrail(getAverageLengthOfStayOnTrail(registration))
                 .build();
     }
