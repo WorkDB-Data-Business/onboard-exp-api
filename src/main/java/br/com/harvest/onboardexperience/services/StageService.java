@@ -274,7 +274,7 @@ public class StageService {
 
     public StageDTO findStageByPosition(@NonNull Long trailId, @NonNull PositionDTO position, @NonNull String token){
         return repository.findOne(StageRepository.byPositionAndTrail(positionService.getPosition(position),
-                trailService.findTrailByIdAndEndUserByTokenAsColaborator(trailId, token)))
+                trailService.findTrailByIdAndToken(trailId, token)))
                 .map(this::stageToDto)
                 .orElse(null);
     }
