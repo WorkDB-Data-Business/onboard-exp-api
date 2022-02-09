@@ -219,8 +219,10 @@ public class TrailService {
                 userTrailRegistrationRepository.findById(createUserRegistrationId(id, userService.findUserByToken(token).getId()))
                         .orElseThrow(() -> new Exception("The user haven't started the trail yet."));
 
-        registration.setFinishedTrailDate(LocalDateTime.now());
-        userTrailRegistrationRepository.save(registration);
+        if(Objects.isNull(registration.getFinishedTrailDate())){
+            registration.setFinishedTrailDate(LocalDateTime.now());
+            userTrailRegistrationRepository.save(registration);
+        }
     }
 
     private UserTrailRegistrationId createUserRegistrationId(@NonNull Long trailId, @NonNull Long userId){

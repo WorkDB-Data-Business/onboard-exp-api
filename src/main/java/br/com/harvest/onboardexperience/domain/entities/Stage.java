@@ -33,7 +33,7 @@ public class Stage extends BaseEntityAudit {
     @Column(name = "minimum_score")
     private BigDecimal minimumScore;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne(cascade = CascadeType.MERGE)
     @JoinColumn(name = "idtrail")
     private Trail trail;
 
