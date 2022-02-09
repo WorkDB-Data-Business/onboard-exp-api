@@ -3,6 +3,7 @@ package br.com.harvest.onboardexperience.services;
 import br.com.harvest.onboardexperience.domain.dtos.*;
 import br.com.harvest.onboardexperience.domain.entities.Client;
 import br.com.harvest.onboardexperience.domain.entities.Trail;
+import br.com.harvest.onboardexperience.domain.entities.UserTrailRegistration;
 import br.com.harvest.onboardexperience.infra.scorm.ScormAPI;
 import br.com.harvest.onboardexperience.infra.scorm.entities.Scorm;
 import br.com.harvest.onboardexperience.infra.scorm.filters.ScormRegistrationFilter;
@@ -23,10 +24,9 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
+import java.text.MessageFormat;
+import java.time.Duration;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -156,6 +156,33 @@ public class DashboardService {
                                 Objects.nonNull(userTrailRegistration.getStartedTrailDate())
                                 && Objects.isNull(userTrailRegistration.getFinishedTrailDate())
                 ).count()))
+                .userMetrics(getUserMetrics(trail))
+                .build();
+    }
+
+    private List<UserMetrics> getUserMetrics(@NonNull Trail trail){
+        return trail.getTrailRegistrations().stream().filter(registration ->
+                Objects.nonNull(registration.getFinishedTrailDate())).map(this::getUserMetric).collect(Collectors.toList());
+    }
+
+    private UserMetrics getUserMetric(@NonNull UserTrailRegistration registration){
+        return UserMetrics
+                .builder()
+                .name(Optional.ofNullable(registration.getUser().getNickname())
+                        .orElse(MessageFormat.format("{0} {1}",
+                                registration.getUser().getFirstName(), registration.getUser().getLastName())))
+                .id(registration.getUser().getId())
+                .averageLengthOfStayOnTrail(getAverageLengthOfStayOnTrail(registration))
+                .build();
+    }
+
+    private AverageLengthOfStayOnTrail getAverageLengthOfStayOnTrail(@NonNull UserTrailRegistration registration){
+        Duration duration = Duration.between(registration.getStartedTrailDate(), registration.getFinishedTrailDate());
+        return AverageLengthOfStayOnTrail
+                .builder()
+                .days(duration.toDaysPart())
+                .hours(duration.toHoursPart())
+                .minutes(duration.toMinutesPart())
                 .build();
     }
 
