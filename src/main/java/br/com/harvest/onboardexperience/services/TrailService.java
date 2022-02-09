@@ -13,6 +13,7 @@ import br.com.harvest.onboardexperience.domain.exceptions.NotFoundException;
 import br.com.harvest.onboardexperience.infra.storage.filters.CustomFilter;
 import br.com.harvest.onboardexperience.infra.storage.services.AssetStorageService;
 import br.com.harvest.onboardexperience.mappers.TrailMapper;
+import br.com.harvest.onboardexperience.repositories.StageUserRepository;
 import br.com.harvest.onboardexperience.repositories.TrailRepository;
 import br.com.harvest.onboardexperience.repositories.UserTrailRegistrationRepository;
 import br.com.harvest.onboardexperience.utils.JwtTokenUtils;
@@ -29,6 +30,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 
@@ -55,6 +57,9 @@ public class TrailService {
 
     @Autowired
     private UserTrailRegistrationRepository userTrailRegistrationRepository;
+
+    @Autowired
+    private StageUserRepository stageUserRepository;
 
     @Autowired
     private FetchService fetchService;
@@ -219,13 +224,27 @@ public class TrailService {
     }
 
     public void finishTrail(@NonNull Long id, @NonNull String token) throws Exception {
+
+        User user = userService.findUserByToken(token);
+        Trail trail = findTrailByIdAndToken(id, token);
+
         UserTrailRegistration registration =
-                userTrailRegistrationRepository.findById(createUserRegistrationId(id, userService.findUserByToken(token).getId()))
+                userTrailRegistrationRepository.findById(createUserRegistrationId(id, user.getId()))
                         .orElseThrow(() -> new Exception("The user haven't started the trail yet."));
 
-        if(Objects.isNull(registration.getFinishedTrailDate())){
+        List<StageUser> userStages = stageUserRepository.findAll(StageUserRepository.byUserAndTrail(user, trail));
+
+        boolean isAllStagesFinished = userStages.stream().allMatch(StageUser::getIsCompleted);
+
+        if(isAllStagesFinished && Objects.isNull(registration.getFinishedTrailDate())){
             registration.setFinishedTrailDate(LocalDateTime.now());
             userTrailRegistrationRepository.save(registration);
+        }
+    }
+
+    public void validateIfUserStartedTheTrail(@NonNull Long id, @NonNull String token){
+        if(!userTrailRegistrationRepository.existsById(createUserRegistrationId(id, userService.findUserByToken(token).getId()))){
+            throw new BusinessException("The user haven't started the trail yet.");
         }
     }
 
