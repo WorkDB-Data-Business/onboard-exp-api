@@ -59,6 +59,10 @@ public class TrailService {
     @Autowired
     private FetchService fetchService;
 
+    public List<Trail> findAll(){
+        return repository.findAll();
+    }
+
     public TrailDTO save(@NonNull TrailForm form, List<PositionDTO> characterMapPositionPath,
                          MultipartFile mapImage, MultipartFile mapMusic, @NonNull String token) throws IOException {
 

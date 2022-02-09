@@ -8,6 +8,7 @@ import br.com.harvest.onboardexperience.domain.exceptions.LinkNotFoundException;
 import br.com.harvest.onboardexperience.infra.storage.dtos.LinkDto;
 import br.com.harvest.onboardexperience.infra.storage.dtos.LinkSimpleDto;
 import br.com.harvest.onboardexperience.infra.storage.dtos.UploadForm;
+import br.com.harvest.onboardexperience.infra.storage.entities.HarvestFile;
 import br.com.harvest.onboardexperience.infra.storage.entities.Link;
 import br.com.harvest.onboardexperience.infra.storage.enumerators.Storage;
 import br.com.harvest.onboardexperience.infra.storage.filters.HarvestLibraryFilter;
@@ -33,6 +34,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 public class LinkStorageService implements StorageService {
@@ -97,10 +99,14 @@ public class LinkStorageService implements StorageService {
     }
 
     @Override
-    public Page<?> findAll(@NonNull String token, HarvestLibraryFilter filter, Pageable pageable) {
+    public Page<LinkSimpleDto> findAll(@NonNull String token, HarvestLibraryFilter filter, Pageable pageable) {
         return repository.findAll(createQuery(filter, token), pageable)
                 .map(LinkMapper.INSTANCE::toLinkSimpleDto)
                 .map(SET_STORAGE);
+    }
+
+    public List<Link> findAllByClient(Client client) {
+        return repository.findAll(LinkRepository.byClient(client));
     }
 
     private Specification<Link> createQuery(@NonNull HarvestLibraryFilter filter, @NonNull String token){

@@ -104,6 +104,10 @@ public class ScormStorageService implements StorageService {
         return repository.findAll(buildQuery(filter, token), pageable).map(ScormMapper.INSTANCE::toDto).map(SET_STORAGE);
     }
 
+    public List<Scorm> findAllByClient(@NonNull Client client) {
+        return repository.findAll(ScormRepository.byClient(client));
+    }
+
     private Specification<Scorm> buildQuery(@NonNull HarvestLibraryFilter filter, @NonNull String token){
         Specification<Scorm> query = Specification.where(ScormRepository.byAuthorizedClients(
                 tenantService.fetchClientByTenantFromToken(token)

@@ -1,5 +1,6 @@
 package br.com.harvest.onboardexperience.domain.dtos;
 
+import br.com.harvest.onboardexperience.infra.storage.enumerators.Storage;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
@@ -18,7 +19,10 @@ public class HarvestLibraryRanking {
     @JsonProperty("name")
     private String name;
 
-    @JsonProperty("quantity")
-    private BigInteger quantity;
+    @JsonProperty("usageQuantity")
+    private BigInteger usageQuantity;
+
+    @JsonProperty("type")
+    private Storage storage;
 
 }

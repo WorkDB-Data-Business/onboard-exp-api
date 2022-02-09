@@ -75,4 +75,8 @@ public interface FileRepository extends JpaRepository<HarvestFile, Long>, JpaSpe
     static Specification<HarvestFile> byAuthor(@NonNull User author) {
         return (file, cq, cb) -> cb.equal(file.get("author"), author);
     }
+
+    static Specification<HarvestFile> byClient(@NonNull Client client) {
+        return (file, cq, cb) -> cb.equal(file.get("author").get("client"), client);
+    }
 }

@@ -31,6 +31,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.FileAlreadyExistsException;
@@ -101,6 +102,10 @@ public class HarvestFileStorageService implements StorageService {
         return fileRepository.findAll(createQuery(filter, token), pageable)
                 .map(FileMapper.INSTANCE::toFileSimpleDto)
                 .map(setStorage);
+    }
+
+    public List<HarvestFile> findAllByClient(@NonNull Client client) {
+        return fileRepository.findAll(FileRepository.byClient(client));
     }
 
     private Specification<HarvestFile> createQuery(@NonNull HarvestLibraryFilter filter, @NonNull String token){
