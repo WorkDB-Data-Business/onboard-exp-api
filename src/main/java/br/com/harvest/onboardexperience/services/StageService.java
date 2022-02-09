@@ -111,6 +111,9 @@ public class StageService {
     }
 
     public void startStage(@NonNull Long trailId, @NonNull Long stageId, @NonNull String token){
+
+        trailService.validateIfUserStartedTheTrail(trailId, token);
+
         Stage stage = findAsColaborator(trailId, stageId, token);
 
         User user = userService.findUserByToken(token);
