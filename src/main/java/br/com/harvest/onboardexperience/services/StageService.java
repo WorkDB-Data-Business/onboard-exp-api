@@ -4,6 +4,8 @@ import br.com.harvest.onboardexperience.domain.dtos.*;
 import br.com.harvest.onboardexperience.domain.dtos.forms.PositionDTO;
 import br.com.harvest.onboardexperience.domain.entities.*;
 import br.com.harvest.onboardexperience.domain.entities.keys.*;
+import br.com.harvest.onboardexperience.domain.exceptions.AlreadyExistsException;
+import br.com.harvest.onboardexperience.domain.exceptions.BusinessException;
 import br.com.harvest.onboardexperience.domain.exceptions.NotFoundException;
 import br.com.harvest.onboardexperience.infra.scorm.entities.ScormRegistration;
 import br.com.harvest.onboardexperience.infra.scorm.services.ScormService;
@@ -88,6 +90,7 @@ public class StageService {
     private UserCoinUseCase userCoinUseCase;
 
     public StageDTO create(@NonNull Long trailId, StageForm form, @NonNull String token){
+        validate(trailId, form, token);
         Stage stage = repository.save(formToStage(trailId, form, token));
         associateMediasToStage(form.getMedias(), stage, token);
         return StageMapper.INSTANCE.toDto(stage);
@@ -95,6 +98,9 @@ public class StageService {
 
     public StageDTO update(@NonNull Long trailId, @NonNull Long stageId, @NonNull StageForm form, @NonNull String token){
         Stage stage = findAsAdmin(trailId, stageId, token);
+
+        validate(stage, trailId, form, token);
+
         Stage updatedStage = formToStage(trailId, form, token);
 
         BeanUtils.copyProperties(updatedStage, stage, "id", "trail", "position", "scorms", "files", "links");
@@ -518,6 +524,51 @@ public class StageService {
                 .isPreRequisite(form.getIsPreRequisite())
                 .position(positionService.getPosition(form.getPosition()))
                 .build();
+    }
+
+    private void validate(@NonNull Long trailId, StageForm stageForm, String token){
+        validateIfAlreadyHasAStageOnPosition(trailId, stageForm, token);
+        validateIfAlreadyHasAStageWithThisName(trailId, stageForm, token);
+        validateIfPositionIsMappedInTrail(trailId, stageForm, token);
+    }
+
+    private void validate(@NonNull Stage stage, @NonNull Long trailId, StageForm stageForm, String token){
+
+        if(!stage.getName().equalsIgnoreCase(stageForm.getName())){
+            validateIfAlreadyHasAStageWithThisName(trailId, stageForm, token);
+        }
+
+        if(!stage.getPosition().getXAxis()
+                .equals(stageForm.getPosition().getXAxis())
+         && !stage.getPosition().getYAxis().equals(stageForm.getPosition().getYAxis())){
+            validateIfAlreadyHasAStageOnPosition(trailId, stageForm, token);
+            validateIfPositionIsMappedInTrail(trailId, stageForm, token);
+        }
+    }
+
+    private void validateIfPositionIsMappedInTrail(@NonNull Long trailId, StageForm stageForm, String token){
+        Trail trail = trailService.findTrailByIdAndTokenAsAdmin(trailId, token);
+
+        if(trail.getCharacterMapPositionPath().stream().noneMatch(position ->
+                position.getXAxis().equals(stageForm.getPosition().getXAxis()) && position.getYAxis().equals(stageForm.getPosition().getYAxis()))){
+            throw new BusinessException("The position needs to be mapped on character path in Trail");
+        }
+    }
+
+    private void validateIfAlreadyHasAStageOnPosition(@NonNull Long trailId, StageForm stageForm, String token){
+        if(Objects.nonNull(findStageByPosition(trailId, stageForm.getPosition(), token))){
+            throw new BusinessException("There is a stage mapped on this position already.");
+        }
+    }
+
+    private void validateIfAlreadyHasAStageWithThisName(@NonNull Long trailId, StageForm stageForm, String token){
+        if(findByNameAndTrail(stageForm.getName(), trailId, token).isPresent()){
+            throw new AlreadyExistsException("Stage", "name", stageForm.getName());
+        }
+    }
+
+    private Optional<Stage> findByNameAndTrail(@NonNull String name, @NonNull Long trailId, @NonNull String token){
+        return repository.findOne(StageRepository.byNameAndTrail(name, trailService.findTrailByIdAndTokenAsAdmin(trailId, token)));
     }
 
     private void associateScormMediaToStage(String scormsId, @NonNull Stage stage, @NonNull String token){

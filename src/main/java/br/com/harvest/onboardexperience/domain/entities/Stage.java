@@ -40,7 +40,7 @@ public class Stage extends BaseEntityAudit {
     @Column(name = "is_pre_requisite")
     private Boolean isPreRequisite;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne(cascade = CascadeType.MERGE)
     @JoinColumns({
             @JoinColumn(name = "x_axis"),
             @JoinColumn(name = "y_axis")
