@@ -21,6 +21,13 @@ public interface StageRepository extends JpaRepository<Stage, Long>, JpaSpecific
         );
     }
 
+    static Specification<Stage> byNameAndTrail(@NonNull String name, @NonNull Trail trail) {
+        return (stage, cq, cb) -> cb.and(
+                cb.equal(cb.lower(stage.get("name")), name.toLowerCase()),
+                cb.equal(stage.get("trail"), trail)
+        );
+    }
+
     static Specification<Stage> byPositionAndTrail(@NonNull Position position, @NonNull Trail trail) {
         return (stage, cq, cb) -> cb.and(
                 cb.equal(stage.get("position"), position),

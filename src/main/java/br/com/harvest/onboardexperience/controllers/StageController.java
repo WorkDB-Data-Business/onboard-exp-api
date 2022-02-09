@@ -85,7 +85,7 @@ public class StageController {
 
     @Operation(description = "Busca uma etapa no banco de dados pela posição como colaborador.")
     @PreAuthorize("hasAuthority('COLABORATOR')")
-    @GetMapping(value = "/trails/{trailId}/stages/position", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/trails/{trailId}/stages/position", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<StageDTO> findStageByPosition(@Valid PositionDTO position,
                                                         @PathVariable("trailId") Long trailId,
                                                         @RequestHeader("Authorization") String token) {

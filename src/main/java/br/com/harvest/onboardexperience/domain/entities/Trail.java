@@ -56,14 +56,14 @@ public class Trail extends BaseEntityAudit {
     @JoinColumn(name = "idclient")
     private Client client;
 
-    @ManyToMany(cascade = CascadeType.ALL)
+    @ManyToMany(cascade = {CascadeType.MERGE, CascadeType.PERSIST})
     @JoinTable(
             name = "tbtrail_map_position_path",
             joinColumns = @JoinColumn(name = "idtrail"),
             inverseJoinColumns = {@JoinColumn(name = "x_axis"), @JoinColumn(name = "y_axis")})
     private List<Position> characterMapPositionPath;
 
-    @ManyToMany(cascade = CascadeType.ALL)
+    @ManyToMany(cascade = {CascadeType.MERGE})
     @JoinTable(
             name = "tbtrail_group",
             joinColumns = @JoinColumn(name = "idtrail"),
@@ -73,7 +73,7 @@ public class Trail extends BaseEntityAudit {
     @OneToMany(mappedBy = "trail")
     private List<UserTrailRegistration> trailRegistrations;
 
-    @OneToMany(mappedBy = "trail", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "trail", fetch = FetchType.EAGER)
     private List<Stage> stages;
 
     @Override
