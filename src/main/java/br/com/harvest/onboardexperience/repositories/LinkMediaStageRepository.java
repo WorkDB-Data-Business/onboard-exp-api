@@ -13,6 +13,8 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface LinkMediaStageRepository extends JpaRepository<LinkMediaStage, LinkMediaStageId>, JpaSpecificationExecutor<LinkMediaStage> {
 
+    Integer countByLink(Link link);
+
     static Specification<LinkMediaStage> byStageAndLink(@NonNull Stage stage, @NonNull Link linkParam) {
         return (link, cq, cb) -> cb.and(
                 cb.equal(link.get("link"), linkParam),

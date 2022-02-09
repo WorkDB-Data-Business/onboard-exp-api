@@ -4,6 +4,12 @@ import br.com.harvest.onboardexperience.domain.dtos.DashboardMasterMetricsDTO;
 import br.com.harvest.onboardexperience.domain.dtos.ScormCloudMetricsDTO;
 import br.com.harvest.onboardexperience.infra.scorm.ScormAPI;
 import br.com.harvest.onboardexperience.infra.scorm.filters.ScormRegistrationFilter;
+import br.com.harvest.onboardexperience.infra.storage.services.HarvestFileStorageService;
+import br.com.harvest.onboardexperience.infra.storage.services.LinkStorageService;
+import br.com.harvest.onboardexperience.infra.storage.services.ScormStorageService;
+import br.com.harvest.onboardexperience.repositories.HarvestFileMediaStageRepository;
+import br.com.harvest.onboardexperience.repositories.LinkMediaStageRepository;
+import br.com.harvest.onboardexperience.repositories.ScormMediaStageRepository;
 import com.rusticisoftware.cloud.v2.client.ApiException;
 import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +24,24 @@ public class DashboardService {
 
     @Autowired
     private ScormAPI scormAPI;
+
+    @Autowired
+    private LinkMediaStageRepository linkMediaStageRepository;
+
+    @Autowired
+    private HarvestFileMediaStageRepository harvestFileMediaStageRepository;
+
+    @Autowired
+    private ScormMediaStageRepository scormMediaStageRepository;
+
+    @Autowired
+    private ScormStorageService scormStorageService;
+
+    @Autowired
+    private HarvestFileStorageService harvestFileStorageService;
+
+    @Autowired
+    private LinkStorageService linkStorageService;
 
     private final String CURRENT_PLAN = "Trial";
     private final BigInteger MAX_REGISTRATIONS_IN_THE_PLAN = BigInteger.TEN;
