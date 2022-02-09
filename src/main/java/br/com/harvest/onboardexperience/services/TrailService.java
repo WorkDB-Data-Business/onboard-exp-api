@@ -68,6 +68,10 @@ public class TrailService {
         return repository.findAll();
     }
 
+    public List<Trail> findAllByClient(@NonNull Client client){
+        return repository.findAll(TrailRepository.byClient(client));
+    }
+
     public TrailDTO save(@NonNull TrailForm form, List<PositionDTO> characterMapPositionPath,
                          MultipartFile mapImage, MultipartFile mapMusic, @NonNull String token) throws IOException {
 

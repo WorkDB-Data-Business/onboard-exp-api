@@ -1,8 +1,6 @@
 package br.com.harvest.onboardexperience.services;
 
-import br.com.harvest.onboardexperience.domain.dtos.DashboardMasterMetricsDTO;
-import br.com.harvest.onboardexperience.domain.dtos.HarvestLibraryRanking;
-import br.com.harvest.onboardexperience.domain.dtos.ScormCloudMetricsDTO;
+import br.com.harvest.onboardexperience.domain.dtos.*;
 import br.com.harvest.onboardexperience.domain.entities.Trail;
 import br.com.harvest.onboardexperience.infra.scorm.ScormAPI;
 import br.com.harvest.onboardexperience.infra.scorm.entities.Scorm;
@@ -27,6 +25,7 @@ import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -59,6 +58,9 @@ public class DashboardService {
     @Autowired
     private ClientService clientService;
 
+    @Autowired
+    private TenantService tenantService;
+
     private final String CURRENT_PLAN = "Trial";
     private final BigInteger MAX_REGISTRATIONS_IN_THE_PLAN = BigInteger.TEN;
 
@@ -66,6 +68,12 @@ public class DashboardService {
         return DashboardMasterMetricsDTO.builder()
                 .scormCloudMetrics(getScormCloudMetrics())
                 .harvestLibraryRanking(getHarvestLibraryRanking())
+                .build();
+    }
+
+    public DashboardAdminMetricsDTO getAdminDashboard(@NonNull String token){
+        return DashboardAdminMetricsDTO.builder()
+                .trailMetrics(getTrailMetrics(token))
                 .build();
     }
 
@@ -130,6 +138,22 @@ public class DashboardService {
                 .name(scorm.getTitle())
                 .usageQuantity(BigInteger.valueOf(scormMediaStageRepository.countByScorm(scorm)))
                 .storage(Storage.SCORM)
+                .build();
+    }
+
+    private List<TrailMetrics> getTrailMetrics(@NonNull String token){
+        return trailService.findAllByClient(tenantService.fetchClientByTenantFromToken(token)).stream().map(this::getTrailMetric).collect(Collectors.toList());
+    }
+
+    private TrailMetrics getTrailMetric(@NonNull Trail trail){
+        return TrailMetrics.builder()
+                .trailId(trail.getId())
+                .name(trail.getName())
+                .quantityActiveUsers(BigInteger.valueOf(trail.getTrailRegistrations().stream().filter(
+                        userTrailRegistration ->
+                                Objects.nonNull(userTrailRegistration.getStartedTrailDate())
+                                && Objects.isNull(userTrailRegistration.getFinishedTrailDate())
+                ).count()))
                 .build();
     }
 
