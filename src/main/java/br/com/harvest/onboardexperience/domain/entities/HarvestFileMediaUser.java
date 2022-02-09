@@ -17,7 +17,7 @@ import java.time.LocalDateTime;
 public class HarvestFileMediaUser {
 
     @Id
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne(cascade = CascadeType.MERGE)
     @JoinColumns({
             @JoinColumn(name = "idfile"),
             @JoinColumn(name = "idstage")

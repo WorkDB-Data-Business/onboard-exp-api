@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 public class LinkMediaUser {
 
     @Id
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne(cascade = CascadeType.MERGE)
     @JoinColumns({
             @JoinColumn(name = "idlink"),
             @JoinColumn(name = "idstage")
