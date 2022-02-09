@@ -91,7 +91,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 	        protected SecurityExpressionOperations createSecurityExpressionRoot(Authentication authentication, FilterInvocation fi) {
 	            WebSecurityExpressionRoot root = (WebSecurityExpressionRoot) super.createSecurityExpressionRoot(authentication, fi);
 	            root.setDefaultRolePrefix("");
-	            root.setRoleHierarchy(roleHierarchy());
+//	            root.setRoleHierarchy(roleHierarchy());
 	            return root;
 	        }
 	    });
@@ -108,11 +108,11 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 		return new CorsFilter(source);
 	}
 	
-	@Bean
-	public RoleHierarchy roleHierarchy() {
-	    RoleHierarchyImpl roleHierarchy = new RoleHierarchyImpl();
-	    String hierarchy = "ADMIN > COLABORATOR";
-	    roleHierarchy.setHierarchy(hierarchy);
-	    return roleHierarchy;
-	}
+//	@Bean
+//	public RoleHierarchy roleHierarchy() {
+//	    RoleHierarchyImpl roleHierarchy = new RoleHierarchyImpl();
+//	    String hierarchy = "ADMIN > COLABORATOR";
+//	    roleHierarchy.setHierarchy(hierarchy);
+//	    return roleHierarchy;
+//	}
 }

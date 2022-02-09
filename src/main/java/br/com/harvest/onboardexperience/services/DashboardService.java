@@ -1,6 +1,7 @@
 package br.com.harvest.onboardexperience.services;
 
 import br.com.harvest.onboardexperience.domain.dtos.*;
+import br.com.harvest.onboardexperience.domain.entities.Client;
 import br.com.harvest.onboardexperience.domain.entities.Trail;
 import br.com.harvest.onboardexperience.infra.scorm.ScormAPI;
 import br.com.harvest.onboardexperience.infra.scorm.entities.Scorm;
@@ -67,13 +68,14 @@ public class DashboardService {
     public DashboardMasterMetricsDTO getMasterDashboard() throws ApiException {
         return DashboardMasterMetricsDTO.builder()
                 .scormCloudMetrics(getScormCloudMetrics())
-                .harvestLibraryRanking(getHarvestLibraryRanking())
+                .harvestLibraryRanking(getHarvestLibraryRanking(clientService.getHarvestClient()))
                 .build();
     }
 
     public DashboardAdminMetricsDTO getAdminDashboard(@NonNull String token){
         return DashboardAdminMetricsDTO.builder()
                 .trailMetrics(getTrailMetrics(token))
+                .harvestLibraryRanking(getHarvestLibraryRanking(tenantService.fetchClientByTenantFromToken(token)))
                 .build();
     }
 
@@ -95,12 +97,12 @@ public class DashboardService {
                 RoundingMode.HALF_UP).multiply(new BigDecimal("100"));
     }
 
-    private List<HarvestLibraryRanking> getHarvestLibraryRanking(){
+    private List<HarvestLibraryRanking> getHarvestLibraryRanking(@NonNull Client client){
         List<HarvestLibraryRanking> harvestLibraryRankings = new ArrayList<>();
 
-        List<Link> links = linkStorageService.findAllByClient(clientService.getHarvestClient());
-        List<HarvestFile> harvestFiles = harvestFileStorageService.findAllByClient(clientService.getHarvestClient()).stream().filter(harvestFile -> !harvestFile.getIsAsset()).collect(Collectors.toList());
-        List<Scorm> scorms = scormStorageService.findAllByClient(clientService.getHarvestClient());
+        List<Link> links = linkStorageService.findAllByClient(client);
+        List<HarvestFile> harvestFiles = harvestFileStorageService.findAllByClient(client).stream().filter(harvestFile -> !harvestFile.getIsAsset()).collect(Collectors.toList());
+        List<Scorm> scorms = scormStorageService.findAllByClient(client);
 
         harvestLibraryRankings.addAll(links.stream().map(this::getHarvestLibraryRankingForLink).collect(Collectors.toList()));
         harvestLibraryRankings.addAll(harvestFiles.stream().map(this::getHarvestLibraryRankingForHarvestFile).collect(Collectors.toList()));

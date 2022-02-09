@@ -15,4 +15,7 @@ public class DashboardAdminMetricsDTO {
     @JsonProperty("trailMetrics")
     private List<TrailMetrics> trailMetrics;
 
+    @JsonProperty("harvestLibraryRanking")
+    private List<HarvestLibraryRanking> harvestLibraryRanking;
+
 }
