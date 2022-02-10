@@ -26,6 +26,9 @@ public class MediaExecution {
     @JsonProperty("previewImagePath")
     private String previewImagePath;
 
+    @JsonProperty("name")
+    private String name;
+
     @JsonIgnore
     private LocalDateTime creationDate;
 
