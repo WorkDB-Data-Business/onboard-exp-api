@@ -37,6 +37,10 @@ public interface LinkRepository extends JpaRepository<Link, Long>, JpaSpecificat
         return (link, cq, cb) -> cb.equal(link.get("author"), author);
     }
 
+    static Specification<Link> byClient(@NonNull Client client) {
+        return (link, cq, cb) -> cb.equal(link.get("author").get("client"), client);
+    }
+
     static Specification<Link> byAuthorizedClients(@NonNull Client client) {
         return (link, cq, cb) -> {
             Join join = link.join("authorizedClients");

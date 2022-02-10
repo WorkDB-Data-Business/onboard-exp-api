@@ -52,6 +52,7 @@ CREATE TABLE IF NOT EXISTS public.tbtrail_group(
 CREATE TABLE IF NOT EXISTS public.tbtrail_user_registration(
 	idtrail bigint NOT NULL,
 	iduser bigint NOT NULL,
+	average_score DECIMAL,
 	started_trail_date TIMESTAMP,
 	finished_trail_date TIMESTAMP,
 	FOREIGN KEY (idtrail) REFERENCES tbtrail(idtrail),

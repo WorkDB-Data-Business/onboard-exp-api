@@ -132,7 +132,7 @@ public class StageService {
         User user = userService.findUserByToken(token);
 
         StageUser stageUser = stageUserRepository.findById(createStageUserId(user, stage)).orElseThrow(
-                () -> new NotFoundException(MessageFormat.format("There isn't any register of the stage's ID {0} " +
+                () -> new NotFoundException(MessageFormat.format("There isn't any register of the stage's ID {1} " +
                         "start from user ID {1}", stage.getId(), user.getId()))
         );
 
@@ -150,6 +150,10 @@ public class StageService {
         return StageUserMapper.INSTANCE.toSimpleDTO(stageUserRepository.save(stageUser));
     }
 
+    public List<StageUser> getAllStagesFromUserInTrail(@NonNull User user, @NonNull Trail trail){
+        return stageUserRepository.findAll(StageUserRepository.byUserAndTrail(user, trail));
+    }
+
     private BigDecimal calculateUserScore(@NonNull StageUser stageUser){
         BigInteger totalMedia = BigInteger.ZERO;
         BigInteger totalMediaPassed = BigInteger.ZERO;
@@ -162,7 +166,8 @@ public class StageService {
         totalMediaPassed = totalMediaPassed.add(BigInteger.valueOf(stageUser.getHarvestFiles().stream().filter(HarvestFileMediaUser::getIsCompleted).count()));
         totalMediaPassed = totalMediaPassed.add(BigInteger.valueOf(stageUser.getLinks().stream().filter(LinkMediaUser::getIsCompleted).count()));
 
-        return new BigDecimal(totalMediaPassed).divide(new BigDecimal(totalMedia), 2, RoundingMode.HALF_UP)
+        return new BigDecimal(totalMediaPassed).divide(new BigDecimal(totalMedia.compareTo(BigInteger.ZERO) == 0
+                        ? BigInteger.ONE : totalMedia), 2, RoundingMode.HALF_UP)
                 .multiply(new BigDecimal("100")).setScale(2, RoundingMode.HALF_UP);
     }
 
@@ -385,11 +390,11 @@ public class StageService {
         ScormMediaStage scormMediaStage = scormMediaStageRepository.findOne(ScormMediaStageRepository.byStageAndScorm(
                 findAsColaborator(trailId, stageId, token), scormStorageService.find(scormId, token, false)
         )).orElseThrow(
-                () -> new NotFoundException(MessageFormat.format("There isn't any register of SCORM as a media in Stage ID {}", stageId))
+                () -> new NotFoundException(MessageFormat.format("There isn't any register of SCORM as a media in Stage ID {1}", stageId))
         );
 
         ScormMediaUser scormMediaUser = scormMediaUserRepository.findById(createScormMediaUserId(scormMediaStage, user)).orElseThrow(
-                () -> new NotFoundException(MessageFormat.format("There isn't any start register of SCORM execution from user ID {}", user.getId()))
+                () -> new NotFoundException(MessageFormat.format("There isn't any start register of SCORM execution from user ID {1}", user.getId()))
         );
 
         ScormRegistration registration = scormService.findScormRegistrationByIdAndToken(scormMediaUser.getScormMedia().getScorm().getId(), token);
@@ -414,11 +419,11 @@ public class StageService {
         HarvestFileMediaStage harvestFileMediaStage = harvestFileMediaStageRepository.findOne(HarvestFileMediaStageRepository.byStageAndHarvestFile(
                 findAsColaborator(trailId, stageId, token), harvestFileStorageService.getFileByIdAndAuthorizedClient(harvestFileId, token, false)
         )).orElseThrow(
-                () -> new NotFoundException(MessageFormat.format("There isn't any register of Harvest File as a media in Stage ID {}", stageId))
+                () -> new NotFoundException(MessageFormat.format("There isn't any register of Harvest File as a media in Stage ID {1}", stageId))
         );
 
         HarvestFileMediaUser harvestFileMediaUser = harvestFileMediaUserRepository.findById(createHarvestFileMediaUserId(harvestFileMediaStage, user)).orElseThrow(
-                () -> new NotFoundException(MessageFormat.format("There isn't any start register of Harvest File execution from user ID {}", user.getId()))
+                () -> new NotFoundException(MessageFormat.format("There isn't any start register of Harvest File execution from user ID {1}", user.getId()))
         );
 
         if(!harvestFileMediaUser.getIsCompleted()){
@@ -434,12 +439,11 @@ public class StageService {
         LinkMediaStage linkMediaStage = linkMediaStageRepository.findOne(LinkMediaStageRepository.byStageAndLink(
                 findAsColaborator(trailId, stageId, token), linkStorageService.getLinkByIdAndAuthorizedClient(linkId, token, false)
         )).orElseThrow(
-                () -> new NotFoundException(MessageFormat.format("There isn't any register of Link as a media in Stage ID {}", stageId))
+                () -> new NotFoundException(MessageFormat.format("There isn't any register of Link as a media in Stage ID {1}", stageId))
         );
 
-
         LinkMediaUser linkMediaUser = linkMediaUserRepository.findById(createLinkMediaUserId(linkMediaStage, user)).orElseThrow(
-                () -> new NotFoundException(MessageFormat.format("There isn't any start register of Link execution from user ID {}", user.getId()))
+                () -> new NotFoundException(MessageFormat.format("There isn't any start register of Link execution from user ID {1}", user.getId()))
         );
 
         if(!linkMediaUser.getIsCompleted()){

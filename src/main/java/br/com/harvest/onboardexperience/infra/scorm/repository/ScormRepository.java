@@ -53,6 +53,10 @@ public interface ScormRepository extends JpaRepository<Scorm, String>, JpaSpecif
         return (scorm, cq, cb) -> cb.equal(scorm.get("author"), author);
     }
 
+    static Specification<Scorm> byClient(@NonNull Client client) {
+        return (scorm, cq, cb) -> cb.equal(scorm.get("author").get("client"), client);
+    }
+
     static Specification<Scorm> byScormLearningStandard(@NonNull CourseSchema.CourseLearningStandardEnum standard) {
         return (scorm, cq, cb) -> cb.equal(cb.lower(scorm.get("title")), standard);
     }

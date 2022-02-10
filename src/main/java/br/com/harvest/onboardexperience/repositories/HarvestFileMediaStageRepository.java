@@ -16,6 +16,8 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface HarvestFileMediaStageRepository extends JpaRepository<HarvestFileMediaStage, HarvestFileMediaStageId>, JpaSpecificationExecutor<HarvestFileMediaStage> {
 
+    Integer countByHarvestFile(HarvestFile harvestFile);
+
     static Specification<HarvestFileMediaStage> byStageAndHarvestFile(@NonNull Stage stage, @NonNull HarvestFile harvestFile) {
         return (file, cq, cb) -> cb.and(
                 cb.equal(file.get("harvestFile"), harvestFile),

@@ -38,14 +38,14 @@ public class CoinController {
 	private UserCoinUseCase useCase;
 	
 	@Operation(description = "Retorna as moedas cadastradas.")
-	@PreAuthorize("hasAuthority('ADMIN')")
+	@PreAuthorize("hasAuthority('ADMIN') or hasAuthority('COLABORATOR')")
 	@GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Page<CoinDto>> findAll(Pageable pageable, @RequestHeader("Authorization") String token) {
 		return ResponseEntity.ok(service.findAllByTenant(pageable, token));
 	}
 
 	@Operation(description = "Retorna as moedas cadastradas.")
-	@PreAuthorize("hasAuthority('ADMIN')")
+	@PreAuthorize("hasAuthority('ADMIN') or hasAuthority('COLABORATOR')")
 	@GetMapping(value = "/list",produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<List<CoinDto>> findAll(@RequestHeader("Authorization") String token) {
 		return ResponseEntity.ok(service.findAllByTenant(token));

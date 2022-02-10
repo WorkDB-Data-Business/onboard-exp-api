@@ -4,6 +4,7 @@ import br.com.harvest.onboardexperience.domain.entities.keys.UserTrailRegistrati
 import lombok.*;
 
 import javax.persistence.*;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
@@ -24,6 +25,9 @@ public class UserTrailRegistration {
     @ManyToOne
     @JoinColumn(name = "iduser")
     private User user;
+
+    @Column(name = "average_score")
+    private BigDecimal averageScore;
 
     @Column(name = "started_trail_date")
     private LocalDateTime startedTrailDate;

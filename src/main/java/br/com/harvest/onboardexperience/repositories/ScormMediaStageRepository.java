@@ -13,6 +13,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ScormMediaStageRepository extends JpaRepository<ScormMediaStage, ScormMediaStageId>, JpaSpecificationExecutor<ScormMediaStage> {
 
+    Integer countByScorm(Scorm scorm);
 
     static Specification<ScormMediaStage> byStageAndScorm(@NonNull Stage stage, @NonNull Scorm scorm) {
         return (scormMedia, cq, cb) -> cb.and(
