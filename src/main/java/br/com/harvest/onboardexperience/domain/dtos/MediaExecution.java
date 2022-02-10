@@ -20,6 +20,9 @@ public class MediaExecution {
     @JsonProperty("storage")
     private Storage storage;
 
+    @JsonProperty("contentPath")
+    private String contentPath;
+
     @JsonIgnore
     private LocalDateTime creationDate;
 

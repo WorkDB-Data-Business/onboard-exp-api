@@ -126,6 +126,14 @@ public class StageService {
         }
     }
 
+    public void deleteMedias(@NonNull Long trailId, @NonNull Long stageId, @NonNull String token){
+        Stage stage = findAsAdmin(trailId, stageId, token);
+
+        stage.getFiles().forEach(file -> disassociateHarvestFilesToStage(file.getHarvestFile().getId(), stage, token));
+        stage.getLinks().forEach(link -> disassociateLinkMediaToStage(link.getLink().getId(), stage, token));
+        stage.getScorms().forEach(scorm -> disassociateScormMediaToStage(scorm.getScorm().getId(), stage, token));
+    }
+
     public StageUserSimpleDTO finishStage(@NonNull Long trailId, @NonNull Long stageId, @NonNull String token){
         Stage stage = findAsColaborator(trailId, stageId, token);
 
@@ -258,6 +266,7 @@ public class StageService {
                 .id(file.getHarvestFile().getId().toString())
                 .creationDate(file.getCreatedAt())
                 .storage(Storage.HARVEST_FILE)
+                .contentPath(file.getHarvestFile().getContentPath())
                 .build();
     }
 
@@ -580,8 +589,36 @@ public class StageService {
 
     private void associateScormMediaToStage(String scormsId, @NonNull Stage stage, @NonNull String token){
         if(StringUtils.hasText(scormsId)){
-            if(!scormMediaStageRepository.existsById(createScormMediaId(scormsId, stage.getId()))){
+            if(scormMediaStageRepository.existsById(createScormMediaId(scormsId, stage.getId()))){
                 scormMediaStageRepository.save(createScormMedia(scormsId, stage, token));
+            }
+        }
+    }
+
+    private void disassociateScormMediaToStage(String scormsId, @NonNull Stage stage, @NonNull String token){
+        if(StringUtils.hasText(scormsId)){
+            if(scormMediaStageRepository.existsById(createScormMediaId(scormsId, stage.getId()))){
+                scormMediaStageRepository.delete(createScormMedia(scormsId, stage, token));
+            }
+        }
+    }
+
+    private void disassociateHarvestFilesToStage(Long filesId, @NonNull Stage stage, @NonNull String token)  {
+        if(Objects.nonNull(filesId)){
+            if(harvestFileMediaStageRepository.existsById(createHarvestMediaStageId(filesId, stage.getId()))){
+                try {
+                    harvestFileMediaStageRepository.delete(createHarvestFileMedia(filesId, stage, token));
+                } catch (Exception e) {
+                    log.info("An error was occurred: ", e);
+                }
+            }
+        }
+    }
+
+    private void disassociateLinkMediaToStage(Long linksId, @NonNull Stage stage, @NonNull String token){
+        if(Objects.nonNull(linksId)){
+            if(linkMediaStageRepository.existsById(createLinkMediaStageId(linksId, stage.getId()))){
+                linkMediaStageRepository.delete(createLinkMedia(linksId, stage, token));
             }
         }
     }
