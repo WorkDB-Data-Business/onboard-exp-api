@@ -2,6 +2,7 @@ package br.com.harvest.onboardexperience.controllers;
 
 
 import br.com.harvest.onboardexperience.domain.dtos.DashboardAdminMetricsDTO;
+import br.com.harvest.onboardexperience.domain.dtos.DashboardColaboratorMetricsDTO;
 import br.com.harvest.onboardexperience.domain.dtos.DashboardMasterMetricsDTO;
 import br.com.harvest.onboardexperience.services.DashboardService;
 import com.rusticisoftware.cloud.v2.client.ApiException;
@@ -29,10 +30,17 @@ public class DashboardController {
         return ResponseEntity.ok(dashboardService.getMasterDashboard());
     }
 
-    @Operation(description = "Retorna as métricas para o dashboard do usuário master.")
+    @Operation(description = "Retorna as métricas para o dashboard do usuário admin.")
     @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping(value = "/admin",produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<DashboardAdminMetricsDTO> getAdminDashboard(@RequestHeader("Authorization") String token) throws ApiException {
         return ResponseEntity.ok(dashboardService.getAdminDashboard(token));
+    }
+
+    @Operation(description = "Retorna as métricas para o dashboard do usuário colaborador.")
+    @PreAuthorize("hasAuthority('COLABORATOR')")
+    @GetMapping(value = "/colaborator", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<DashboardColaboratorMetricsDTO> getColaboratorDashboard(@RequestHeader("Authorization") String token) {
+        return ResponseEntity.ok(dashboardService.getColaboratorDashboard(token));
     }
 }

@@ -1,9 +1,7 @@
 package br.com.harvest.onboardexperience.services;
 
 import br.com.harvest.onboardexperience.domain.dtos.*;
-import br.com.harvest.onboardexperience.domain.entities.Client;
-import br.com.harvest.onboardexperience.domain.entities.Trail;
-import br.com.harvest.onboardexperience.domain.entities.UserTrailRegistration;
+import br.com.harvest.onboardexperience.domain.entities.*;
 import br.com.harvest.onboardexperience.infra.scorm.ScormAPI;
 import br.com.harvest.onboardexperience.infra.scorm.entities.Scorm;
 import br.com.harvest.onboardexperience.infra.scorm.filters.ScormRegistrationFilter;
@@ -62,6 +60,12 @@ public class DashboardService {
     @Autowired
     private TenantService tenantService;
 
+    @Autowired
+    private UserService userService;
+
+    @Autowired
+    private StageService stageService;
+
     private final String CURRENT_PLAN = "Trial";
     private final BigInteger MAX_REGISTRATIONS_IN_THE_PLAN = BigInteger.TEN;
 
@@ -76,6 +80,13 @@ public class DashboardService {
         return DashboardAdminMetricsDTO.builder()
                 .trailMetrics(getTrailMetrics(token))
                 .harvestLibraryRanking(getHarvestLibraryRanking(tenantService.fetchClientByTenantFromToken(token)))
+                .build();
+    }
+
+    public DashboardColaboratorMetricsDTO getColaboratorDashboard(@NonNull String token){
+        return DashboardColaboratorMetricsDTO
+                .builder()
+                .userTrailMetrics(getUserTrailMetrics(token))
                 .build();
     }
 
@@ -203,6 +214,24 @@ public class DashboardService {
                 .days(duration.toDaysPart())
                 .hours(duration.toHoursPart())
                 .minutes(duration.toMinutesPart())
+                .build();
+    }
+
+    private List<UserTrailMetrics> getUserTrailMetrics(@NonNull String token){
+        return trailService.findAllMyTrails(token).stream().map(trail -> getUserTrailMetric(userService.findUserByToken(token),
+                trail)).collect(Collectors.toList());
+    }
+
+    private UserTrailMetrics getUserTrailMetric(@NonNull User user, @NonNull Trail trail){
+        List<StageUser> stageUsers = stageService.getAllStagesFromUserInTrail(user, trail);
+
+        BigDecimal completedStages = BigDecimal.valueOf(stageUsers.stream().filter(StageUser::getIsCompleted).count());
+        BigDecimal stagesTrail = BigDecimal.valueOf(trail.getStages().size());
+
+        return UserTrailMetrics.builder()
+                .finalizationPercentage(completedStages.divide(stagesTrail, 2, RoundingMode.HALF_UP).multiply(new BigDecimal("100")))
+                .id(trail.getId())
+                .name(trail.getName())
                 .build();
     }
 

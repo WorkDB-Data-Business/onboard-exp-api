@@ -150,6 +150,10 @@ public class StageService {
         return StageUserMapper.INSTANCE.toSimpleDTO(stageUserRepository.save(stageUser));
     }
 
+    public List<StageUser> getAllStagesFromUserInTrail(@NonNull User user, @NonNull Trail trail){
+        return stageUserRepository.findAll(StageUserRepository.byUserAndTrail(user, trail));
+    }
+
     private BigDecimal calculateUserScore(@NonNull StageUser stageUser){
         BigInteger totalMedia = BigInteger.ZERO;
         BigInteger totalMediaPassed = BigInteger.ZERO;

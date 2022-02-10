@@ -127,6 +127,10 @@ public class TrailService {
                 pageable).map(TrailMapper.INSTANCE::toSimpleDto);
     }
 
+    public List<Trail> findAllMyTrails(@NonNull String token){
+        return repository.findAll(TrailRepository.byEndUser(userService.findUserByToken(token)));
+    }
+
     private Specification<Trail> createQuery(@NonNull CustomFilter filter, @NonNull String token){
         Specification<Trail> query = Specification.where(TrailRepository.byClient(tenantService.fetchClientByTenantFromToken(token)));
 
