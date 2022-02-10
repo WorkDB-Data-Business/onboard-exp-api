@@ -58,6 +58,16 @@ public class StageController {
         service.delete(trailId, stageId, token);
     }
 
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(description = "Deleta as mídias da etapa no Banco de dados")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @DeleteMapping(value = "/trails/{trailId}/stages/id/{stageId}/medias")
+    public void deleteMedias(@PathVariable("trailId") Long trailId,
+                       @PathVariable("stageId") Long stageId,
+                       @RequestHeader("Authorization") String token) {
+        service.deleteMedias(trailId, stageId, token);
+    }
+
     @Operation(description = "Busca uma etapa no banco de dados como colaborador.")
     @PreAuthorize("hasAuthority('COLABORATOR')")
     @GetMapping(value = "/trails/{trailId}/stages/id/{stageId}/my-stage", produces = MediaType.APPLICATION_JSON_VALUE)
