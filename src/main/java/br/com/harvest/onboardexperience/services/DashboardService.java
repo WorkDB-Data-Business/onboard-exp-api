@@ -86,7 +86,8 @@ public class DashboardService {
     public DashboardColaboratorMetricsDTO getColaboratorDashboard(@NonNull String token){
         return DashboardColaboratorMetricsDTO
                 .builder()
-                .userTrailMetrics(getUserTrailMetrics(token))
+                .colaboratorTrailMetrics(getUserTrailMetrics(token))
+                .totalCoinColaborator(getTotalCoinColaborator(token))
                 .build();
     }
 
@@ -217,12 +218,12 @@ public class DashboardService {
                 .build();
     }
 
-    private List<UserTrailMetrics> getUserTrailMetrics(@NonNull String token){
+    private List<ColaboratorTrailMetrics> getUserTrailMetrics(@NonNull String token){
         return trailService.findAllMyTrails(token).stream().map(trail -> getUserTrailMetric(userService.findUserByToken(token),
                 trail)).collect(Collectors.toList());
     }
 
-    private UserTrailMetrics getUserTrailMetric(@NonNull User user, @NonNull Trail trail){
+    private ColaboratorTrailMetrics getUserTrailMetric(@NonNull User user, @NonNull Trail trail){
         List<StageUser> stageUsers = stageService.getAllStagesFromUserInTrail(user, trail);
 
         StageUser lastStopedStageStarted = stageUsers.stream()
@@ -235,7 +236,7 @@ public class DashboardService {
         BigDecimal completedStages = BigDecimal.valueOf(stageUsers.stream().filter(StageUser::getIsCompleted).count());
         BigDecimal stagesTrail = BigDecimal.valueOf(trail.getStages().size());
 
-        return UserTrailMetrics.builder()
+        return ColaboratorTrailMetrics.builder()
                 .finalizationPercentage(completedStages.divide(stagesTrail, 2, RoundingMode.HALF_UP).multiply(new BigDecimal("100")))
                 .trailId(trail.getId())
                 .trailName(trail.getName())
@@ -252,4 +253,25 @@ public class DashboardService {
                 .build();
     }
 
+    private TotalCoinColaborator getTotalCoinColaborator(@NonNull String token){
+        User user = userService.findUserByToken(token);
+
+        BigInteger totalCoinsFromUser = user.getCoins().stream()
+                .map(UserCoin::getAmount).reduce(BigInteger.ZERO, BigInteger::add);
+
+        BigInteger totalCoinsFromTrails = trailService.findAllByClient(user.getClient()).stream()
+                .map(Trail::getStages).flatMap(Collection::stream).map(Stage::getAmountCoins)
+                .reduce(BigInteger.ZERO, BigInteger::add);
+
+        totalCoinsFromTrails = totalCoinsFromTrails.compareTo(BigInteger.ZERO) == 0 ? BigInteger.ONE : totalCoinsFromTrails;
+
+        return TotalCoinColaborator
+                .builder()
+                .totalColaboratorCoins(totalCoinsFromUser)
+                .totalPossibleCoinsFromTrails(totalCoinsFromTrails)
+                .percentageFromTotal(new BigDecimal(totalCoinsFromUser)
+                        .divide(new BigDecimal(totalCoinsFromTrails), 2,
+                                RoundingMode.HALF_UP).multiply(new BigDecimal("100")))
+                .build();
+    }
 }

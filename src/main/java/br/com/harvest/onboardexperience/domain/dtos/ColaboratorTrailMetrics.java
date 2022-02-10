@@ -10,7 +10,7 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode
-public class UserTrailMetrics {
+public class ColaboratorTrailMetrics {
 
     @JsonProperty("trailId")
     private Long trailId;

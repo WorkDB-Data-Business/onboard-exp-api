@@ -12,6 +12,9 @@ import java.util.List;
 @EqualsAndHashCode
 public class DashboardColaboratorMetricsDTO {
 
-    @JsonProperty("userTrailMetrics")
-    private List<UserTrailMetrics> userTrailMetrics;
+    @JsonProperty("colaboratorTrailMetrics")
+    private List<ColaboratorTrailMetrics> colaboratorTrailMetrics;
+
+    @JsonProperty("totalCoinColaborator")
+    private TotalCoinColaborator totalCoinColaborator;
 }
