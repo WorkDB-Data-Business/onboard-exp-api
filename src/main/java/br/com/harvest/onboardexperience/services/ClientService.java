@@ -102,7 +102,7 @@ public class ClientService {
     }
 
     public ClientDto findByTenant(@NonNull final String tenant) {
-        return mapper.toDto(repository.findByTenantContainingIgnoreCase(tenant).orElseThrow(
+        return mapper.toDto(repository.findByTenantIgnoreCase(tenant).orElseThrow(
                 () -> new ClientNotFoundException(ExceptionMessageFactory.createNotFoundMessage("client", "ID", tenant))));
     }
 
@@ -189,24 +189,36 @@ public class ClientService {
     }
 
     private Boolean checkIfCnpjChanged(@NonNull final Client client, @NonNull final ClientDto dto) {
-        if (client.getCnpj().equals(dto.getCnpj())) {
-            return false;
-        }
-        return true;
+        return !client.getCnpj().equals(dto.getCnpj());
     }
 
     private void validate(@NonNull ClientDto dto) {
-        checkIfClientAlreadyExists(dto);
+        checkIfClientWithThisCnpjAlreadyExists(dto);
+        checkIfClientWithThisTenantAlreadyExists(dto);
         validateCnpj(dto);
     }
 
     private void validate(@NonNull Client client, @NonNull ClientDto dto) {
+        if(!client.getCnpj().equalsIgnoreCase(dto.getCnpj())){
+            checkIfClientWithThisCnpjAlreadyExists(dto);
+        }
+
+        if(!client.getTenant().equalsIgnoreCase(dto.getTenant())){
+            checkIfClientWithThisTenantAlreadyExists(dto);
+        }
+
         validateCnpj(client, dto);
     }
 
-    private void checkIfClientAlreadyExists(@NonNull ClientDto dto) {
+    private void checkIfClientWithThisCnpjAlreadyExists(@NonNull ClientDto dto){
         if (repository.findByCnpj(dto.getCnpj()).isPresent()) {
             throw new ClientAlreadyExistsException(ExceptionMessageFactory.createAlreadyExistsMessage("client", "CNPJ", dto.getCnpj()));
+        }
+    }
+
+    private void checkIfClientWithThisTenantAlreadyExists(@NonNull ClientDto dto){
+        if(repository.findByTenantIgnoreCase(dto.getTenant()).isPresent()){
+            throw new ClientAlreadyExistsException(ExceptionMessageFactory.createAlreadyExistsMessage("client", "Tenant", dto.getTenant()));
         }
     }
 

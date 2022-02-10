@@ -22,13 +22,13 @@ public class TenantService {
 
     public Client fetchClientByTenantFromToken(String token) {
         String tenant = jwtUtils.getUserTenant(token);
-        return clientRepository.findByTenantContainingIgnoreCase(tenant).orElseThrow(() -> new ClientNotFoundException(
+        return clientRepository.findByTenantIgnoreCase(tenant).orElseThrow(() -> new ClientNotFoundException(
                 ExceptionMessageFactory.createNotFoundMessage("client", "tenant", tenant)));
     }
 
     public ClientDto fetchClientDtoByTenantFromToken(String token) {
         String tenant = jwtUtils.getUserTenant(token);
-        return ClientMapper.INSTANCE.toDto(clientRepository.findByTenantContainingIgnoreCase(tenant).orElseThrow(() -> new ClientNotFoundException(
+        return ClientMapper.INSTANCE.toDto(clientRepository.findByTenantIgnoreCase(tenant).orElseThrow(() -> new ClientNotFoundException(
                 ExceptionMessageFactory.createNotFoundMessage("client", "tenant", tenant))));
     }
 
