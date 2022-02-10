@@ -592,7 +592,7 @@ public class StageService {
 
     private void associateScormMediaToStage(String scormsId, @NonNull Stage stage, @NonNull String token){
         if(StringUtils.hasText(scormsId)){
-            if(scormMediaStageRepository.existsById(createScormMediaId(scormsId, stage.getId()))){
+            if(!scormMediaStageRepository.existsById(createScormMediaId(scormsId, stage.getId()))){
                 scormMediaStageRepository.save(createScormMedia(scormsId, stage, token));
             }
         }
