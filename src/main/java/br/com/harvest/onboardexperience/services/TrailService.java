@@ -221,7 +221,7 @@ public class TrailService {
         Trail trail = findTrailByIdAndEndUserByTokenAsColaborator(id, token);
         User user = userService.findUserByToken(token);
 
-        if(LocalDateTime.now().isBefore(trail.getConclusionDate())){
+        if(LocalDateTime.now().isAfter(trail.getConclusionDate())){
             throw new BusinessException("You cannot start a trail after its conclusion date.");
         }
 
@@ -251,8 +251,11 @@ public class TrailService {
     }
 
     private BigDecimal calculateAverageScoreOnTrail(List<StageUser> userStages){
-        return userStages.stream().map(StageUser::getScore).reduce(BigDecimal.ZERO,
-                BigDecimal::add).divide(BigDecimal.valueOf(userStages.size()), 2, RoundingMode.HALF_UP);
+        if(!ObjectUtils.isEmpty(userStages)){
+            return userStages.stream().map(StageUser::getScore).reduce(BigDecimal.ZERO,
+                    BigDecimal::add).divide(BigDecimal.valueOf(userStages.size()), 2, RoundingMode.HALF_UP);
+        }
+        return BigDecimal.ZERO;
     }
 
     public void validateIfUserStartedTheTrail(@NonNull Long id, @NonNull String token){

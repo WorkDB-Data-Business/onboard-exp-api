@@ -164,13 +164,18 @@ public class DashboardService {
                                 && Objects.nonNull(userTrailRegistration.getFinishedTrailDate())
         ).count());
 
+        BigDecimal averageScore = userMetrics.stream().map(UserMetrics::getAverageScore)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
         return TrailMetrics.builder()
                 .trailId(trail.getId())
                 .name(trail.getName())
                 .quantityActiveUsers(activeUsersQuantity)
                 .userMetrics(userMetrics)
-                .averageScore(userMetrics.stream().map(UserMetrics::getAverageScore).reduce(BigDecimal.ZERO, BigDecimal::add)
-                        .divide(new BigDecimal(finishedUsersQuantity), 2, RoundingMode.HALF_UP))
+                .averageScore(averageScore
+                        .divide(new BigDecimal(finishedUsersQuantity.compareTo(BigInteger.ZERO) == 0
+                                        ? BigInteger.ONE : finishedUsersQuantity)
+                                , 2, RoundingMode.HALF_UP))
                 .build();
     }
 

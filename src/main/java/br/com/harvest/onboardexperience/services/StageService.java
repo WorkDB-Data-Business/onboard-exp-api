@@ -162,7 +162,8 @@ public class StageService {
         totalMediaPassed = totalMediaPassed.add(BigInteger.valueOf(stageUser.getHarvestFiles().stream().filter(HarvestFileMediaUser::getIsCompleted).count()));
         totalMediaPassed = totalMediaPassed.add(BigInteger.valueOf(stageUser.getLinks().stream().filter(LinkMediaUser::getIsCompleted).count()));
 
-        return new BigDecimal(totalMediaPassed).divide(new BigDecimal(totalMedia), 2, RoundingMode.HALF_UP)
+        return new BigDecimal(totalMediaPassed).divide(new BigDecimal(totalMedia.compareTo(BigInteger.ZERO) == 0
+                        ? BigInteger.ONE : totalMedia), 2, RoundingMode.HALF_UP)
                 .multiply(new BigDecimal("100")).setScale(2, RoundingMode.HALF_UP);
     }
 
