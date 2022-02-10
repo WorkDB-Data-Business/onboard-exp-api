@@ -255,6 +255,7 @@ public class StageService {
         return MediaExecution
                 .builder()
                 .id(scorm.getScorm().getId())
+                .previewImagePath(scorm.getScorm().getPreviewImagePath())
                 .creationDate(scorm.getCreatedAt())
                 .storage(Storage.SCORM)
                 .build();
@@ -266,6 +267,7 @@ public class StageService {
                 .id(file.getHarvestFile().getId().toString())
                 .creationDate(file.getCreatedAt())
                 .storage(Storage.HARVEST_FILE)
+                .previewImagePath(file.getHarvestFile().getPreviewImagePath())
                 .contentPath(file.getHarvestFile().getContentPath())
                 .build();
     }
@@ -274,6 +276,7 @@ public class StageService {
         return MediaExecution
                 .builder()
                 .id(link.getLink().getId().toString())
+                .previewImagePath(link.getLink().getPreviewImagePath())
                 .creationDate(link.getCreatedAt())
                 .storage(Storage.LINK)
                 .build();
