@@ -234,7 +234,7 @@ public class DashboardService {
 
 
         BigDecimal completedStages = BigDecimal.valueOf(stageUsers.stream().filter(StageUser::getIsCompleted).count());
-        BigDecimal stagesTrail = BigDecimal.valueOf(trail.getStages().size());
+        BigDecimal stagesTrail = trail.getStages().size() == 0 ? BigDecimal.ONE : BigDecimal.valueOf(trail.getStages().size());
 
         return ColaboratorTrailMetrics.builder()
                 .finalizationPercentage(completedStages.divide(stagesTrail, 2, RoundingMode.HALF_UP).multiply(new BigDecimal("100")))
