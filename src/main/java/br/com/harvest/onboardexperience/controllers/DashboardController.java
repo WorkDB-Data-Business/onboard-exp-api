@@ -14,7 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-@Tag(name = "Group")
+@Tag(name = "Dashboard")
 @RestController
 @RequestMapping("/v1/dashboard")
 @CrossOrigin(origins = "*", maxAge = 36000)
