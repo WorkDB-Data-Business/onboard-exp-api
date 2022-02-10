@@ -12,13 +12,16 @@ import java.math.BigDecimal;
 @EqualsAndHashCode
 public class UserTrailMetrics {
 
-    @JsonProperty("id")
-    private Long id;
+    @JsonProperty("trailId")
+    private Long trailId;
 
-    @JsonProperty("name")
-    private String name;
+    @JsonProperty("trailName")
+    private String trailName;
 
     @JsonProperty("finalizationPercentage")
     private BigDecimal finalizationPercentage;
+
+    @JsonProperty("lastStopedStage")
+    private LastStopedStage lastStopedStage;
 
 }

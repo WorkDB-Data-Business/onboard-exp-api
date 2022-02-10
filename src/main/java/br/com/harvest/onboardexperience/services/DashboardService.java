@@ -225,13 +225,30 @@ public class DashboardService {
     private UserTrailMetrics getUserTrailMetric(@NonNull User user, @NonNull Trail trail){
         List<StageUser> stageUsers = stageService.getAllStagesFromUserInTrail(user, trail);
 
+        StageUser lastStopedStageStarted = stageUsers.stream()
+                .sorted(Comparator.comparing(StageUser::getStartedAt).reversed())
+                .limit(1)
+                .findFirst()
+                .orElse(null);
+
+
         BigDecimal completedStages = BigDecimal.valueOf(stageUsers.stream().filter(StageUser::getIsCompleted).count());
         BigDecimal stagesTrail = BigDecimal.valueOf(trail.getStages().size());
 
         return UserTrailMetrics.builder()
                 .finalizationPercentage(completedStages.divide(stagesTrail, 2, RoundingMode.HALF_UP).multiply(new BigDecimal("100")))
-                .id(trail.getId())
-                .name(trail.getName())
+                .trailId(trail.getId())
+                .trailName(trail.getName())
+                .lastStopedStage(getLastStopedStage(lastStopedStageStarted))
+                .build();
+    }
+
+    private LastStopedStage getLastStopedStage(StageUser stageUser){
+        if(Objects.isNull(stageUser)) return null;
+        return LastStopedStage
+                .builder()
+                .id(stageUser.getStage().getId())
+                .name(stageUser.getStage().getName())
                 .build();
     }
 
