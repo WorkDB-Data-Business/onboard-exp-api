@@ -71,10 +71,10 @@ public class StageController {
     @Operation(description = "Busca uma etapa no banco de dados como colaborador.")
     @PreAuthorize("hasAuthority('COLABORATOR')")
     @GetMapping(value = "/trails/{trailId}/stages/id/{stageId}/my-stage", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<StageDTO> findAsColaborator(@PathVariable("trailId") Long trailId,
+    public ResponseEntity<StageUserDTO> findAsColaborator(@PathVariable("trailId") Long trailId,
                                                       @PathVariable("stageId") Long stageId,
                                                       @RequestHeader("Authorization") String token) {
-        return ResponseEntity.ok().body(service.findAsColaboratorAsDTO(trailId, stageId, token));
+        return ResponseEntity.ok().body(service.findStageUserAsColaboratorAsDTO(trailId, stageId, token));
     }
 
     @Operation(description = "Busca todas as etapas no banco de dados como admin.")
@@ -87,10 +87,18 @@ public class StageController {
 
     @Operation(description = "Busca todas as etapas no banco de dados como colaborador.")
     @PreAuthorize("hasAuthority('COLABORATOR')")
-    @GetMapping(value = "/trails/{trailId}/stages/my-stages", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/trails/{trailId}/stages/all-stages", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<StageDTO>> findAllStagesByTrailAsColaborator(@PathVariable("trailId") Long trailId,
                                                                @RequestHeader("Authorization") String token) {
         return ResponseEntity.ok().body(service.findAllByTrailAsColaborator(trailId, token));
+    }
+
+    @Operation(description = "Busca todas as etapas no banco de dados como colaborador.")
+    @PreAuthorize("hasAuthority('COLABORATOR')")
+    @GetMapping(value = "/trails/{trailId}/stages/my-stages", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<StageUserDTO>> findAllMyStagesByTrailAsColaborator(@PathVariable("trailId") Long trailId,
+                                                                            @RequestHeader("Authorization") String token) {
+        return ResponseEntity.ok().body(service.findAllStagesByTrailAsColaborator(trailId, token));
     }
 
     @Operation(description = "Busca uma etapa no banco de dados pela posição como colaborador.")

@@ -54,7 +54,7 @@ public class Stage extends BaseEntityAudit {
     private List<ScormMediaStage> scorms;
 
     @OneToMany(mappedBy = "stage")
-    private List<HarvestFileMediaStage> files;
+    private List<HarvestFileMediaStage> harvestFiles;
 
     @OneToMany(mappedBy = "stage")
     private List<LinkMediaStage> links;

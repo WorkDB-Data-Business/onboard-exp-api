@@ -23,6 +23,12 @@ public class MediaExecution {
     @JsonProperty("contentPath")
     private String contentPath;
 
+    @JsonProperty("isCompleted")
+    private Boolean isCompleted;
+
+    @JsonProperty("completedAt")
+    private LocalDateTime completedAt;
+
     @JsonProperty("previewImagePath")
     private String previewImagePath;
 

@@ -1,5 +1,6 @@
 package br.com.harvest.onboardexperience.repositories;
 
+import br.com.harvest.onboardexperience.domain.entities.Stage;
 import br.com.harvest.onboardexperience.domain.entities.StageUser;
 import br.com.harvest.onboardexperience.domain.entities.Trail;
 import br.com.harvest.onboardexperience.domain.entities.User;
@@ -17,6 +18,13 @@ public interface StageUserRepository extends JpaRepository<StageUser, StageUserI
         return (stageUser, cq, cb) -> cb.and(
                 cb.equal(stageUser.get("user"), user),
                 cb.equal(stageUser.get("stage").get("trail"), trail)
+        );
+    }
+
+    static Specification<StageUser> byUserAndStage(@NonNull User user, @NonNull Stage stage) {
+        return (stageUser, cq, cb) -> cb.and(
+                cb.equal(stageUser.get("user"), user),
+                cb.equal(stageUser.get("stage"), stage)
         );
     }
 
