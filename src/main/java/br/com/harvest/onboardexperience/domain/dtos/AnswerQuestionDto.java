@@ -20,7 +20,4 @@ public class AnswerQuestionDto {
     @JsonProperty("isCorrect")
     private Boolean isCorrect = false;
 
-    @JsonProperty("idQuestion")
-    private Long idQuestion;
-
 }

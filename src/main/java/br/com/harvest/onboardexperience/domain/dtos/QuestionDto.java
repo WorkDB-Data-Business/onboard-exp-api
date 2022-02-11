@@ -3,6 +3,7 @@ package br.com.harvest.onboardexperience.domain.dtos;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Data
@@ -15,29 +16,17 @@ public class QuestionDto {
     @JsonProperty("id")
     private Long id;
 
-    @JsonProperty("name")
-    private String name;
-
-    @JsonProperty("description")
+    @JsonProperty("descriptionQuestion")
     private String description;
 
-    @JsonProperty("previewImagePath")
-    private String previewImagePath;
-
     @JsonProperty("scoreQuestion")
-    private Long scoreQuestion;
-
-    @JsonProperty("isActive")
-    private Boolean isActive ;
+    private BigDecimal scoreQuestion;
 
     @JsonProperty("isMultipleChoice")
     private Boolean isMultipleChoice;
 
-    @JsonProperty("answers")
+    @JsonProperty("answersQuestions")
     private List<AnswerQuestionDto> answersQuestions;
-
-    @JsonProperty("authorizedClients")
-    private List<Long> authorizedClientsId;
 
 }
 
