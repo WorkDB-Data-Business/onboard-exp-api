@@ -121,7 +121,7 @@ public class StageService {
         if(!stageUserRepository.existsById(createStageUserId(user, stage))){
             stageUserRepository.save(createStageUser(user, stage));
             stage.getLinks().forEach(link -> startLinkMedia(trailId, stageId, link.getLink().getId().toString(), token));
-            stage.getFiles().forEach(file -> startHarvestFileMedia(trailId, stageId, file.getHarvestFile().getId().toString(), token));
+            stage.getHarvestFiles().forEach(file -> startHarvestFileMedia(trailId, stageId, file.getHarvestFile().getId().toString(), token));
             stage.getScorms().forEach(scorm -> startScormMedia(trailId, stageId, scorm.getScorm().getId(), token));
         }
     }
@@ -129,7 +129,7 @@ public class StageService {
     public void deleteMedias(@NonNull Long trailId, @NonNull Long stageId, @NonNull String token){
         Stage stage = findAsAdmin(trailId, stageId, token);
 
-        stage.getFiles().forEach(file -> disassociateHarvestFilesToStage(file.getHarvestFile().getId(), stage, token));
+        stage.getHarvestFiles().forEach(file -> disassociateHarvestFilesToStage(file.getHarvestFile().getId(), stage, token));
         stage.getLinks().forEach(link -> disassociateLinkMediaToStage(link.getLink().getId(), stage, token));
         stage.getScorms().forEach(scorm -> disassociateScormMediaToStage(scorm.getScorm().getId(), stage, token));
     }
@@ -232,8 +232,18 @@ public class StageService {
         return repository.findOne(StageRepository.byIdAndTrail(stageId, trailService.findTrailByIdAndTokenAsAdmin(trailId, token)))
                 .orElseThrow(() -> new NotFoundException("Stage", "ID", stageId.toString()));
     }
-    public StageDTO findAsColaboratorAsDTO(@NonNull Long trailId, @NonNull Long stageId, @NonNull String token){
-        return stageToDto(findAsColaborator(trailId, stageId, token));
+    public StageUserDTO findStageUserAsColaboratorAsDTO(@NonNull Long trailId, @NonNull Long stageId, @NonNull String token){
+        return stageToDto(findStageUserAsColaborator(trailId, stageId, token));
+    }
+
+    private StageUser findStageUserAsColaborator(@NonNull Long trailId, @NonNull Long stageId, @NonNull String token){
+        return stageUserRepository.findOne(StageUserRepository.byUserAndStage(userService.findUserByToken(token),
+                        repository.findOne(StageRepository.byIdAndTrail(
+                            stageId, trailService.findTrailByIdAndEndUserByTokenAsColaborator(trailId, token)
+                        )).orElseThrow(
+                                (() -> new NotFoundException("Stage", "ID", stageId.toString()))
+                        )))
+                .orElseThrow(() -> new NotFoundException("Stage", "ID", stageId.toString()));
     }
 
     private Stage findAsColaborator(@NonNull Long trailId, @NonNull Long stageId, @NonNull String token){
@@ -245,44 +255,27 @@ public class StageService {
         StageDTO dto = StageMapper.INSTANCE.toDto(stage);
         List<MediaExecution> executions = new ArrayList<>();
         executions.addAll(stage.getScorms().stream().map(this::createScormMediaExecution).collect(Collectors.toList()));
-        executions.addAll(stage.getFiles().stream().map(this::createHarvestFileMediaExecution).collect(Collectors.toList()));
+        executions.addAll(stage.getHarvestFiles().stream().map(this::createHarvestFileMediaExecution).collect(Collectors.toList()));
         executions.addAll(stage.getLinks().stream().map(this::createLinkMediaExecution).collect(Collectors.toList()));
         dto.setMediaExecutions(executions.stream().sorted(Comparator.comparing(MediaExecution::getCreationDate)).collect(Collectors.toList()));
         return dto;
     }
 
-    private MediaExecution createScormMediaExecution(ScormMediaStage scorm){
-        return MediaExecution
-                .builder()
-                .id(scorm.getScorm().getId())
-                .name(scorm.getScorm().getTitle())
-                .previewImagePath(scorm.getScorm().getPreviewImagePath())
-                .creationDate(scorm.getCreatedAt())
-                .storage(Storage.SCORM)
-                .build();
+    private StageUserDTO stageToDto(@NonNull StageUser stageUser){
+        StageUserDTO dto = StageUserMapper.INSTANCE.toDto(stageUser);
+        dto.setId(stageUser.getStage().getId());
+        List<MediaExecution> executions = new ArrayList<>();
+        executions.addAll(stageUser.getScorms().stream().map(this::createScormMediaExecution).collect(Collectors.toList()));
+        executions.addAll(stageUser.getHarvestFiles().stream().map(this::createHarvestFileMediaExecution).collect(Collectors.toList()));
+        executions.addAll(stageUser.getLinks().stream().map(this::createLinkMediaExecution).collect(Collectors.toList()));
+        dto.setMediaExecutions(executions.stream().sorted(Comparator.comparing(MediaExecution::getCreationDate)).collect(Collectors.toList()));
+        return dto;
     }
 
-    private MediaExecution createHarvestFileMediaExecution(HarvestFileMediaStage file){
-        return MediaExecution
-                .builder()
-                .id(file.getHarvestFile().getId().toString())
-                .creationDate(file.getCreatedAt())
-                .name(file.getHarvestFile().getName())
-                .storage(Storage.HARVEST_FILE)
-                .previewImagePath(file.getHarvestFile().getPreviewImagePath())
-                .contentPath(file.getHarvestFile().getContentPath())
-                .build();
-    }
-
-    private MediaExecution createLinkMediaExecution(LinkMediaStage link){
-        return MediaExecution
-                .builder()
-                .id(link.getLink().getId().toString())
-                .name(link.getLink().getLink())
-                .previewImagePath(link.getLink().getPreviewImagePath())
-                .creationDate(link.getCreatedAt())
-                .storage(Storage.LINK)
-                .build();
+    public List<StageUserDTO> findAllStagesByTrailAsColaborator(@NonNull Long trailId, @NonNull String token){
+        return stageUserRepository.findAll(StageUserRepository.byUserAndTrail(
+                userService.findUserByToken(token), trailService.findTrailByIdAndEndUserByTokenAsColaborator(trailId, token)))
+                .stream().map(this::stageToDto).collect(Collectors.toList());
     }
 
     public List<StageDTO> findAllByTrailAsColaborator(@NonNull Long trailId, @NonNull String token){
@@ -668,4 +661,80 @@ public class StageService {
                 .stage(stage)
                 .build();
     }
+
+
+    private MediaExecution createScormMediaExecution(ScormMediaStage scorm){
+        return MediaExecution
+                .builder()
+                .id(scorm.getScorm().getId())
+                .name(scorm.getScorm().getTitle())
+                .previewImagePath(scorm.getScorm().getPreviewImagePath())
+                .creationDate(scorm.getCreatedAt())
+                .storage(Storage.SCORM)
+                .build();
+    }
+
+    private MediaExecution createScormMediaExecution(ScormMediaUser scorm){
+        return MediaExecution
+                .builder()
+                .id(scorm.getScormMedia().getScorm().getId())
+                .name(scorm.getScormMedia().getScorm().getTitle())
+                .previewImagePath(scorm.getScormMedia().getScorm().getPreviewImagePath())
+                .creationDate(scorm.getScormMedia().getCreatedAt())
+                .isCompleted(scorm.getIsCompleted())
+                .completedAt(scorm.getCompletedAt())
+                .storage(Storage.SCORM)
+                .build();
+    }
+
+    private MediaExecution createHarvestFileMediaExecution(HarvestFileMediaUser file){
+        return MediaExecution
+                .builder()
+                .id(file.getHarvestFileMedia().getHarvestFile().getId().toString())
+                .creationDate(file.getHarvestFileMedia().getCreatedAt())
+                .completedAt(file.getCompletedAt())
+                .isCompleted(file.getIsCompleted())
+                .name(file.getHarvestFileMedia().getHarvestFile().getName())
+                .storage(Storage.HARVEST_FILE)
+                .previewImagePath(file.getHarvestFileMedia().getHarvestFile().getPreviewImagePath())
+                .contentPath(file.getHarvestFileMedia().getHarvestFile().getContentPath())
+                .build();
+    }
+
+    private MediaExecution createHarvestFileMediaExecution(HarvestFileMediaStage file){
+        return MediaExecution
+                .builder()
+                .id(file.getHarvestFile().getId().toString())
+                .creationDate(file.getCreatedAt())
+                .name(file.getHarvestFile().getName())
+                .storage(Storage.HARVEST_FILE)
+                .previewImagePath(file.getHarvestFile().getPreviewImagePath())
+                .contentPath(file.getHarvestFile().getContentPath())
+                .build();
+    }
+
+    private MediaExecution createLinkMediaExecution(LinkMediaStage link){
+        return MediaExecution
+                .builder()
+                .id(link.getLink().getId().toString())
+                .name(link.getLink().getLink())
+                .previewImagePath(link.getLink().getPreviewImagePath())
+                .creationDate(link.getCreatedAt())
+                .storage(Storage.LINK)
+                .build();
+    }
+
+    private MediaExecution createLinkMediaExecution(LinkMediaUser link){
+        return MediaExecution
+                .builder()
+                .id(link.getLinkMedia().getLink().getId().toString())
+                .isCompleted(link.getIsCompleted())
+                .completedAt(link.getCompletedAt())
+                .name(link.getLinkMedia().getLink().getLink())
+                .previewImagePath(link.getLinkMedia().getLink().getPreviewImagePath())
+                .creationDate(link.getLinkMedia().getCreatedAt())
+                .storage(Storage.LINK)
+                .build();
+    }
+
 }

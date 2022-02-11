@@ -14,6 +14,9 @@ import java.util.List;
 @EqualsAndHashCode
 public class StageUserDTO {
 
+    @JsonProperty("id")
+    private Long id;
+
     @JsonProperty("user")
     private UserSimpleDto user;
 
@@ -29,13 +32,7 @@ public class StageUserDTO {
     @JsonProperty("startedAt")
     private LocalDateTime startedAt;
 
-    @JsonProperty("scorms")
-    private List<ScormMediaUserDTO> scorms;
-
-    @JsonProperty("harvestFiles")
-    private List<HarvestFileMediaUserDTO> harvestFiles;
-
-    @JsonProperty("links")
-    private List<LinkMediaUserDTO> links;
+    @JsonProperty("mediaExecutions")
+    private List<MediaExecution> mediaExecutions;
 
 }
