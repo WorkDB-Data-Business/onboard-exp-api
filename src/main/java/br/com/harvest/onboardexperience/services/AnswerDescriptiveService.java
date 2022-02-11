@@ -38,7 +38,7 @@ public class AnswerDescriptiveService {
                 .id(dto.getId())
                 .answerDescriptive(dto.getAnswerDescriptive())
                 .author(userService.findUserByToken(token))
-                .idQuestion(QuestionMapper.INSTANCE.toEntity(questionService.findQuestionById(idQuestion,null)))
+                .idQuestion(QuestionMapper.INSTANCE.toEntity(questionService.findQuestionByIdAndFrom(idQuestion,null)))
                 .build();
 
     }

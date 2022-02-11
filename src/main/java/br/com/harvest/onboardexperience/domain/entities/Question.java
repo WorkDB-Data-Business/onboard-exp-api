@@ -1,14 +1,11 @@
 package br.com.harvest.onboardexperience.domain.entities;
 
-
 import lombok.*;
-import org.apache.commons.lang3.ObjectUtils;
 
 import javax.persistence.*;
-import javax.validation.constraints.NotNull;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 @Data
 @EqualsAndHashCode
@@ -24,51 +21,21 @@ public class Question {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotNull
-    @Column(name = "name")
-    private String name;
-
     @Column(name = "description")
     private String description;
 
-    @Column(name = "preview_image_path")
-    private String previewImagePath;
-
     @Column(name = "score_question")
-    private Long scoreQuestion;
+    private BigDecimal scoreQuestion;
 
-    @Column(name = "is_active")
-    private Boolean isActive;
-
-    @Column(name = "is_multiplechoice")
+    @Column(name = "is_multiple_choice")
     private Boolean isMultipleChoice;
 
     @ManyToOne
-    @JoinColumn(name = "author")
-    private User author;
+    @JoinColumn(name = "idquestionnaire")
+    private Questionnaire questionnaire;
 
     @Builder.Default
-    @OneToMany(mappedBy = "question", cascade = CascadeType.ALL)
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "question")
     private List<AnswerQuestion> answersQuestions = new ArrayList<>();
-
-    @ManyToMany
-    @JoinTable(
-            name = "tbquestion_client",
-            joinColumns = @JoinColumn(name = "idquestion"),
-            inverseJoinColumns = @JoinColumn(name = "idclient"))
-    private List<Client>authorizedClients;
-
-
-    public void addAnswer(List<AnswerQuestion> answers){
-        if(!ObjectUtils.isEmpty(answers)){
-            answers.forEach(answer -> answer.setQuestion(this));
-        }
-    }
-
-    public void addAnswer(AnswerQuestion answer){
-        if(Objects.nonNull(answer)){
-            answer.setQuestion(this);
-        }
-    }
 
 }

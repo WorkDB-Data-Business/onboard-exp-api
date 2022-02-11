@@ -9,4 +9,4 @@ CREATE TABLE public.tbanswer_question (
   CONSTRAINT pk_tbanswer_question PRIMARY KEY (idanswer)
 );
 
-ALTER TABLE public.tbanswer_question ADD CONSTRAINT FK_TBANSWERQUESTION_ON_ID_QUESTION FOREIGN KEY (idquestion) REFERENCES public.tbquestion (idquestion);
+ALTER TABLE public.tbanswer_question ADD CONSTRAINT FK_TBANSWERQUESTION_ON_ID_QUESTION FOREIGN KEY (idquestion) REFERENCES public.tbquestion (idquestion) ON DELETE CASCADE;

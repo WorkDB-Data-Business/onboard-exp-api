@@ -1,29 +1,24 @@
 package br.com.harvest.onboardexperience.services;
 
 
-import br.com.harvest.onboardexperience.domain.dtos.AnswerDescriptiveDto;
-import br.com.harvest.onboardexperience.domain.dtos.AnswerQuestionDto;
 import br.com.harvest.onboardexperience.domain.dtos.QuestionDto;
 import br.com.harvest.onboardexperience.domain.entities.*;
 import br.com.harvest.onboardexperience.domain.enumerators.QuestionFrom;
-import br.com.harvest.onboardexperience.mappers.AnswerDescriptiveMapper;
-import br.com.harvest.onboardexperience.mappers.AnswerQuestionMapper;
+import br.com.harvest.onboardexperience.domain.exceptions.NotFoundException;
 import br.com.harvest.onboardexperience.mappers.QuestionMapper;
-import br.com.harvest.onboardexperience.repositories.AnswerDescriptiveRepository;
+
 import br.com.harvest.onboardexperience.repositories.AnswerQuestionRepository;
 import br.com.harvest.onboardexperience.repositories.QuestionRepository;
 import br.com.harvest.onboardexperience.repositories.UserRepository;
-import br.com.harvest.onboardexperience.utils.GenericUtils;
 import br.com.harvest.onboardexperience.utils.JwtTokenUtils;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import javax.ws.rs.NotFoundException;
+import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -51,13 +46,8 @@ public class QuestionService {
     @Autowired
     private AnswerQuestionRepository answerQuestionRepository;
 
-    public Page<QuestionDto> findAllQuestions(String token, Pageable pageable) {
-        return questionRepository.findAll(QuestionRepository.byAuthorizedClients(userService.findUserByToken(token).getClient()),
-                pageable).map(QuestionMapper.INSTANCE::toDto);
-    }
-
-    public QuestionDto findQuestionById(Long id, QuestionFrom from) {
-        Question question = questionRepository.findById(id).orElseThrow(() -> new NotFoundException(("Não encontrado")));
+    public QuestionDto findQuestionByIdAndFrom(@NonNull Long id, QuestionFrom from) {
+        Question question = questionRepository.findById(id).orElseThrow(() -> new NotFoundException("Question", "ID", id.toString()));
         question.getAnswersQuestions().forEach(
                 answerQuestion -> {
                     if(QuestionFrom.TRAIL.equals(from)){
@@ -68,67 +58,63 @@ public class QuestionService {
         return QuestionMapper.INSTANCE.toDto(question);
     }
 
-    public QuestionDto createQuestion(QuestionDto dto, String token) {
-        Question question = dtoToEntity(dto,token);
-        QuestionDto questionEventFinal = QuestionMapper.INSTANCE.toDto(questionRepository.save(question));
-        log.info("The Question" + question.getName() + " was created sucessful");
-        this.answerQuestionService.saveAnswersQuestionsByQuestionCreating(questionEventFinal,question);
-        questionEventFinal.setAuthorizedClientsId(GenericUtils.extractIDsFromList(question.getAuthorizedClients(), Client.class));
-        return questionEventFinal;
+    public Question findQuestionById(@NonNull Long id){
+        return questionRepository.findById(id).orElseThrow(() -> new NotFoundException("Question", "ID", id.toString()));
     }
 
-    public QuestionDto updateQuestionEvent (Long id, QuestionDto dto, String token) throws Exception {
-        Question question = findQuestionByIdAndToken(id, token);
+    public List<Question> saveAll(@NonNull List<QuestionDto> questions, @NonNull Questionnaire questionnaire, @NonNull String token){
+        return questions.stream().map(question -> saveQuestionAndAnswers(question, token, questionnaire)).collect(Collectors.toList());
+    }
 
-        Question updatedQuestion = dtoToEntity(dto, token);
+    public List<Question> updateAll(@NonNull List<QuestionDto> questions, @NonNull Questionnaire questionnaire, @NonNull String token){
+        return questions.stream().map(question -> updateQuestionAndAnswers(question, questionnaire, token)).collect(Collectors.toList());
+    }
 
-          Question finalQuestion = this.questionRepository.saveAndFlush(updatedQuestion);
-            updatedQuestion.getAnswersQuestions().forEach(
-                answerQuestion -> {
-                    answerQuestion.setQuestion(finalQuestion);
-                    this.answerQuestionRepository.saveAndFlush(answerQuestion);
-                }
+    private Question updateQuestionAndAnswers(@NonNull QuestionDto questionDto, @NonNull Questionnaire questionnaire, @NonNull String token){
+
+        if(Objects.isNull(questionDto.getId())){
+            return saveQuestionAndAnswers(questionDto, token, questionnaire);
+        }
+
+        Question question = findQuestionById(questionDto.getId());
+
+        Question updatedQuestion = dtoToEntity(questionDto, token, questionnaire);
+
+        BeanUtils.copyProperties(updatedQuestion, question, "id", "author", "questionnaire", "answersQuestions");
+
+        questionRepository.save(question);
+
+        question.setAnswersQuestions(this.answerQuestionService.updateAll(question, questionDto.getAnswersQuestions()));
+
+        return question;
+    }
+
+    private Question saveQuestionAndAnswers(@NonNull QuestionDto questionDto, @NonNull String token, @NonNull Questionnaire questionnaire){
+        Question question = this.questionRepository.save(dtoToEntity(questionDto, token, questionnaire));
+        question.setAnswersQuestions(this.answerQuestionService.saveAll(question, questionDto.getAnswersQuestions()));
+        return question;
+    }
+
+    public Question findQuestionByIdAndToken(@NonNull Long id) throws Exception {
+        return questionRepository.findById(id).orElseThrow(
+                () -> new NotFoundException("Question", "ID", id.toString())
         );
-
-
-        return QuestionMapper.INSTANCE.toDto(updatedQuestion);
     }
 
-    public Question findQuestionByIdAndToken(@NonNull Long id, @NonNull String token) throws Exception {
-        User user = userService.findUserByToken(token);
-        return questionRepository
-                .findOne(QuestionRepository.byId(id).and(QuestionRepository.byAuthorizedClients(user.getClient())))
-                .or(() -> questionRepository.findOne(QuestionRepository.byId(id).and(QuestionRepository.byAuthor(user))))
-                .orElseThrow(
-                        () -> new Exception("Question not found")
-                );
-    }
-
-    private Question dtoToEntity(QuestionDto dto,String token){
-        User author = userService.findUserById(jwtUtils.getUserId(token));
+    private Question dtoToEntity(@NonNull QuestionDto dto, @NonNull String token, @NonNull Questionnaire questionnaire){
         return Question
                 .builder()
                 .id(dto.getId())
-                .name(dto.getName())
                 .description(dto.getDescription())
-                .answersQuestions(dto.getAnswersQuestions().stream().map(AnswerQuestionMapper.INSTANCE::toEntity)
-                        .collect(Collectors.toList()))
-                .isActive(dto.getIsActive())
+                .questionnaire(questionnaire)
                 .isMultipleChoice(dto.getAnswersQuestions().size() > 0)
                 .scoreQuestion(dto.getScoreQuestion())
-                .author(author)
-                .authorizedClients(fetchService.generateAuthorizedClients(dto.getAuthorizedClientsId(), author))
                 .build();
 
     }
 
-    public void deleteQuestion(Long id, String token) throws Exception {
-        Question question = findQuestionByIdAndToken(id, token);
-        questionRepository.deleteById(id);
-    }
-
-    private void setAuthor(Question question, String token) {
-        question.setAuthor(userService.findUserByToken(token));
+    public void deleteQuestion(Long id) throws Exception {
+        questionRepository.delete(findQuestionByIdAndToken(id));
     }
 }
 
