@@ -2,11 +2,17 @@ package br.com.harvest.onboardexperience.services;
 
 
 import br.com.harvest.onboardexperience.domain.dtos.QuestionnaireDto;
+import br.com.harvest.onboardexperience.domain.dtos.QuestionnaireSimpleDTO;
 import br.com.harvest.onboardexperience.domain.entities.Client;
 import br.com.harvest.onboardexperience.domain.entities.Questionnaire;
 import br.com.harvest.onboardexperience.domain.entities.User;
 import br.com.harvest.onboardexperience.domain.enumerators.FileTypeEnum;
+import br.com.harvest.onboardexperience.domain.exceptions.AlreadyExistsException;
 import br.com.harvest.onboardexperience.domain.exceptions.NotFoundException;
+import br.com.harvest.onboardexperience.infra.storage.dtos.UploadForm;
+import br.com.harvest.onboardexperience.infra.storage.entities.HarvestFile;
+import br.com.harvest.onboardexperience.infra.storage.enumerators.Storage;
+import br.com.harvest.onboardexperience.infra.storage.interfaces.StorageService;
 import br.com.harvest.onboardexperience.infra.storage.services.AssetStorageService;
 
 import br.com.harvest.onboardexperience.mappers.QuestionnaireMapper;
@@ -21,9 +27,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.nio.file.FileAlreadyExistsException;
 import java.util.Objects;
 
 @Slf4j
@@ -54,17 +60,33 @@ public class QuestionnaireService {
     @Autowired
     private AssetStorageService assetStorageService;
 
-    @Transactional
-    public QuestionnaireDto createQuestionnaire(QuestionnaireDto dto, String token) {
-        Questionnaire questionnaire = this.questionnaireRepository.save(dtoToEntity(dto,token));
+    public QuestionnaireDto create(@NonNull QuestionnaireDto dto, @NonNull String token) {
+
+        Questionnaire questionnaire = dtoToEntity(dto,token);
+
+        validateIfAlreadyExists(questionnaire);
+
+        questionnaire = this.questionnaireRepository.save(questionnaire);
 
         questionnaire.setQuestionOfQuestionnaire(questionService.saveAll(dto.getQuestionOfQuestionnaire(), questionnaire, token));
 
         return entityToDto(questionnaire);
     }
 
-    public QuestionnaireDto uploadImagePreview(@NonNull Long id, MultipartFile multipartFile){
-        Questionnaire questionnaire = findQuestionnaireById(id);
+    private void validateIfAlreadyExists(Questionnaire questionnaire, @NonNull QuestionnaireDto form) {
+        if(!questionnaire.getName().equalsIgnoreCase(form.getName())){
+            validateIfAlreadyExists(questionnaire);
+        }
+    }
+
+    private void validateIfAlreadyExists(@NonNull Questionnaire questionnaire) {
+        if(questionnaireRepository.existsByNameAndAuthor_Client(questionnaire.getName(), questionnaire.getAuthor().getClient())){
+            throw new AlreadyExistsException("Questionnaire", "name", questionnaire.getName());
+        }
+    }
+
+    public QuestionnaireDto uploadImagePreview(@NonNull Long id, MultipartFile multipartFile, @NonNull String token){
+        Questionnaire questionnaire = findByIdAndAuthorizedClients(id, token, true);
 
         if(Objects.nonNull(multipartFile)){
             questionnaire.setPreviewImagePath(assetStorageService.uploadAsset(
@@ -77,44 +99,68 @@ public class QuestionnaireService {
             questionnaireRepository.save(questionnaire);
         }
 
-        return QuestionnaireMapper.INSTANCE.toDto(questionnaire);
+        return entityToDto(questionnaire);
     }
 
-    private Questionnaire dtoToEntity(QuestionnaireDto dto,String token){
+    private Questionnaire dtoToEntity(@NonNull QuestionnaireDto dto, @NonNull String token){
         User author = userService.findUserById(jwtUtils.getUserId(token));
         return Questionnaire
                 .builder()
                 .id(dto.getId())
                 .name(dto.getName())
                 .isActive(dto.getIsActive())
+                .minimumScore(dto.getMinimumScore())
                 .author(author)
                 .authorizedClients(fetchService.generateAuthorizedClients(dto.getAuthorizedClientsId(),author))
                 .build();
     }
 
-    public Page<QuestionnaireDto> findAllQuestionnaire(String token, Pageable pageable) {
+    public Page<QuestionnaireSimpleDTO> findAllQuestionnaire(@NonNull String token, Pageable pageable) {
             return questionnaireRepository.findAll(QuestionnaireRepository.byAuthorizedClients(userService.findUserByToken(token).getClient()),
-                    pageable).map(QuestionnaireMapper.INSTANCE::toDto);
+                    pageable).map(this::entityToSimpleDto);
     }
 
     public QuestionnaireDto findQuestionnaireByIdAsDTO(@NonNull Long id, @NonNull String token) {
-        return entityToDto(findQuestionnaireByAndToken(id, token));
+        return entityToDto(findByIdAndAuthorizedClients(id, token, false));
     }
 
-    private QuestionnaireDto entityToDto(Questionnaire questionnaire){
+    private QuestionnaireDto entityToDto(@NonNull Questionnaire questionnaire){
         QuestionnaireDto questionnaireDto = QuestionnaireMapper.INSTANCE.toDto(questionnaire);
         questionnaireDto.setAuthorizedClientsId(GenericUtils.extractIDsFromList(questionnaire.getAuthorizedClients(), Client.class));
+        questionnaireDto.setStorage(Storage.QUIZZ);
         return questionnaireDto;
     }
 
-    public Questionnaire findQuestionnaireById(Long id) {
-        return questionnaireRepository.findById(id).orElseThrow(()-> new NotFoundException(("Nao Encontrado.")));
+    private QuestionnaireSimpleDTO entityToSimpleDto(@NonNull Questionnaire questionnaire){
+        QuestionnaireSimpleDTO questionnaireDto = QuestionnaireMapper.INSTANCE.toSimpleDto(questionnaire);
+        questionnaireDto.setStorage(Storage.QUIZZ);
+        return questionnaireDto;
+    }
+
+    public Questionnaire findByIdAndAuthorizedClients(@NonNull Long id, @NonNull String token, Boolean validateAuthor){
+        User user = userService.findUserByToken(token);
+
+        Questionnaire questionnaire = questionnaireRepository
+                .findOne(QuestionnaireRepository.byId(id).and(QuestionnaireRepository.byAuthorizedClients(user.getClient())))
+                .or(() -> questionnaireRepository.findOne(QuestionnaireRepository.byId(id).and(QuestionnaireRepository.byAuthor(user))))
+                .orElseThrow(
+                        () -> new NotFoundException("Questionnaire", "ID", id.toString())
+                );
+
+        if(validateAuthor){
+            StorageService.validateAuthor(questionnaire, Questionnaire.class, user, "You're not the author of the questionnaire.");
+        }
+
+        return questionnaire;
     }
 
     public QuestionnaireDto update(@NonNull Long id, @NonNull QuestionnaireDto dto, @NonNull String token) throws Exception {
-        Questionnaire questionnaire = findQuestionnaireByAndToken(id,token);
+        Questionnaire questionnaire = findByIdAndAuthorizedClients(id,token, true);
+
+        validateIfAlreadyExists(questionnaire, dto);
 
         Questionnaire updateQuestionnaire = dtoToEntity(dto,token);
+
 
         BeanUtils.copyProperties(updateQuestionnaire, questionnaire, "id", "author", "questionOfQuestionnaire");
 
@@ -125,16 +171,8 @@ public class QuestionnaireService {
         return entityToDto(questionnaire);
     }
 
-    private Questionnaire findQuestionnaireByAndToken(@NonNull Long id, @NonNull String token) {
-        User user = userService.findUserByToken(token);
-        return  questionnaireRepository
-                .findOne(QuestionnaireRepository.byId(id).and(QuestionnaireRepository.byAuthorizedClients(user.getClient())))
-                .or(()-> questionnaireRepository.findOne(QuestionnaireRepository.byId(id).and(QuestionnaireRepository.byAuthor(user))))
-                .orElseThrow(()-> new NotFoundException("Questionnaire", "ID", id.toString()));
-    }
-
-    public void deleteQuestionnaire(Long id, String token) {
-        questionnaireRepository.delete(findQuestionnaireByAndToken(id,token));
+    public void deleteQuestionnaire(@NonNull Long id, @NonNull String token) {
+        questionnaireRepository.delete(findByIdAndAuthorizedClients(id, token, true));
     }
 }
 

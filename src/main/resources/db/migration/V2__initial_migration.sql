@@ -187,6 +187,7 @@ CREATE TABLE public.tbquestionnaire (
   idquestionnaire BIGSERIAL NOT NULL,
   name CHARACTER VARYING(255) NOT NULL,
   is_active BOOLEAN,
+  minimum_score DECIMAL NOT NULL,
   author BIGINT,
   preview_image_path CHARACTER VARYING,
 
@@ -197,7 +198,6 @@ CREATE TABLE public.tbquestionnaire (
 CREATE TABLE public.tbquestion (
   idquestion BIGSERIAL NOT NULL,
   description CHARACTER VARYING,
-  score_question DECIMAL,
   is_multiple_choice BOOLEAN,
   idquestionnaire BIGINT,
 

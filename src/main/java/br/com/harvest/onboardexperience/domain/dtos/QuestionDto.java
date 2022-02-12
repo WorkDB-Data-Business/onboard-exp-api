@@ -19,9 +19,6 @@ public class QuestionDto {
     @JsonProperty("descriptionQuestion")
     private String description;
 
-    @JsonProperty("scoreQuestion")
-    private BigDecimal scoreQuestion;
-
     @JsonProperty("isMultipleChoice")
     private Boolean isMultipleChoice;
 

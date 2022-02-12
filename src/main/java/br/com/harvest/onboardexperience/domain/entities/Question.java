@@ -24,9 +24,6 @@ public class Question {
     @Column(name = "description")
     private String description;
 
-    @Column(name = "score_question")
-    private BigDecimal scoreQuestion;
-
     @Column(name = "is_multiple_choice")
     private Boolean isMultipleChoice;
 

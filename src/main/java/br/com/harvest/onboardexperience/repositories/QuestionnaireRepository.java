@@ -15,6 +15,8 @@ import javax.persistence.criteria.Join;
 @Repository
 public interface QuestionnaireRepository extends JpaRepository<Questionnaire, Long>, JpaSpecificationExecutor<Questionnaire> {
 
+    Boolean existsByNameAndAuthor_Client(String name, Client client);
+
     static Specification<Questionnaire> byAuthor(@NonNull User author) {
         return (questionnaire, cq, cb) -> cb.equal(questionnaire.get("author"), author);
     }
