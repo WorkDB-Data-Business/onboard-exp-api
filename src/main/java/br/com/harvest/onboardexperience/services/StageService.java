@@ -19,6 +19,7 @@ import br.com.harvest.onboardexperience.mappers.StageUserMapper;
 import br.com.harvest.onboardexperience.repositories.*;
 import br.com.harvest.onboardexperience.domain.dtos.forms.StageForm;
 import br.com.harvest.onboardexperience.usecases.UserCoinUseCase;
+import com.rusticisoftware.cloud.v2.client.model.RegistrationCompletion;
 import com.rusticisoftware.cloud.v2.client.model.RegistrationSchema;
 import com.rusticisoftware.cloud.v2.client.model.RegistrationSuccess;
 import lombok.NonNull;
@@ -407,11 +408,11 @@ public class StageService {
 
         ScormRegistration registration = scormService.findScormRegistrationByIdAndToken(scormMediaUser.getScormMedia().getScorm().getId(), token);
 
-        RegistrationSuccess registrationStatus = scormService.getResultForRegistration(registration.getId()).map(RegistrationSchema::getRegistrationSuccess)
-                .filter(registrationSuccess -> !registrationSuccess.equals(RegistrationSuccess.UNKNOWN))
-                .orElseThrow(() -> new Exception("An error occurred while getting the registration status in SCORM CLOUD."));
+        RegistrationCompletion registrationCompletion = scormService.getResultForRegistration(registration.getId())
+                .map(RegistrationSchema::getRegistrationCompletion)
+                .filter(registrationCompletionEnum -> !registrationCompletionEnum.equals(RegistrationCompletion.UNKNOWN)).orElse(null);
 
-        if(registrationStatus.equals(RegistrationSuccess.PASSED)){
+        if(Objects.nonNull(registrationCompletion) && registrationCompletion.equals(RegistrationCompletion.COMPLETED)){
             scormService.registerPassStatusOnScormRegistration(registration.getScorm().getId(), registration.getUser().getId());
             scormMediaUser.setCompletedAt(LocalDateTime.now());
             scormMediaUser.setIsCompleted(true);
