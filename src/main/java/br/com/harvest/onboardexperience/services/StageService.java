@@ -408,11 +408,11 @@ public class StageService {
 
         ScormRegistration registration = scormService.findScormRegistrationByIdAndToken(scormMediaUser.getScormMedia().getScorm().getId(), token);
 
-        RegistrationCompletion registrationCompletion = scormService.getResultForRegistration(registration.getId())
-                .map(RegistrationSchema::getRegistrationCompletion)
-                .filter(registrationCompletionEnum -> !registrationCompletionEnum.equals(RegistrationCompletion.UNKNOWN)).orElse(null);
+        RegistrationSchema registrationScormCloud = scormService.getResultForRegistration(registration.getId()).orElse(new RegistrationSchema());
 
-        if(Objects.nonNull(registrationCompletion) && registrationCompletion.equals(RegistrationCompletion.COMPLETED)){
+        if(RegistrationSuccess.PASSED.equals(registrationScormCloud.getRegistrationSuccess())
+                || (RegistrationSuccess.UNKNOWN.equals(registrationScormCloud.getRegistrationSuccess())
+                && RegistrationCompletion.COMPLETED.equals(registrationScormCloud.getRegistrationCompletion()))){
             scormService.registerPassStatusOnScormRegistration(registration.getScorm().getId(), registration.getUser().getId());
             scormMediaUser.setCompletedAt(LocalDateTime.now());
             scormMediaUser.setIsCompleted(true);
@@ -597,17 +597,25 @@ public class StageService {
 
     private void disassociateScormMediaToStage(String scormsId, @NonNull Stage stage, @NonNull String token){
         if(StringUtils.hasText(scormsId)){
-            if(scormMediaStageRepository.existsById(createScormMediaId(scormsId, stage.getId()))){
-                scormMediaStageRepository.delete(createScormMedia(scormsId, stage, token));
+            Optional<ScormMediaStage> scormMediaStage = scormMediaStageRepository.findById(createScormMediaId(scormsId, stage.getId()));
+            if(scormMediaStage.isPresent()){
+                if(scormMediaUserRepository.existsByScormMedia(scormMediaStage.get())){
+                    throw new BusinessException("There are some users that started this media: " + scormMediaStage.get().getScorm().getTitle());
+                }
+                scormMediaStageRepository.delete(scormMediaStage.get());
             }
         }
     }
 
     private void disassociateHarvestFilesToStage(Long filesId, @NonNull Stage stage, @NonNull String token)  {
         if(Objects.nonNull(filesId)){
-            if(harvestFileMediaStageRepository.existsById(createHarvestMediaStageId(filesId, stage.getId()))){
+            Optional<HarvestFileMediaStage> harvestFileMediaStage = harvestFileMediaStageRepository.findById(createHarvestMediaStageId(filesId, stage.getId()));
+            if(harvestFileMediaStage.isPresent()){
+                if(harvestFileMediaUserRepository.existsByHarvestFileMedia(harvestFileMediaStage.get())){
+                    throw new BusinessException("There are some users that started this media: " + harvestFileMediaStage.get().getHarvestFile().getName());
+                }
                 try {
-                    harvestFileMediaStageRepository.delete(createHarvestFileMedia(filesId, stage, token));
+                    harvestFileMediaStageRepository.delete(harvestFileMediaStage.get());
                 } catch (Exception e) {
                     log.info("An error was occurred: ", e);
                 }
@@ -617,7 +625,11 @@ public class StageService {
 
     private void disassociateLinkMediaToStage(Long linksId, @NonNull Stage stage, @NonNull String token){
         if(Objects.nonNull(linksId)){
-            if(linkMediaStageRepository.existsById(createLinkMediaStageId(linksId, stage.getId()))){
+            Optional<LinkMediaStage> linkMediaStage = linkMediaStageRepository.findById(createLinkMediaStageId(linksId, stage.getId()));
+            if(linkMediaStage.isPresent()){
+                if(linkMediaUserRepository.existsByLinkMedia(linkMediaStage.get())){
+                    throw new BusinessException("There are some users that started this media: " + linkMediaStage.get().getLink().getLink());
+                }
                 linkMediaStageRepository.delete(createLinkMedia(linksId, stage, token));
             }
         }
