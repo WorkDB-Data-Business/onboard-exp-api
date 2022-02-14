@@ -181,10 +181,12 @@ public class StageService {
         totalMedia = totalMedia.add(BigInteger.valueOf(stageUser.getScorms().size()));
         totalMedia = totalMedia.add(BigInteger.valueOf(stageUser.getHarvestFiles().size()));
         totalMedia = totalMedia.add(BigInteger.valueOf(stageUser.getLinks().size()));
+        totalMedia = totalMedia.add(BigInteger.valueOf(stageUser.getQuestionnaires().size()));
 
         totalMediaPassed = totalMediaPassed.add(BigInteger.valueOf(stageUser.getScorms().stream().filter(ScormMediaUser::getIsCompleted).count()));
         totalMediaPassed = totalMediaPassed.add(BigInteger.valueOf(stageUser.getHarvestFiles().stream().filter(HarvestFileMediaUser::getIsCompleted).count()));
         totalMediaPassed = totalMediaPassed.add(BigInteger.valueOf(stageUser.getLinks().stream().filter(LinkMediaUser::getIsCompleted).count()));
+        totalMediaPassed = totalMediaPassed.add(BigInteger.valueOf(stageUser.getQuestionnaires().stream().filter(QuestionnaireMediaUser::getIsCompleted).count()));
 
         return new BigDecimal(totalMediaPassed).divide(new BigDecimal(totalMedia.compareTo(BigInteger.ZERO) == 0
                         ? BigInteger.ONE : totalMedia), 2, RoundingMode.HALF_UP)
