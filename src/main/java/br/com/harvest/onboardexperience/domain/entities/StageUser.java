@@ -65,6 +65,14 @@ public class StageUser {
     })
     private List<LinkMediaUser> links = new ArrayList<>();
 
+    @Builder.Default
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumns({
+            @JoinColumn(name = "idstage", insertable = false, updatable = false),
+            @JoinColumn(name = "iduser", insertable = false, updatable = false)
+    })
+    private List<QuestionnaireMediaUser> questionnaires = new ArrayList<>();
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

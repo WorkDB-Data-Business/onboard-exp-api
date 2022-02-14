@@ -70,6 +70,12 @@ public class StageService {
     private HarvestFileMediaUserRepository harvestFileMediaUserRepository;
 
     @Autowired
+    private QuestionnaireMediaStageRepository questionnaireMediaStageRepository;
+
+    @Autowired
+    private QuestionnaireMediaUserRepository questionnaireMediaUserRepository;
+
+    @Autowired
     private LinkMediaStageRepository linkMediaStageRepository;
 
     @Autowired
@@ -77,6 +83,9 @@ public class StageService {
 
     @Autowired
     private LinkStorageService linkStorageService;
+
+    @Autowired
+    private QuestionnaireService questionnaireService;
 
     @Autowired
     private UserService userService;
@@ -124,15 +133,17 @@ public class StageService {
             stage.getLinks().forEach(link -> startLinkMedia(trailId, stageId, link.getLink().getId().toString(), token));
             stage.getHarvestFiles().forEach(file -> startHarvestFileMedia(trailId, stageId, file.getHarvestFile().getId().toString(), token));
             stage.getScorms().forEach(scorm -> startScormMedia(trailId, stageId, scorm.getScorm().getId(), token));
+            stage.getQuestionnaires().forEach(questionnaire -> startQuestionnaireMedia(trailId, stageId, questionnaire.getQuestionnaire().getId(), token));
         }
     }
 
     public void deleteMedias(@NonNull Long trailId, @NonNull Long stageId, @NonNull String token){
         Stage stage = findAsAdmin(trailId, stageId, token);
 
-        stage.getHarvestFiles().forEach(file -> disassociateHarvestFilesToStage(file.getHarvestFile().getId(), stage, token));
-        stage.getLinks().forEach(link -> disassociateLinkMediaToStage(link.getLink().getId(), stage, token));
-        stage.getScorms().forEach(scorm -> disassociateScormMediaToStage(scorm.getScorm().getId(), stage, token));
+        stage.getHarvestFiles().forEach(file -> disassociateHarvestFilesToStage(file.getHarvestFile().getId(), stage));
+        stage.getLinks().forEach(link -> disassociateLinkMediaToStage(link.getLink().getId(), stage));
+        stage.getScorms().forEach(scorm -> disassociateScormMediaToStage(scorm.getScorm().getId(), stage));
+        stage.getQuestionnaires().forEach(questionnaire -> disassociateQuestionnaireMediaToStage(questionnaire.getQuestionnaire().getId(), stage));
     }
 
     public StageUserSimpleDTO finishStage(@NonNull Long trailId, @NonNull Long stageId, @NonNull String token){
@@ -222,6 +233,10 @@ public class StageService {
                 }
                 break;
             }
+            case QUIZZ: {
+                associateQuestionnairesToStage(Long.parseLong(mediaExecution.getId()), stage, token);
+                break;
+            }
         }
     }
 
@@ -258,6 +273,7 @@ public class StageService {
         executions.addAll(stage.getScorms().stream().map(this::createScormMediaExecution).collect(Collectors.toList()));
         executions.addAll(stage.getHarvestFiles().stream().map(this::createHarvestFileMediaExecution).collect(Collectors.toList()));
         executions.addAll(stage.getLinks().stream().map(this::createLinkMediaExecution).collect(Collectors.toList()));
+        executions.addAll(stage.getQuestionnaires().stream().map(this::createQuestionnaireExecution).collect(Collectors.toList()));
         dto.setMediaExecutions(executions.stream().sorted(Comparator.comparing(MediaExecution::getCreationDate)).collect(Collectors.toList()));
         return dto;
     }
@@ -269,6 +285,7 @@ public class StageService {
         executions.addAll(stageUser.getScorms().stream().map(this::createScormMediaExecution).collect(Collectors.toList()));
         executions.addAll(stageUser.getHarvestFiles().stream().map(this::createHarvestFileMediaExecution).collect(Collectors.toList()));
         executions.addAll(stageUser.getLinks().stream().map(this::createLinkMediaExecution).collect(Collectors.toList()));
+        executions.addAll(stageUser.getQuestionnaires().stream().map(this::createQuestionnaireExecution).collect(Collectors.toList()));
         dto.setMediaExecutions(executions.stream().sorted(Comparator.comparing(MediaExecution::getCreationDate)).collect(Collectors.toList()));
         return dto;
     }
@@ -298,7 +315,7 @@ public class StageService {
 
     public void startMedia(@NonNull Long trailId, @NonNull Long stageId,
                            @NonNull String mediaId, @NonNull Storage type,
-                           @NonNull String token) throws Exception {
+                           @NonNull String token) {
         switch (type){
             case HARVEST_FILE: {
                 startHarvestFileMedia(trailId, stageId, mediaId, token);
@@ -331,6 +348,10 @@ public class StageService {
                 finishScormMediaExecution(trailId, stageId, mediaId, token);
                 break;
             }
+            case QUIZZ: {
+                finishQuestionnaireExecution(trailId, stageId, mediaId, token);
+                break;
+            }
         }
     }
 
@@ -340,6 +361,14 @@ public class StageService {
         ));
 
         scormMediaStage.ifPresent(mediaStage -> startScormMediaUserExecution(mediaStage, token));
+    }
+
+    private void startQuestionnaireMedia(@NonNull Long trailId, @NonNull Long stageId, @NonNull Long questionnaireId, @NonNull String token){
+        Optional<QuestionnaireMediaStage> scormMediaStage = questionnaireMediaStageRepository.findOne(QuestionnaireMediaStageRepository.byStageAndQuestionnaire(
+                findAsColaborator(trailId, stageId, token), questionnaireService.findByIdAndAuthorizedClients(questionnaireId, token, false)
+        ));
+
+        scormMediaStage.ifPresent(mediaStage -> startQuestionnaireMediaUserExecution(mediaStage, token));
     }
 
     private void startHarvestFileMedia(@NonNull Long trailId, @NonNull Long stageId, @NonNull String harvestFileId, @NonNull String token) {
@@ -384,6 +413,15 @@ public class StageService {
         }
     }
 
+    private void startQuestionnaireMediaUserExecution(@NonNull QuestionnaireMediaStage questionnaireMediaStage, @NonNull String token){
+
+        User user = userService.findUserByToken(token);
+
+        if(!questionnaireMediaUserRepository.existsById(createQuestionnaireMediaUserId(questionnaireMediaStage, user))){
+            questionnaireMediaUserRepository.save(createQuestionnaireMediaUser(questionnaireMediaStage, user));
+        }
+    }
+
     private void startLinkMediaUserExecution(@NonNull LinkMediaStage linkMediaStage, @NonNull String token){
 
         User user = userService.findUserByToken(token);
@@ -408,11 +446,11 @@ public class StageService {
 
         ScormRegistration registration = scormService.findScormRegistrationByIdAndToken(scormMediaUser.getScormMedia().getScorm().getId(), token);
 
-        RegistrationCompletion registrationCompletion = scormService.getResultForRegistration(registration.getId())
-                .map(RegistrationSchema::getRegistrationCompletion)
-                .filter(registrationCompletionEnum -> !registrationCompletionEnum.equals(RegistrationCompletion.UNKNOWN)).orElse(null);
+        RegistrationSchema registrationScormCloud = scormService.getResultForRegistration(registration.getId()).orElse(new RegistrationSchema());
 
-        if(Objects.nonNull(registrationCompletion) && registrationCompletion.equals(RegistrationCompletion.COMPLETED)){
+        if(RegistrationSuccess.PASSED.equals(registrationScormCloud.getRegistrationSuccess())
+                || (RegistrationSuccess.UNKNOWN.equals(registrationScormCloud.getRegistrationSuccess())
+                && RegistrationCompletion.COMPLETED.equals(registrationScormCloud.getRegistrationCompletion()))){
             scormService.registerPassStatusOnScormRegistration(registration.getScorm().getId(), registration.getUser().getId());
             scormMediaUser.setCompletedAt(LocalDateTime.now());
             scormMediaUser.setIsCompleted(true);
@@ -439,6 +477,26 @@ public class StageService {
             harvestFileMediaUser.setCompletedAt(LocalDateTime.now());
             harvestFileMediaUser.setIsCompleted(true);
             harvestFileMediaUserRepository.save(harvestFileMediaUser);
+        }
+    }
+
+    private void finishQuestionnaireExecution(@NonNull Long trailId, @NonNull Long stageId, @NonNull String questionnaireId, @NonNull String token) throws Exception {
+        User user = userService.findUserByToken(token);
+
+        QuestionnaireMediaStage questionnaireMediaStage = questionnaireMediaStageRepository.findOne(QuestionnaireMediaStageRepository.byStageAndQuestionnaire(
+                findAsColaborator(trailId, stageId, token), questionnaireService.findByIdAndAuthorizedClients(Long.parseLong(questionnaireId), token, false)
+        )).orElseThrow(
+                () -> new NotFoundException(MessageFormat.format("There isn't any register of Quizz as a media in Stage ID {0}", stageId))
+        );
+
+        QuestionnaireMediaUser questionnaireMediaUser = questionnaireMediaUserRepository.findById(createQuestionnaireMediaUserId(questionnaireMediaStage, user)).orElseThrow(
+                () -> new NotFoundException(MessageFormat.format("There isn't any start register of Quizz execution from user ID {0}", user.getId()))
+        );
+
+        if(!questionnaireMediaUser.getIsCompleted()){
+            questionnaireMediaUser.setCompletedAt(LocalDateTime.now());
+            questionnaireMediaUser.setIsCompleted(true);
+            questionnaireMediaUserRepository.save(questionnaireMediaUser);
         }
     }
 
@@ -496,6 +554,13 @@ public class StageService {
                 .build();
     }
 
+    private QuestionnaireMediaStageId createQuestionnaireStageId(@NonNull Long questionnaireId, @NonNull Long stageId){
+        return QuestionnaireMediaStageId.builder()
+                .questionnaire(questionnaireId)
+                .stage(stageId)
+                .build();
+    }
+
     private HarvestFileMediaUserId createHarvestFileMediaUserId(@NonNull HarvestFileMediaStage harvestFileMediaStage, @NonNull User user){
         return HarvestFileMediaUserId.builder()
                 .user(user.getId())
@@ -503,30 +568,11 @@ public class StageService {
                 .build();
     }
 
-    private ScormMediaUser createScormMediaUser(@NonNull ScormMediaStage scormMediaStage, @NonNull User user){
-        return ScormMediaUser
-                .builder()
-                .user(user)
-                .scormMedia(scormMediaStage)
-                .isCompleted(false)
-                .build();
-    }
-
-    private LinkMediaUser createLinkMediaUser(@NonNull LinkMediaStage linkMediaStage, @NonNull User user){
-        return LinkMediaUser
-                .builder()
-                .user(user)
-                .linkMedia(linkMediaStage)
-                .isCompleted(false)
-                .build();
-    }
-
-    private HarvestFileMediaUser createHarvestMediaUser(@NonNull HarvestFileMediaStage harvestFileMediaStage, @NonNull User user){
-        return HarvestFileMediaUser
-                .builder()
-                .user(user)
-                .harvestFileMedia(harvestFileMediaStage)
-                .isCompleted(false)
+    private QuestionnaireMediaUserId createQuestionnaireMediaUserId(@NonNull QuestionnaireMediaStage questionnaireMediaStage, @NonNull User user){
+        return QuestionnaireMediaUserId.builder()
+                .user(user.getId())
+                .questionnaireMedia(createQuestionnaireStageId(questionnaireMediaStage.getQuestionnaire().getId(),
+                        questionnaireMediaStage.getStage().getId()))
                 .build();
     }
 
@@ -595,19 +641,39 @@ public class StageService {
         }
     }
 
-    private void disassociateScormMediaToStage(String scormsId, @NonNull Stage stage, @NonNull String token){
+    private void disassociateScormMediaToStage(String scormsId, @NonNull Stage stage){
         if(StringUtils.hasText(scormsId)){
-            if(scormMediaStageRepository.existsById(createScormMediaId(scormsId, stage.getId()))){
-                scormMediaStageRepository.delete(createScormMedia(scormsId, stage, token));
+            Optional<ScormMediaStage> scormMediaStage = scormMediaStageRepository.findById(createScormMediaId(scormsId, stage.getId()));
+            if(scormMediaStage.isPresent()){
+                if(scormMediaUserRepository.existsByScormMedia(scormMediaStage.get())){
+                    throw new BusinessException("There are some users that started this media: " + scormMediaStage.get().getScorm().getTitle());
+                }
+                scormMediaStageRepository.delete(scormMediaStage.get());
             }
         }
     }
 
-    private void disassociateHarvestFilesToStage(Long filesId, @NonNull Stage stage, @NonNull String token)  {
+    private void disassociateQuestionnaireMediaToStage(Long questionnaireId, @NonNull Stage stage){
+        if(Objects.nonNull(questionnaireId)){
+            Optional<QuestionnaireMediaStage> questionnaireMediaStage = questionnaireMediaStageRepository.findById(createQuestionnaireStageId(questionnaireId, stage.getId()));
+            if(questionnaireMediaStage.isPresent()){
+                if(questionnaireMediaUserRepository.existsByQuestionnaireMedia(questionnaireMediaStage.get())){
+                    throw new BusinessException("There are some users that started this media: " + questionnaireMediaStage.get().getQuestionnaire().getName());
+                }
+                questionnaireMediaStageRepository.delete(questionnaireMediaStage.get());
+            }
+        }
+    }
+
+    private void disassociateHarvestFilesToStage(Long filesId, @NonNull Stage stage)  {
         if(Objects.nonNull(filesId)){
-            if(harvestFileMediaStageRepository.existsById(createHarvestMediaStageId(filesId, stage.getId()))){
+            Optional<HarvestFileMediaStage> harvestFileMediaStage = harvestFileMediaStageRepository.findById(createHarvestMediaStageId(filesId, stage.getId()));
+            if(harvestFileMediaStage.isPresent()){
+                if(harvestFileMediaUserRepository.existsByHarvestFileMedia(harvestFileMediaStage.get())){
+                    throw new BusinessException("There are some users that started this media: " + harvestFileMediaStage.get().getHarvestFile().getName());
+                }
                 try {
-                    harvestFileMediaStageRepository.delete(createHarvestFileMedia(filesId, stage, token));
+                    harvestFileMediaStageRepository.delete(harvestFileMediaStage.get());
                 } catch (Exception e) {
                     log.info("An error was occurred: ", e);
                 }
@@ -615,10 +681,14 @@ public class StageService {
         }
     }
 
-    private void disassociateLinkMediaToStage(Long linksId, @NonNull Stage stage, @NonNull String token){
+    private void disassociateLinkMediaToStage(Long linksId, @NonNull Stage stage){
         if(Objects.nonNull(linksId)){
-            if(linkMediaStageRepository.existsById(createLinkMediaStageId(linksId, stage.getId()))){
-                linkMediaStageRepository.delete(createLinkMedia(linksId, stage, token));
+            Optional<LinkMediaStage> linkMediaStage = linkMediaStageRepository.findById(createLinkMediaStageId(linksId, stage.getId()));
+            if(linkMediaStage.isPresent()){
+                if(linkMediaUserRepository.existsByLinkMedia(linkMediaStage.get())){
+                    throw new BusinessException("There are some users that started this media: " + linkMediaStage.get().getLink().getLink());
+                }
+                linkMediaStageRepository.delete(linkMediaStage.get());
             }
         }
     }
@@ -627,6 +697,14 @@ public class StageService {
         if(Objects.nonNull(filesId)){
             if(!harvestFileMediaStageRepository.existsById(createHarvestMediaStageId(filesId, stage.getId()))){
                 harvestFileMediaStageRepository.save(createHarvestFileMedia(filesId, stage, token));
+            }
+        }
+    }
+
+    private void associateQuestionnairesToStage(Long questionnaireId, @NonNull Stage stage, @NonNull String token) {
+        if(Objects.nonNull(questionnaireId)){
+            if(!questionnaireMediaStageRepository.existsById(createQuestionnaireStageId(questionnaireId, stage.getId()))){
+                questionnaireMediaStageRepository.save(createQuestionnaireMedia(questionnaireId, stage, token));
             }
         }
     }
@@ -660,6 +738,51 @@ public class StageService {
                 .builder()
                 .harvestFile(harvestFileStorageService.getFileByIdAndAuthorizedClient(fileId.toString(), token, false))
                 .stage(stage)
+                .build();
+    }
+
+    private QuestionnaireMediaStage createQuestionnaireMedia(@NonNull Long questionnaireId, @NonNull Stage stage, @NonNull String token) {
+        return QuestionnaireMediaStage
+                .builder()
+                .questionnaire(questionnaireService.findByIdAndAuthorizedClients(questionnaireId, token, false))
+                .stage(stage)
+                .build();
+    }
+
+
+    private ScormMediaUser createScormMediaUser(@NonNull ScormMediaStage scormMediaStage, @NonNull User user){
+        return ScormMediaUser
+                .builder()
+                .user(user)
+                .scormMedia(scormMediaStage)
+                .isCompleted(false)
+                .build();
+    }
+
+    private LinkMediaUser createLinkMediaUser(@NonNull LinkMediaStage linkMediaStage, @NonNull User user){
+        return LinkMediaUser
+                .builder()
+                .user(user)
+                .linkMedia(linkMediaStage)
+                .isCompleted(false)
+                .build();
+    }
+
+    private QuestionnaireMediaUser createQuestionnaireMediaUser(@NonNull QuestionnaireMediaStage questionnaireMedia, @NonNull User user){
+        return QuestionnaireMediaUser
+                .builder()
+                .user(user)
+                .questionnaireMedia(questionnaireMedia)
+                .isCompleted(false)
+                .build();
+    }
+
+    private HarvestFileMediaUser createHarvestMediaUser(@NonNull HarvestFileMediaStage harvestFileMediaStage, @NonNull User user){
+        return HarvestFileMediaUser
+                .builder()
+                .user(user)
+                .harvestFileMedia(harvestFileMediaStage)
+                .isCompleted(false)
                 .build();
     }
 
@@ -738,4 +861,28 @@ public class StageService {
                 .build();
     }
 
+    private MediaExecution createQuestionnaireExecution(QuestionnaireMediaStage questionnaire){
+        return MediaExecution
+                .builder()
+                .id(questionnaire.getQuestionnaire().getId().toString())
+                .creationDate(questionnaire.getCreatedAt())
+                .name(questionnaire.getQuestionnaire().getName())
+                .storage(Storage.QUIZZ)
+                .previewImagePath(questionnaire.getQuestionnaire().getPreviewImagePath())
+                .build();
+    }
+
+
+    private MediaExecution createQuestionnaireExecution(QuestionnaireMediaUser questionnaire){
+        return MediaExecution
+                .builder()
+                .id(questionnaire.getQuestionnaireMedia().getQuestionnaire().getId().toString())
+                .creationDate(questionnaire.getQuestionnaireMedia().getCreatedAt())
+                .completedAt(questionnaire.getCompletedAt())
+                .isCompleted(questionnaire.getIsCompleted())
+                .name(questionnaire.getQuestionnaireMedia().getQuestionnaire().getName())
+                .storage(Storage.QUIZZ)
+                .previewImagePath(questionnaire.getQuestionnaireMedia().getQuestionnaire().getPreviewImagePath())
+                .build();
+    }
 }

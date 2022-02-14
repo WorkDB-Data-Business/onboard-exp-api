@@ -95,7 +95,7 @@ public class QuestionService {
         return question;
     }
 
-    public Question findQuestionByIdAndToken(@NonNull Long id) throws Exception {
+    public Question findQuestionByIdAndToken(@NonNull Long id) {
         return questionRepository.findById(id).orElseThrow(
                 () -> new NotFoundException("Question", "ID", id.toString())
         );
@@ -108,7 +108,6 @@ public class QuestionService {
                 .description(dto.getDescription())
                 .questionnaire(questionnaire)
                 .isMultipleChoice(dto.getAnswersQuestions().size() > 0)
-                .scoreQuestion(dto.getScoreQuestion())
                 .build();
 
     }

@@ -5,6 +5,7 @@ import lombok.*;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,6 +33,10 @@ public class Questionnaire {
     @Builder.Default
     @Column(name = "is_active")
     private Boolean isActive = true;
+
+    @Builder.Default
+    @Column(name = "minimum_score")
+    private BigDecimal minimumScore = BigDecimal.ZERO;
 
     @ManyToOne
     @JoinColumn(name = "author")

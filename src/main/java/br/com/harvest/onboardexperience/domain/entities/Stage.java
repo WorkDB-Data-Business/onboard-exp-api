@@ -59,6 +59,9 @@ public class Stage extends BaseEntityAudit {
     @OneToMany(mappedBy = "stage")
     private List<LinkMediaStage> links;
 
+    @OneToMany(mappedBy = "stage")
+    private List<QuestionnaireMediaStage> questionnaires;
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
