@@ -9,8 +9,6 @@ import br.com.harvest.onboardexperience.domain.entities.User;
 import br.com.harvest.onboardexperience.domain.enumerators.FileTypeEnum;
 import br.com.harvest.onboardexperience.domain.exceptions.AlreadyExistsException;
 import br.com.harvest.onboardexperience.domain.exceptions.NotFoundException;
-import br.com.harvest.onboardexperience.infra.storage.dtos.UploadForm;
-import br.com.harvest.onboardexperience.infra.storage.entities.HarvestFile;
 import br.com.harvest.onboardexperience.infra.storage.enumerators.Storage;
 import br.com.harvest.onboardexperience.infra.storage.interfaces.StorageService;
 import br.com.harvest.onboardexperience.infra.storage.services.AssetStorageService;
