@@ -18,7 +18,7 @@ public class FileSimpleDto {
 
     private String contentId;
 
-    private String previewImagePath;
+    private String imagePreviewEncoded;
 
     private String contentPath;
 

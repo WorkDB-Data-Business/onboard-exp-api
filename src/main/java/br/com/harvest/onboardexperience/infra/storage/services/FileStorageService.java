@@ -22,9 +22,9 @@ public class FileStorageService {
     @Autowired
     private FileContentStore contentStore;
 
-    public Optional<FileDto> find(String contentPath) throws FileNotFoundException {
+    public FileDto find(String contentPath) throws FileNotFoundException {
         if(GenericUtils.stringNullOrEmpty(contentPath)){
-            throw new NullPointerException("The content path can't be null.");
+            return null;
         }
 
         HarvestFile file = fileRepository.findByContentPath(contentPath).orElseThrow(
@@ -35,6 +35,6 @@ public class FileStorageService {
 
         dto.setFileEncoded(StorageService.encodeFileToBase64(contentStore.getContent(file)));
 
-        return Optional.of(dto);
+        return dto;
     }
 }

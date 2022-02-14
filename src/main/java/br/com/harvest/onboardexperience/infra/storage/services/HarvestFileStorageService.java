@@ -64,6 +64,9 @@ public class HarvestFileStorageService implements StorageService {
     @Autowired
     private AssetStorageService assetStorageService;
 
+    @Autowired
+    private FileStorageService fileStorageService;
+
     private final Function<FileSimpleDto, FileSimpleDto> setStorage = fileSimpleDto -> {
         fileSimpleDto.setStorage(Storage.HARVEST_FILE);
         return fileSimpleDto;
@@ -100,8 +103,20 @@ public class HarvestFileStorageService implements StorageService {
     @Override
     public Page<FileSimpleDto> findAll(@NonNull String token, HarvestLibraryFilter filter, Pageable pageable) {
         return fileRepository.findAll(createQuery(filter, token), pageable)
-                .map(FileMapper.INSTANCE::toFileSimpleDto)
+                .map(this::toFileSimpleDto)
                 .map(setStorage);
+    }
+
+    private FileSimpleDto toFileSimpleDto(@NonNull HarvestFile harvestFile) {
+        FileSimpleDto fileSimpleDto = FileMapper.INSTANCE.toFileSimpleDto(harvestFile);
+        try {
+            FileDto fileDto = fileStorageService.find(harvestFile.getPreviewImagePath());
+            fileSimpleDto.setImagePreviewEncoded(Objects.nonNull(fileDto) ? fileDto.getFileEncoded() : null);
+        } catch (FileNotFoundException e) {
+            log.info("An error occurred while getting image preview file:", e);
+        }
+
+        return fileSimpleDto;
     }
 
     public List<HarvestFile> findAllByClient(@NonNull Client client) {
@@ -228,7 +243,7 @@ public class HarvestFileStorageService implements StorageService {
                 assetStorageService.uploadAsset(form.getPreviewImage(),
                         harvestFile.getAuthor().getClient().getCnpj(),
                         harvestFile.getName() + "_preview",
-                        FileTypeEnum.ASSET, harvestFile.getAuthor()));
+                        FileTypeEnum.THUMBNAIL, harvestFile.getAuthor()));
     }
 
     private String createFilePath(String fileName, Client client) {

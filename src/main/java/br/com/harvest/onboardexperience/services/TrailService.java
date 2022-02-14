@@ -10,14 +10,20 @@ import br.com.harvest.onboardexperience.domain.enumerators.FileTypeEnum;
 import br.com.harvest.onboardexperience.domain.exceptions.AlreadyExistsException;
 import br.com.harvest.onboardexperience.domain.exceptions.BusinessException;
 import br.com.harvest.onboardexperience.domain.exceptions.NotFoundException;
+import br.com.harvest.onboardexperience.infra.storage.dtos.FileDto;
+import br.com.harvest.onboardexperience.infra.storage.dtos.FileSimpleDto;
+import br.com.harvest.onboardexperience.infra.storage.entities.HarvestFile;
 import br.com.harvest.onboardexperience.infra.storage.filters.CustomFilter;
+import br.com.harvest.onboardexperience.infra.storage.mappers.FileMapper;
 import br.com.harvest.onboardexperience.infra.storage.services.AssetStorageService;
+import br.com.harvest.onboardexperience.infra.storage.services.FileStorageService;
 import br.com.harvest.onboardexperience.mappers.TrailMapper;
 import br.com.harvest.onboardexperience.repositories.StageUserRepository;
 import br.com.harvest.onboardexperience.repositories.TrailRepository;
 import br.com.harvest.onboardexperience.repositories.UserTrailRegistrationRepository;
 import br.com.harvest.onboardexperience.utils.JwtTokenUtils;
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -28,6 +34,7 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -37,6 +44,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 
+@Slf4j
 @Service
 public class TrailService {
 
@@ -66,6 +74,9 @@ public class TrailService {
 
     @Autowired
     private FetchService fetchService;
+
+    @Autowired
+    private FileStorageService fileStorageService;
 
     public List<Trail> findAll(){
         return repository.findAll();
@@ -118,13 +129,25 @@ public class TrailService {
     }
 
     public Page<TrailSimpleDTO> findAll(Pageable pageable, CustomFilter filter, @NonNull String token){
-        return repository.findAll(createQuery(filter, token), pageable).map(TrailMapper.INSTANCE::toSimpleDto);
+        return repository.findAll(createQuery(filter, token), pageable).map(this::toFileSimpleDto);
     }
 
     public Page<TrailSimpleDTO> findAllMyTrails(Pageable pageable, CustomFilter filter, @NonNull String token){
         return repository.findAll(createQuery(filter, token)
                         .and(TrailRepository.byEndUser(userService.findUserByToken(token))),
-                pageable).map(TrailMapper.INSTANCE::toSimpleDto);
+                pageable).map(this::toFileSimpleDto);
+    }
+
+    private TrailSimpleDTO toFileSimpleDto(@NonNull Trail trail) {
+        TrailSimpleDTO trailSimpleDTO = TrailMapper.INSTANCE.toSimpleDto(trail);
+        try {
+            FileDto fileDto = fileStorageService.find(trail.getPreviewImagePath());
+            trailSimpleDTO.setImagePreviewEncoded(Objects.nonNull(fileDto) ? fileDto.getFileEncoded() : null);
+        } catch (FileNotFoundException e) {
+            log.info("An error occurred while getting image preview file:", e);
+        }
+
+        return trailSimpleDTO;
     }
 
     public List<Trail> findAllMyTrails(@NonNull String token){
@@ -200,6 +223,12 @@ public class TrailService {
                             FileTypeEnum.ASSET, trail.getAuthor()
                     )
             );
+            trail.setPreviewImagePath(assetStorageService.uploadAsset(
+                    mapImage,
+                    trail.getAuthor().getClient().getCnpj(),
+                    MessageFormat.format("{0}_map_preview", trail.getName()),
+                    FileTypeEnum.THUMBNAIL, trail.getAuthor()
+            ));
         }
     }
 

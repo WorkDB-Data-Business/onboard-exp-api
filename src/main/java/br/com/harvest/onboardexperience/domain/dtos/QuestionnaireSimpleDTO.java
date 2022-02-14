@@ -18,8 +18,8 @@ public class QuestionnaireSimpleDTO {
     @JsonProperty("name")
     private String name;
 
-    @JsonProperty("previewImagePath")
-    private String previewImagePath;
+    @JsonProperty("imagePreviewEncoded")
+    private String imagePreviewEncoded;
 
     @JsonProperty("isActive")
     private Boolean isActive;

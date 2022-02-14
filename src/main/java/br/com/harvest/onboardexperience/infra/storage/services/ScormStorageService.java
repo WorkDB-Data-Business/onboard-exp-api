@@ -12,6 +12,7 @@ import br.com.harvest.onboardexperience.infra.scorm.mappers.ScormMapper;
 import br.com.harvest.onboardexperience.infra.scorm.repository.ScormRepository;
 import br.com.harvest.onboardexperience.infra.scorm.services.RegistrationService;
 import br.com.harvest.onboardexperience.infra.scorm.services.ScormService;
+import br.com.harvest.onboardexperience.infra.storage.dtos.FileDto;
 import br.com.harvest.onboardexperience.infra.storage.dtos.UploadForm;
 import br.com.harvest.onboardexperience.infra.storage.enumerators.Storage;
 import br.com.harvest.onboardexperience.infra.storage.filters.HarvestLibraryFilter;
@@ -28,12 +29,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
-import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -63,6 +63,9 @@ public class ScormStorageService implements StorageService {
 
     @Autowired
     private AssetStorageService assetStorageService;
+
+    @Autowired
+    private FileStorageService fileStorageService;
 
     private final Function<ScormDto, ScormDto> SET_STORAGE = scormDto -> {
         scormDto.setStorage(Storage.SCORM);
@@ -101,7 +104,20 @@ public class ScormStorageService implements StorageService {
 
     @Override
     public Page<ScormDto> findAll(@NonNull String token, HarvestLibraryFilter filter, Pageable pageable) {
-        return repository.findAll(buildQuery(filter, token), pageable).map(ScormMapper.INSTANCE::toDto).map(SET_STORAGE);
+        return repository.findAll(buildQuery(filter, token), pageable).map(this::toScormDto).map(SET_STORAGE);
+    }
+
+    public ScormDto toScormDto(@NonNull Scorm scorm){
+        ScormDto dto = ScormMapper.INSTANCE.toDto(scorm);
+
+        try {
+            FileDto fileDto = fileStorageService.find(scorm.getPreviewImagePath());
+            dto.setImagePreviewEncoded(Objects.nonNull(fileDto) ? fileDto.getFileEncoded() : null);
+        } catch (FileNotFoundException e) {
+            log.info("An error occurred while getting image preview file:", e);
+        }
+
+        return dto;
     }
 
     public List<Scorm> findAllByClient(@NonNull Client client) {
@@ -129,7 +145,7 @@ public class ScormStorageService implements StorageService {
                 assetStorageService.uploadAsset(form.getPreviewImage(),
                         scorm.getAuthor().getClient().getCnpj(),
                         MessageFormat.format("{0}_{1}_preview",  scorm.getTitle(), GenericUtils.generateUUID()),
-                        FileTypeEnum.ASSET, scorm.getAuthor()));
+                        FileTypeEnum.THUMBNAIL, scorm.getAuthor()));
     }
 
     @Override

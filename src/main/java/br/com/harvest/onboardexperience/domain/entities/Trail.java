@@ -34,6 +34,9 @@ public class Trail extends BaseEntityAudit {
     @Column(name = "map_image_path")
     private String mapImagePath;
 
+    @Column(name = "preview_image_path")
+    private String previewImagePath;
+
     @Column(name = "map_music_path")
     private String mapMusicPath;
 

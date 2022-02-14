@@ -18,6 +18,9 @@ public class TrailSimpleDTO {
     @JsonProperty("name")
     private String name;
 
+    @JsonProperty("imagePreviewEncoded")
+    private String imagePreviewEncoded;
+
     @JsonProperty("description")
     private String description;
 

@@ -25,7 +25,7 @@ public class StorageController {
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/files/")
     public ResponseEntity<FileDto> findByContentPath(@RequestParam String contentPath) throws FileNotFoundException {
-        return ResponseEntity.ok(service.find(contentPath).get());
+        return ResponseEntity.ok(service.find(contentPath));
     }
 
 }
