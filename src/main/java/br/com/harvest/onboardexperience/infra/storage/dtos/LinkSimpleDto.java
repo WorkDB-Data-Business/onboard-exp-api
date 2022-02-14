@@ -19,7 +19,7 @@ public class LinkSimpleDto {
 
     private String link;
 
-    private String previewImagePath;
+    private String imagePreviewEncoded;
 
     private ContentType contentType;
 

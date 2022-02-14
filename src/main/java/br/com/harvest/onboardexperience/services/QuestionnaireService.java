@@ -9,10 +9,12 @@ import br.com.harvest.onboardexperience.domain.entities.User;
 import br.com.harvest.onboardexperience.domain.enumerators.FileTypeEnum;
 import br.com.harvest.onboardexperience.domain.exceptions.AlreadyExistsException;
 import br.com.harvest.onboardexperience.domain.exceptions.NotFoundException;
+import br.com.harvest.onboardexperience.infra.storage.dtos.FileDto;
 import br.com.harvest.onboardexperience.infra.storage.enumerators.Storage;
 import br.com.harvest.onboardexperience.infra.storage.interfaces.StorageService;
 import br.com.harvest.onboardexperience.infra.storage.services.AssetStorageService;
 
+import br.com.harvest.onboardexperience.infra.storage.services.FileStorageService;
 import br.com.harvest.onboardexperience.mappers.QuestionnaireMapper;
 import br.com.harvest.onboardexperience.repositories.QuestionnaireRepository;
 import br.com.harvest.onboardexperience.repositories.UserRepository;
@@ -27,7 +29,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.nio.file.FileAlreadyExistsException;
+import java.io.FileNotFoundException;
 import java.util.Objects;
 
 @Slf4j
@@ -57,6 +59,9 @@ public class QuestionnaireService {
 
     @Autowired
     private AssetStorageService assetStorageService;
+
+    @Autowired
+    private FileStorageService fileStorageService;
 
     public QuestionnaireDto create(@NonNull QuestionnaireDto dto, @NonNull String token) {
 
@@ -91,7 +96,7 @@ public class QuestionnaireService {
                     multipartFile,
                     questionnaire.getAuthor().getClient().getCnpj(),
                     questionnaire.getName(),
-                    FileTypeEnum.ASSET,
+                    FileTypeEnum.THUMBNAIL,
                     questionnaire.getAuthor()
             ));
             questionnaireRepository.save(questionnaire);
@@ -132,6 +137,14 @@ public class QuestionnaireService {
     private QuestionnaireSimpleDTO entityToSimpleDto(@NonNull Questionnaire questionnaire){
         QuestionnaireSimpleDTO questionnaireDto = QuestionnaireMapper.INSTANCE.toSimpleDto(questionnaire);
         questionnaireDto.setStorage(Storage.QUIZZ);
+
+        try {
+            FileDto fileDto = fileStorageService.find(questionnaire.getPreviewImagePath());
+            questionnaireDto.setImagePreviewEncoded(Objects.nonNull(fileDto) ? fileDto.getFileEncoded() : null);
+        } catch (FileNotFoundException e) {
+            log.info("An error occurred while getting image preview file:", e);
+        }
+
         return questionnaireDto;
     }
 

@@ -5,10 +5,10 @@ import br.com.harvest.onboardexperience.domain.entities.User;
 import br.com.harvest.onboardexperience.domain.enumerators.FileTypeEnum;
 import br.com.harvest.onboardexperience.domain.exceptions.GenericUploadException;
 import br.com.harvest.onboardexperience.domain.exceptions.LinkNotFoundException;
+import br.com.harvest.onboardexperience.infra.storage.dtos.FileDto;
 import br.com.harvest.onboardexperience.infra.storage.dtos.LinkDto;
 import br.com.harvest.onboardexperience.infra.storage.dtos.LinkSimpleDto;
 import br.com.harvest.onboardexperience.infra.storage.dtos.UploadForm;
-import br.com.harvest.onboardexperience.infra.storage.entities.HarvestFile;
 import br.com.harvest.onboardexperience.infra.storage.entities.Link;
 import br.com.harvest.onboardexperience.infra.storage.enumerators.Storage;
 import br.com.harvest.onboardexperience.infra.storage.filters.HarvestLibraryFilter;
@@ -20,22 +20,22 @@ import br.com.harvest.onboardexperience.services.TenantService;
 import br.com.harvest.onboardexperience.services.UserService;
 import br.com.harvest.onboardexperience.utils.GenericUtils;
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
-import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
-import java.util.ArrayList;
+import java.io.FileNotFoundException;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 public class LinkStorageService implements StorageService {
 
@@ -53,6 +53,9 @@ public class LinkStorageService implements StorageService {
 
     @Autowired
     private AssetStorageService assetStorageService;
+
+    @Autowired
+    private FileStorageService fileStorageService;
 
     private final Function<LinkSimpleDto, LinkSimpleDto> SET_STORAGE = linkSimpleDto -> {
         linkSimpleDto.setStorage(Storage.LINK);
@@ -84,7 +87,7 @@ public class LinkStorageService implements StorageService {
                 assetStorageService.uploadAsset(form.getPreviewImage(),
                         link.getAuthor().getClient().getCnpj(),
                         GenericUtils.generateUUID() + "_preview",
-                        FileTypeEnum.ASSET, link.getAuthor()));
+                        FileTypeEnum.THUMBNAIL, link.getAuthor()));
     }
 
     @Override
@@ -101,8 +104,21 @@ public class LinkStorageService implements StorageService {
     @Override
     public Page<LinkSimpleDto> findAll(@NonNull String token, HarvestLibraryFilter filter, Pageable pageable) {
         return repository.findAll(createQuery(filter, token), pageable)
-                .map(LinkMapper.INSTANCE::toLinkSimpleDto)
+                .map(this::toLinkSimpleDto)
                 .map(SET_STORAGE);
+    }
+
+    public LinkSimpleDto toLinkSimpleDto(@NonNull Link link){
+        LinkSimpleDto linkSimpleDto = LinkMapper.INSTANCE.toLinkSimpleDto(link);
+
+        try {
+            FileDto fileDto = fileStorageService.find(link.getPreviewImagePath());
+            linkSimpleDto.setImagePreviewEncoded(Objects.nonNull(fileDto) ? fileDto.getFileEncoded() : null);
+        } catch (FileNotFoundException e) {
+            log.info("An error occurred while getting image preview file:", e);
+        }
+
+        return linkSimpleDto;
     }
 
     public List<Link> findAllByClient(Client client) {
