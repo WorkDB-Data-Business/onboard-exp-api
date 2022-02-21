@@ -156,6 +156,9 @@ public class ScormStorageService implements StorageService {
             uploadImage(scorm, form);
         }
 
+        scorm.setAuthorizedClients(fetchService.generateAuthorizedClients(form.getAuthorizedClients(), scorm.getAuthor()));
+
+
         repository.save(scorm);
     }
 
