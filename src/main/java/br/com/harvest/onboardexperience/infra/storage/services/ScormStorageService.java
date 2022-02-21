@@ -171,7 +171,7 @@ public class ScormStorageService implements StorageService {
     public Optional<ScormDto> find(@NonNull String id, @NonNull String token) throws Exception {
         Scorm scorm = find(id, token, false);
 
-        ScormDto dto = ScormMapper.INSTANCE.toDto(scorm);
+        ScormDto dto = toScormDto(scorm);
         dto.setAuthorizedClientsId(GenericUtils.extractIDsFromList(scorm.getAuthorizedClients(), Client.class));
         dto.setStorage(Storage.SCORM);
 
